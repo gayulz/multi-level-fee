@@ -57,3 +57,4 @@ docker-compose.override.yml
 
 # Shrimp Task Manager data
 shrimp-data/
+shrimp-rules.md
