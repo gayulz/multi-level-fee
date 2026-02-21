@@ -1,0 +1,58 @@
+spring:
+  profiles:
+    active: local
+  application:
+    name: settlement
+
+server:
+  port: 8080
+
+---
+# Local Profile
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  # Thymeleaf 설정
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+  # H2 Database 설정 (로컬 개발용)
+  datasource:
+    url: jdbc:h2:mem:settlementdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  # RabbitMQ 설정
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+# Logging
+logging:
+  level:
+    com.example.settlement: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

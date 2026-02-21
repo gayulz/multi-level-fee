@@ -1,0 +1,261 @@
+/**
+ * [NEW] Settlement Engine - 커스텀 CSS
+ *
+ * Bootstrap 5를 보완하는 커스텀 스타일입니다.
+ *
+ * @author gayul.kim
+ * @since 2026-02-21
+ */
+
+/* ===== CSS 변수 정의 ===== */
+:root {
+	--primary-color: #0d6efd;
+	--secondary-color: #6c757d;
+	--success-color: #198754;
+	--danger-color: #dc3545;
+	--warning-color: #ffc107;
+	--info-color: #0dcaf0;
+	--sidebar-width: 250px;
+	--header-height: 56px;
+}
+
+/* ===== 전역 스타일 ===== */
+body {
+	font-size: 0.875rem;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+/* ===== Header 스타일 ===== */
+.navbar {
+	height: var(--header-height);
+	z-index: 1040;
+}
+
+/* ===== Sidebar 스타일 ===== */
+.sidebar {
+	position: fixed;
+	top: var(--header-height);
+	bottom: 0;
+	left: 0;
+	z-index: 100;
+	padding: 0;
+	box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+	overflow-y: auto;
+}
+
+.sidebar .nav-link {
+	font-weight: 500;
+	color: #333;
+	padding: 0.75rem 1rem;
+	border-left: 3px solid transparent;
+	transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover {
+	background-color: #f8f9fa;
+	color: var(--primary-color);
+	border-left-color: var(--primary-color);
+}
+
+.sidebar .nav-link.active {
+	color: var(--primary-color);
+	background-color: #e7f1ff;
+	border-left-color: var(--primary-color);
+}
+
+.sidebar .nav-link i {
+	width: 20px;
+	text-align: center;
+}
+
+.sidebar-heading {
+	font-size: .75rem;
+	text-transform: uppercase;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+}
+
+/* 모바일 사이드바 토글 */
+@media (max-width: 767.98px) {
+	.sidebar {
+		display: none;
+	}
+
+	.sidebar.show {
+		display: block;
+		width: 100%;
+	}
+}
+
+/* ===== Main Content 스타일 ===== */
+.main-content {
+	margin-top: var(--header-height);
+	margin-left: 0;
+	padding-top: 1rem;
+	min-height: calc(100vh - var(--header-height) - 80px);
+}
+
+@media (min-width: 768px) {
+	.main-content {
+		margin-left: var(--sidebar-width);
+	}
+}
+
+.content-wrapper {
+	padding-bottom: 2rem;
+}
+
+/* ===== Dashboard Card 스타일 ===== */
+.dashboard-card {
+	border: none;
+	border-radius: 10px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
+	cursor: pointer;
+}
+
+.dashboard-card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-card .card-body {
+	padding: 1.5rem;
+}
+
+.dashboard-card-icon {
+	width: 50px;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 10px;
+	font-size: 1.5rem;
+}
+
+.dashboard-card-icon.primary {
+	background-color: rgba(13, 110, 253, 0.1);
+	color: var(--primary-color);
+}
+
+.dashboard-card-icon.success {
+	background-color: rgba(25, 135, 84, 0.1);
+	color: var(--success-color);
+}
+
+.dashboard-card-icon.info {
+	background-color: rgba(13, 202, 240, 0.1);
+	color: var(--info-color);
+}
+
+.dashboard-card-icon.warning {
+	background-color: rgba(255, 193, 7, 0.1);
+	color: var(--warning-color);
+}
+
+/* ===== Loading Overlay 스타일 ===== */
+.loading-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: none;
+	justify-content: center;
+	align-items: center;
+	z-index: 9999;
+}
+
+.loading-overlay.show {
+	display: flex;
+}
+
+.loading-spinner {
+	width: 3rem;
+	height: 3rem;
+	border: 0.4rem solid rgba(255, 255, 255, 0.3);
+	border-top-color: #fff;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* ===== Settlement Tree 스타일 ===== */
+.settlement-tree {
+	list-style: none;
+	padding-left: 0;
+}
+
+.settlement-tree-item {
+	padding: 0.75rem;
+	border-left: 3px solid #dee2e6;
+	margin-bottom: 0.5rem;
+	background-color: #f8f9fa;
+	border-radius: 0 5px 5px 0;
+}
+
+.settlement-tree-item.level-0 {
+	border-left-color: var(--primary-color);
+	background-color: rgba(13, 110, 253, 0.1);
+	font-weight: 600;
+}
+
+.settlement-tree-item.level-1 {
+	border-left-color: var(--success-color);
+	background-color: rgba(25, 135, 84, 0.05);
+	margin-left: 2rem;
+}
+
+.settlement-tree-item.level-2 {
+	border-left-color: var(--info-color);
+	background-color: rgba(13, 202, 240, 0.05);
+	margin-left: 4rem;
+}
+
+.settlement-tree-item.level-3 {
+	border-left-color: var(--warning-color);
+	background-color: rgba(255, 193, 7, 0.05);
+	margin-left: 6rem;
+}
+
+/* ===== Footer 스타일 ===== */
+.footer {
+	margin-top: auto;
+	background-color: #f8f9fa;
+}
+
+/* ===== 유틸리티 클래스 ===== */
+.text-money {
+	font-family: 'Courier New', monospace;
+	font-weight: 600;
+}
+
+.badge-status {
+	padding: 0.35em 0.65em;
+	font-size: 0.75rem;
+	font-weight: 600;
+	border-radius: 0.25rem;
+}
+
+/* ===== 반응형 타이포그래피 ===== */
+@media (max-width: 767.98px) {
+	h1 {
+		font-size: 1.5rem;
+	}
+
+	h2 {
+		font-size: 1.25rem;
+	}
+
+	.dashboard-card .card-body {
+		padding: 1rem;
+	}
+}

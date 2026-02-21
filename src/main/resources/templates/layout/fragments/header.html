@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+	<!-- Header Fragment -->
+	<header th:fragment="header" class="navbar navbar-dark bg-dark sticky-top shadow-sm">
+		<div class="container-fluid">
+			<!-- 모바일 메뉴 토글 버튼 -->
+			<button class="navbar-toggler d-md-none" type="button" id="sidebarToggle">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<!-- 로고 및 프로젝트명 -->
+			<a class="navbar-brand d-flex align-items-center" th:href="@{/}">
+				<i class="fas fa-calculator me-2"></i>
+				<span class="fw-bold">Settlement Engine</span>
+			</a>
+
+			<!-- 우측 영역: 실시간 시계 -->
+			<div class="d-flex align-items-center text-white">
+				<i class="fas fa-clock me-2"></i>
+				<span id="realtime-clock" class="small">--:--:--</span>
+			</div>
+		</div>
+	</header>
+
+	<!-- 실시간 시계 JavaScript -->
+	<script th:inline="javascript">
+		// 실시간 시계 업데이트
+		function updateClock() {
+			const now = new Date();
+			const hours = String(now.getHours()).padStart(2, '0');
+			const minutes = String(now.getMinutes()).padStart(2, '0');
+			const seconds = String(now.getSeconds()).padStart(2, '0');
+			const timeString = `${hours}:${minutes}:${seconds}`;
+
+			const clockElement = document.getElementById('realtime-clock');
+			if (clockElement) {
+				clockElement.textContent = timeString;
+			}
+		}
+
+		// 페이지 로드 시 시계 시작
+		document.addEventListener('DOMContentLoaded', function() {
+			updateClock();
+			setInterval(updateClock, 1000);
+		});
+	</script>
+</body>
+</html>

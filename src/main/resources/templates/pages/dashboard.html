@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/default :: head}"></head>
+<body>
+	<!-- Header -->
+	<div th:replace="~{layout/fragments/header :: header}"></div>
+
+	<div class="container-fluid">
+		<div class="row">
+			<!-- Sidebar -->
+			<div th:replace="~{layout/fragments/sidebar :: sidebar}"></div>
+
+			<!-- Main Content -->
+			<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+				<div class="content-wrapper">
+					<!-- 페이지 타이틀 및 툴바 -->
+					<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+						<h1 class="h2" th:text="${pageTitle}">대시보드</h1>
+						<div class="btn-toolbar">
+							<button class="btn btn-sm btn-outline-secondary" id="refresh-btn">
+								<i class="fas fa-sync-alt"></i> 새로고침
+							</button>
+						</div>
+					</div>
+
+					<!-- 요약 카드 영역 (Task 2.2-3에서 구현) -->
+					<div id="summary-cards" class="row g-3 mb-4">
+						<!-- 카드는 다음 단계에서 추가됩니다 -->
+					</div>
+
+					<!-- 최근 정산 내역 영역 (Task 2.2-4에서 구현) -->
+					<div id="recent-settlements" class="row mt-4">
+						<!-- 테이블은 다음 단계에서 추가됩니다 -->
+					</div>
+				</div>
+			</main>
+		</div>
+	</div>
+
+	<!-- Footer -->
+	<div th:replace="~{layout/fragments/footer :: footer}"></div>
+
+	<!-- Scripts -->
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+	<script th:src="@{/js/main.js}"></script>
+
+	<!-- 새로고침 버튼 JavaScript -->
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// 새로고침 버튼 클릭 이벤트
+			const refreshBtn = document.getElementById('refresh-btn');
+			if (refreshBtn) {
+				refreshBtn.addEventListener('click', function() {
+					Utils.showLoading();
+					setTimeout(() => location.reload(), 500);
+				});
+			}
+		});
+	</script>
+</body>
+</html>
