@@ -131,3 +131,50 @@ body {
 .border-right {
   border-right: 1px solid var(--border-color) !important;
 }
+
+/* ========================================= */
+/* jsTree Custom Theme (Light / Dark Mode)   */
+/* ========================================= */
+
+.jstree-default .jstree-anchor {
+	font-family: var(--font-family-base);
+	color: var(--text-main) !important;
+	transition: all 0.2s ease-in-out;
+}
+
+/* Dark Mode Overrides for jsTree */
+[data-bs-theme="dark"] .jstree-default .jstree-clicked {
+	background: var(--sidebar-active-bg) !important;
+	color: var(--text-main) !important;
+	border-radius: 4px;
+	box-shadow: none;
+}
+
+[data-bs-theme="dark"] .jstree-default .jstree-hovered {
+	background: var(--sidebar-hover-bg) !important;
+	color: var(--text-main) !important;
+	border-radius: 4px;
+	box-shadow: none;
+}
+
+[data-bs-theme="dark"] .jstree-default .jstree-wholerow-hovered {
+	background: var(--sidebar-hover-bg) !important;
+}
+
+[data-bs-theme="dark"] .jstree-default .jstree-wholerow-clicked {
+	background: var(--sidebar-active-bg) !important;
+}
+
+/* Make tree nodes less congested */
+.jstree-default .jstree-node {
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+/* Fix Bootstrap Icon size alignment in jsTree */
+.jstree-default .jstree-themeicon.bi {
+	background-image: none !important;
+	font-size: 1.1rem;
+	line-height: 24px;
+	margin-top: -2px;
+}

@@ -1,0 +1,135 @@
+<!--
+  [NEW] 정산 노드 등록/수정 폼 뷰
+  
+  Bootstrap 5 반응형 입력 폼 및 Validation UI 적용
+  
+  @author gayul.kim
+  @since 2026-02-25
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+
+<head>
+    <title th:text="${pageTitle}">노드 등록/수정</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <h1 class="h2 fw-bold" th:text="${pageTitle}">노드 폼</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a th:href="@{/nodes}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                <i class="bi bi-arrow-left"></i>
+                목록으로 돌아가기
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Module Split Layout -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent py-3 border-bottom">
+                    <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle text-primary"></i> 노드 기본 정보 입력
+                    </h5>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    
+                    <!-- 노드 정보 입력 폼 -->
+                    <!-- JS validation(needs-validation) 적용 -->
+                    <form class="needs-validation" novalidate id="nodeForm">
+                        
+                        <!-- 1. 부모 노드 선택 -->
+                        <div class="mb-4">
+                            <label for="parentId" class="form-label fw-bold">상위 노드 선택</label>
+                            <select class="form-select form-select-lg fs-6" id="parentId" name="parentId">
+                                <option value="" selected>선택 안함 (최상위 루트 노드 생성 시)</option>
+                                <option th:each="p : ${parentNodes}" 
+                                        th:value="${p.id}" 
+                                        th:text="${p.name}">본사</option>
+                            </select>
+                            <div class="form-text text-muted">선택하지 않으면 새로운 최상위 노드로 생성됩니다.</div>
+                        </div>
+
+                        <!-- 2. 노드 이름 -->
+                        <div class="mb-4">
+                            <label for="name" class="form-label fw-bold">노드명 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-lg fs-6" id="name" name="name" 
+                                   placeholder="예: 서울 중구 대리점" required minlength="2" maxlength="50">
+                            <div class="invalid-feedback">
+                                노드명은 2자 이상 입력해야 합니다.
+                            </div>
+                        </div>
+
+                        <!-- 3. 수수료율 -->
+                        <div class="mb-5">
+                            <label for="feeRate" class="form-label fw-bold">수수료율(%) <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-lg">
+                                <input type="number" class="form-control fs-6" id="feeRate" name="feeRate" 
+                                       placeholder="예: 3.5" step="0.01" min="0" max="100" required>
+                                <span class="input-group-text bg-transparent">%</span>
+                                <div class="invalid-feedback">
+                                    0부터 100 사이의 올바른 수수료율을 입력해야 합니다.
+                                </div>
+                            </div>
+                            <div class="form-text text-muted">소수점 이하 두 자리까지 설정 가능합니다.</div>
+                        </div>
+                        
+                        <hr class="text-muted opacity-25 mb-4">
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a th:href="@{/nodes}" class="btn btn-light border px-4">취소</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">
+                                <i class="bi bi-check-lg pe-1"></i> 저장
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+            
+            <!-- 추가 안내 영역 (옵션) -->
+            <div class="mt-4 p-3 bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded d-flex align-items-center gap-3">
+                <i class="bi bi-lightbulb fs-4"></i>
+                <div class="small">
+                    <strong>Tip:</strong> 적절하게 계층을 분리하여 각 대리점과 지사가 관리할 구역을 구분하세요. 하위 노드의 수수료가 상위보다 높을 수 없는 검증 로직이 작동될 예정입니다.
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Form Validation Script -->
+    <script>
+        // Example starter JavaScript for disabling form submissions if there are invalid fields
+        (() => {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    } else {
+                        // Demo 용 목업 액션 (실제론 서버 연동)
+                        event.preventDefault();
+                        alert("노드 정보가 성공적으로 저장되었습니다. (Mock)");
+                        window.location.href = "/nodes";
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+</div>
+</body>
+</html>
