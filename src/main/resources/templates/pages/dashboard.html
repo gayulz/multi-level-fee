@@ -1,62 +1,139 @@
+<!--
+  [NEW] 대시보드 페이지 UI 검증용
+  
+  Envato Elements 스타일 UI 위젯 구현
+  
+  @author gayul.kim
+  @since 2026-02-25
+-->
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout/default :: head}"></head>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+
+<head>
+    <title>경영정보 대시보드</title>
+</head>
+
 <body>
-	<!-- Header -->
-	<div th:replace="~{layout/fragments/header :: header}"></div>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <h1 class="h2 fw-bold">Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary">공유</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">내보내기</button>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1">
+                <i class="bi bi-calendar3"></i>
+                이번 주
+            </button>
+        </div>
+    </div>
 
-	<div class="container-fluid">
-		<div class="row">
-			<!-- Sidebar -->
-			<div th:replace="~{layout/fragments/sidebar :: sidebar}"></div>
-
-			<!-- Main Content -->
-			<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-				<div class="content-wrapper">
-					<!-- 페이지 타이틀 및 툴바 -->
-					<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-						<h1 class="h2" th:text="${pageTitle}">대시보드</h1>
-						<div class="btn-toolbar">
-							<button class="btn btn-sm btn-outline-secondary" id="refresh-btn">
-								<i class="fas fa-sync-alt"></i> 새로고침
-							</button>
-						</div>
-					</div>
-
-					<!-- 요약 카드 영역 (Task 2.2-3에서 구현) -->
-					<div id="summary-cards" class="row g-3 mb-4">
-						<!-- 카드는 다음 단계에서 추가됩니다 -->
-					</div>
-
-					<!-- 최근 정산 내역 영역 (Task 2.2-4에서 구현) -->
-					<div id="recent-settlements" class="row mt-4">
-						<!-- 테이블은 다음 단계에서 추가됩니다 -->
-					</div>
-				</div>
-			</main>
-		</div>
-	</div>
-
-	<!-- Footer -->
-	<div th:replace="~{layout/fragments/footer :: footer}"></div>
-
-	<!-- Scripts -->
-	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-	<script th:src="@{/js/main.js}"></script>
-
-	<!-- 새로고침 버튼 JavaScript -->
-	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			// 새로고침 버튼 클릭 이벤트
-			const refreshBtn = document.getElementById('refresh-btn');
-			if (refreshBtn) {
-				refreshBtn.addEventListener('click', function() {
-					Utils.showLoading();
-					setTimeout(() => location.reload(), 500);
-				});
-			}
-		});
-	</script>
+    <!-- Stat Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="card-title mb-0 text-muted">총 정산액</h6>
+                        <div class="p-2 bg-primary bg-opacity-10 rounded text-primary">
+                            <i class="bi bi-currency-dollar fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-2 fw-bold" th:text="${'₩' + #numbers.formatInteger(totalAmount, 0, 'COMMA')}">₩1,250,000</h3>
+                    <p class="mb-0 text-success small">
+                        <i class="bi bi-arrow-up-right me-1"></i>+12.5% 이번 주
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="card-title mb-0 text-muted">신규 노드</h6>
+                        <div class="p-2 bg-success bg-opacity-10 rounded text-success">
+                            <i class="bi bi-diagram-3 fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-2 fw-bold" th:text="${totalNodes}">42</h3>
+                    <p class="mb-0 text-success small">
+                        <i class="bi bi-arrow-up-right me-1"></i>+4.2% 이번 주
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="card-title mb-0 text-muted">처리 건수</h6>
+                        <div class="p-2 bg-info bg-opacity-10 rounded text-info">
+                            <i class="bi bi-receipt fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-2 fw-bold" th:text="${todaySettlements}">1,452</h3>
+                    <p class="mb-0 text-danger small">
+                        <i class="bi bi-arrow-down-right me-1"></i>-2.1% 이번 주
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="card-title mb-0 text-muted">활성 유저</h6>
+                        <div class="p-2 bg-warning bg-opacity-10 rounded text-warning">
+                            <i class="bi bi-people fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-2 fw-bold" th:text="${avgProcessTime + ' ms'}">8,924</h3>
+                    <p class="mb-0 text-success small">
+                        <i class="bi bi-arrow-up-right me-1"></i>+9.2% 이번 주
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Transactions Table -->
+    <div class="card">
+    	<div class="card-header py-3 d-flex justify-content-between align-items-center">
+    		<h5 class="mb-0 fw-bold">최근 정산 내역</h5>
+    		<a href="#" class="btn btn-sm btn-outline-primary">모두 보기</a>
+    	</div>
+    	<div class="card-body p-0">
+    		<div class="table-responsive">
+    			<table class="table table-hover align-middle mb-0">
+    				<thead class="table-light">
+    					<tr>
+    						<th scope="col" class="ps-4">주문 ID</th>
+    						<th scope="col">처리 상태</th>
+    						<th scope="col">대상 노드</th>
+    						<th scope="col">금액</th>
+    						<th scope="col">요청 일시</th>
+    					</tr>
+    				</thead>
+    				<tbody>
+    					<tr th:each="settlement : ${recentSettlements}">
+    						<td class="ps-4 fw-medium" th:text="${settlement.orderId}">ORD-001</td>
+    						<td>
+								<span th:if="${settlement.status == 'COMPLETED'}" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">완료됨</span>
+								<span th:if="${settlement.status == 'PENDING'}" class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 rounded-pill">처리 중</span>
+								<span th:if="${settlement.status == 'FAILED'}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 rounded-pill">실패함</span>
+							</td>
+    						<td th:text="${'노드 ID: ' + settlement.id}">종로 대리점</td>
+    						<td class="fw-bold" th:text="${'₩' + #numbers.formatInteger(settlement.amount, 0, 'COMMA')}">₩45,000</td>
+    						<td class="text-muted" th:text="${#temporals.format(settlement.createdAt, 'yyyy-MM-dd HH:mm')}">2026-02-25 10:23 AM</td>
+    					</tr>
+    				</tbody>
+    			</table>
+    		</div>
+    	</div>
+    </div>
+</div>
 </body>
 </html>

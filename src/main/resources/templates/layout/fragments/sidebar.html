@@ -1,75 +1,73 @@
-<!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<body>
-	<!-- Sidebar Fragment -->
-	<nav th:fragment="sidebar" id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-		<div class="position-sticky pt-3">
-			<!-- 메인 메뉴 -->
-			<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-				<span>메인 메뉴</span>
+<!--
+  [NEW] 측면 메뉴바 모듈
+  
+  Bootstrap Offcanvas-lg 구조를 사용한 반응형 사이드바
+  데스크톱에서는 좌측 고정, 모바일에서는 좌측 슬라이딩(Offcanvas) 패널로 열림
+  
+  @author gayul.kim
+  @since 2026-02-25
+-->
+<nav class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel" th:fragment="sidebar">
+	<div class="offcanvas-header border-bottom">
+		<h5 class="offcanvas-title" id="sidebarMenuLabel">
+			<i class="bi bi-box-fill text-primary me-1"></i> Admin Menu
+		</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
+	</div>
+	
+	<div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+		<ul class="nav flex-column mb-auto px-3 w-100">
+			<!-- 대시보드 -->
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2 active" th:href="@{/}" aria-current="page">
+					<i class="bi bi-house-door"></i>
+					대시보드
+				</a>
+			</li>
+			
+			<h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted fw-bold">
+				<span>정산 노드 관리</span>
 			</h6>
-			<ul class="nav flex-column">
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/}" th:classappend="${currentPage == 'dashboard' ? 'active' : ''}">
-						<i class="fas fa-home me-2"></i>
-						대시보드
-					</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/nodes}" th:classappend="${currentPage == 'nodes' ? 'active' : ''}">
-						<i class="fas fa-sitemap me-2"></i>
-						노드 관리
-					</a>
-				</li>
-			</ul>
-
-			<!-- 정산 관리 메뉴 -->
-			<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-				<span>정산 관리</span>
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2" th:href="@{/nodes}">
+					<i class="bi bi-diagram-3"></i>
+					노드 현황
+				</a>
+			</li>
+			
+			<h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted fw-bold">
+				<span>수수료 및 정산</span>
 			</h6>
-			<ul class="nav flex-column">
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/settlement/request}" th:classappend="${currentPage == 'settlement-request' ? 'active' : ''}">
-						<i class="fas fa-calculator me-2"></i>
-						정산 요청
-					</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/settlement/history}" th:classappend="${currentPage == 'settlement-history' ? 'active' : ''}">
-						<i class="fas fa-history me-2"></i>
-						정산 내역
-					</a>
-				</li>
-			</ul>
-
-			<!-- 시스템 메뉴 -->
-			<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-				<span>시스템</span>
-			</h6>
-			<ul class="nav flex-column mb-2">
-				<li class="nav-item">
-					<a class="nav-link" href="http://localhost:15672" target="_blank">
-						<i class="fas fa-network-wired me-2"></i>
-						RabbitMQ 관리
-						<i class="fas fa-external-link-alt ms-1 small"></i>
-					</a>
-				</li>
-			</ul>
-		</div>
-	</nav>
-
-	<!-- 사이드바 토글 JavaScript -->
-	<script th:inline="javascript">
-		document.addEventListener('DOMContentLoaded', function() {
-			const sidebarToggle = document.getElementById('sidebarToggle');
-			const sidebar = document.getElementById('sidebar');
-
-			if (sidebarToggle && sidebar) {
-				sidebarToggle.addEventListener('click', function() {
-					sidebar.classList.toggle('show');
-				});
-			}
-		});
-	</script>
-</body>
-</html>
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2" th:href="@{/settlement/request}">
+					<i class="bi bi-calculator"></i>
+					정산 요청
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2" th:href="@{/settlement/history}">
+					<i class="bi bi-receipt"></i>
+					정산 내역
+				</a>
+			</li>
+		</ul>
+		
+		<hr class="my-3 mx-3 text-muted">
+		
+		<ul class="nav flex-column mb-4 px-3 w-100">
+			<!-- 환경설정 부분 등 -->
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2" href="#">
+					<i class="bi bi-gear"></i>
+					설정
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2" href="#">
+					<i class="bi bi-box-arrow-right"></i>
+					로그아웃
+				</a>
+			</li>
+		</ul>
+	</div>
+</nav>
