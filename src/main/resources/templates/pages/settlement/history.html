@@ -1,0 +1,166 @@
+<!--
+  [NEW] 정산 내역 목록 페이지
+  
+  검색 필터(기간, 주문ID, 상태)와 Mock 데이터 기반 정산 내역 테이블을 표시합니다.
+  DataTables 라이브러리를 통한 정렬/검색/페이지네이션 적용
+  
+  @author gayul.kim
+  @since 2026-03-04
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+
+<head>
+    <title th:text="${pageTitle}">정산 내역</title>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+</head>
+
+<body>
+<div layout:fragment="content">
+    <!-- 페이지 헤더 -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <h1 class="h2 fw-bold" th:text="${pageTitle}">정산 내역</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a th:href="@{/settlement/request}" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+                <i class="bi bi-plus-lg"></i>
+                새 정산 요청
+            </a>
+        </div>
+    </div>
+
+    <!-- 검색 필터 카드 -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-transparent py-3 border-bottom">
+            <h6 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                <i class="bi bi-funnel text-primary"></i> 검색 필터
+            </h6>
+        </div>
+        <div class="card-body">
+            <form class="row g-3 align-items-end" id="filterForm">
+                <!-- 기간 필터 -->
+                <div class="col-12 col-md-3">
+                    <label for="startDate" class="form-label small fw-bold">시작일</label>
+                    <input type="date" class="form-control" id="startDate" value="2026-03-01">
+                </div>
+                <div class="col-12 col-md-3">
+                    <label for="endDate" class="form-label small fw-bold">종료일</label>
+                    <input type="date" class="form-control" id="endDate" value="2026-03-04">
+                </div>
+                <!-- 주문 ID 검색 -->
+                <div class="col-12 col-md-3">
+                    <label for="searchOrderId" class="form-label small fw-bold">주문 ID</label>
+                    <input type="text" class="form-control" id="searchOrderId" placeholder="ORD-YYYYMMDD-NNN">
+                </div>
+                <!-- 상태 필터 -->
+                <div class="col-12 col-md-2">
+                    <label for="statusFilter" class="form-label small fw-bold">상태</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">전체</option>
+                        <option value="COMPLETED">완료</option>
+                        <option value="PENDING">처리 중</option>
+                        <option value="FAILED">실패</option>
+                    </select>
+                </div>
+                <!-- 검색 버튼 -->
+                <div class="col-12 col-md-1">
+                    <button type="button" class="btn btn-primary w-100" id="searchBtn">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 정산 내역 테이블 카드 -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center border-bottom">
+            <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                <i class="bi bi-receipt text-primary"></i> 정산 내역
+            </h5>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2"
+                  th:text="${'총 ' + #lists.size(settlements) + '건'}">총 5건</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="settlementTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="ps-4">주문 ID</th>
+                            <th scope="col">루트 노드</th>
+                            <th scope="col" class="text-end">결제 금액</th>
+                            <th scope="col" class="text-end">수수료 합계</th>
+                            <th scope="col" class="text-center">상태</th>
+                            <th scope="col">정산 일시</th>
+                            <th scope="col" class="text-center">상세</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="s : ${settlements}">
+                            <td class="ps-4 fw-medium" th:text="${s.orderId}">ORD-001</td>
+                            <td>
+                                <span class="d-flex align-items-center gap-1">
+                                    <i class="bi bi-diagram-3 text-muted"></i>
+                                    <span th:text="${s.rootNodeName}">본사</span>
+                                </span>
+                            </td>
+                            <td class="text-end fw-bold" th:text="${'₩' + #numbers.formatInteger(s.amount, 0, 'COMMA')}">₩100,000</td>
+                            <td class="text-end text-primary fw-medium" th:text="${'₩' + #numbers.formatInteger(s.totalFee, 0, 'COMMA')}">₩17,050</td>
+                            <td class="text-center">
+                                <span th:if="${s.status == 'COMPLETED'}" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">완료</span>
+                                <span th:if="${s.status == 'PENDING'}" class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 rounded-pill">처리 중</span>
+                                <span th:if="${s.status == 'FAILED'}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 rounded-pill">실패</span>
+                            </td>
+                            <td class="text-muted" th:text="${#temporals.format(s.settledAt, 'yyyy-MM-dd HH:mm')}">2026-03-04 10:00</td>
+                            <td class="text-center">
+                                <a th:href="@{/settlement/detail/{id}(id=${s.id})}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- DataTables JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script th:inline="none">
+        $(document).ready(function () {
+            var table = $('#settlementTable').DataTable({
+                language: {
+                    search: "검색:",
+                    lengthMenu: "_MENU_ 건씩 보기",
+                    info: "_START_ - _END_ / 총 _TOTAL_ 건",
+                    infoEmpty: "데이터가 없습니다",
+                    infoFiltered: "(전체 _MAX_ 건 중)",
+                    zeroRecords: "검색 결과가 없습니다",
+                    paginate: {
+                        first: "첫 페이지",
+                        last: "마지막",
+                        next: "다음",
+                        previous: "이전"
+                    }
+                },
+                pageLength: 10,
+                order: [[5, 'desc']],
+                columnDefs: [
+                    { orderable: false, targets: 6 }
+                ]
+            });
+
+            // 검색 버튼 클릭 시 테이블 필터 (Mock - 상태 필터만 동작)
+            $('#searchBtn').on('click', function () {
+                var status = $('#statusFilter').val();
+                table.column(4).search(status).draw();
+            });
+        });
+    </script>
+</div>
+</body>
+</html>

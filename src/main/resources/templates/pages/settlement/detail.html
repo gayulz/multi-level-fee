@@ -1,0 +1,206 @@
+<!--
+  [NEW] 정산 상세 결과 페이지
+  
+  정산 요약 정보와 노드별 수수료 배분 내역을 트리 형태로 표시합니다.
+  낙전 보정 내역 표시 영역 포함
+  
+  @author gayul.kim
+  @since 2026-03-04
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+
+<head>
+    <title th:text="${pageTitle}">정산 상세</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <!-- 페이지 헤더 -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <h1 class="h2 fw-bold" th:text="${pageTitle}">정산 상세</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a th:href="@{/settlement/history}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                <i class="bi bi-arrow-left"></i>
+                목록으로 돌아가기
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- 좌측: 정산 요약 정보 -->
+        <div class="col-12 col-lg-5">
+            <!-- 상태 알림 -->
+            <div th:if="${settlement.status == 'COMPLETED'}" class="alert alert-success d-flex align-items-center gap-2 mb-3" role="alert">
+                <i class="bi bi-check-circle-fill fs-5"></i>
+                <div>
+                    <strong>정산 완료</strong> — 정상적으로 처리되었습니다.
+                </div>
+            </div>
+            <div th:if="${settlement.status == 'PENDING'}" class="alert alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
+                <i class="bi bi-hourglass-split fs-5"></i>
+                <div>
+                    <strong>처리 중</strong> — 정산이 아직 진행 중입니다.
+                </div>
+            </div>
+            <div th:if="${settlement.status == 'FAILED'}" class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                <div>
+                    <strong>정산 실패</strong> — 처리 중 오류가 발생했습니다.
+                </div>
+            </div>
+
+            <!-- 요약 카드 -->
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-transparent py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-clipboard-data text-primary"></i> 정산 요약
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-borderless mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted ps-4" style="width: 35%;">정산 ID</td>
+                                <td class="fw-bold text-end pe-4" th:text="${'#' + settlement.id}">#1</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted ps-4">주문 ID</td>
+                                <td class="fw-bold text-end pe-4" th:text="${settlement.orderId}">ORD-001</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted ps-4">결제 금액</td>
+                                <td class="fw-bold text-end pe-4" th:text="${'₩' + #numbers.formatInteger(settlement.amount, 0, 'COMMA')}">₩100,000</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted ps-4">총 수수료</td>
+                                <td class="fw-bold text-end pe-4 text-primary" th:text="${'₩' + #numbers.formatInteger(settlement.totalFee, 0, 'COMMA')}">₩17,050</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted ps-4">루트 노드</td>
+                                <td class="fw-bold text-end pe-4" th:text="${settlement.rootNodeName}">본사</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted ps-4">처리 일시</td>
+                                <td class="text-end pe-4" th:text="${#temporals.format(settlement.settledAt, 'yyyy-MM-dd HH:mm:ss')}">2026-03-04 10:00:00</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted ps-4">비고</td>
+                                <td class="text-end pe-4" th:text="${settlement.remark}">정상 처리 완료</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 낙전 보정 내역 -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-arrow-repeat text-warning"></i> 낙전 보정 내역
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center text-muted py-3">
+                        <i class="bi bi-check-circle display-6 mb-3 opacity-25"></i>
+                        <p class="mb-0 small">낙전(丸端)이 발생하지 않았습니다.</p>
+                        <p class="mb-0 small text-muted">수수료 합계와 배분 합계가 정확히 일치합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 우측: 노드별 수수료 배분 내역 -->
+        <div class="col-12 col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-transparent py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-diagram-3 text-success"></i> 노드별 수수료 배분
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="ps-4">노드명</th>
+                                    <th scope="col" class="text-center">수수료율</th>
+                                    <th scope="col" class="text-end pe-4">수수료 금액</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="detail : ${feeDetails}">
+                                    <td class="ps-4">
+                                        <!-- 트리 깊이에 따른 들여쓰기 -->
+                                        <span th:if="${detail.depth == 0}" class="fw-bold">
+                                            <i class="bi bi-building text-primary me-1"></i>
+                                            <span th:text="${detail.nodeName}">본사</span>
+                                        </span>
+                                        <span th:if="${detail.depth == 1}" class="ms-3">
+                                            <span class="text-muted">└─</span>
+                                            <i class="bi bi-geo-alt text-success ms-1 me-1"></i>
+                                            <span th:text="${detail.nodeName}">서울지사</span>
+                                        </span>
+                                        <span th:if="${detail.depth == 2}" class="ms-5">
+                                            <span class="text-muted">└─</span>
+                                            <i class="bi bi-shop text-info ms-1 me-1"></i>
+                                            <span th:text="${detail.nodeName}">강남대리점</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill"
+                                              th:text="${detail.rate}">10.00%</span>
+                                    </td>
+                                    <td class="text-end pe-4 fw-bold" th:text="${'₩' + #numbers.formatInteger(detail.fee, 0, 'COMMA')}">₩10,000</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light">
+                                    <td class="ps-4 fw-bold">합계</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">17.05%</span>
+                                    </td>
+                                    <td class="text-end pe-4 fw-bold text-primary" th:text="${'₩' + #numbers.formatInteger(settlement.totalFee, 0, 'COMMA')}">₩17,050</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 트리 시각화 카드 -->
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-header bg-transparent py-3 border-bottom">
+                    <h6 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-bezier2 text-info"></i> 수수료 흐름 시각화
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="fee-flow-tree">
+                        <div class="fee-node fee-node-root p-3 rounded mb-2" th:each="detail : ${feeDetails}">
+                            <div class="d-flex justify-content-between align-items-center"
+                                 th:style="${'margin-left: ' + (detail.depth * 2) + 'rem;'}">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span th:if="${detail.depth > 0}" class="text-muted small">↳</span>
+                                    <div class="p-2 rounded" 
+                                         th:classappend="${detail.depth == 0 ? 'bg-primary bg-opacity-10 text-primary' : (detail.depth == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-info bg-opacity-10 text-info')}">
+                                        <i th:classappend="${detail.depth == 0 ? 'bi bi-building' : (detail.depth == 1 ? 'bi bi-geo-alt' : 'bi bi-shop')}"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-medium" th:text="${detail.nodeName}">본사</span>
+                                        <span class="text-muted small ms-1" th:text="${'(' + detail.rate + ')'}"> (10.00%)</span>
+                                    </div>
+                                </div>
+                                <span class="fw-bold" th:text="${'₩' + #numbers.formatInteger(detail.fee, 0, 'COMMA')}">₩10,000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

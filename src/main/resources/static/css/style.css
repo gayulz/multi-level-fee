@@ -178,3 +178,102 @@ body {
 	line-height: 24px;
 	margin-top: -2px;
 }
+
+/* ========================================= */
+/* Settlement Result Styles                  */
+/* ========================================= */
+
+/* 정산 결과 카드 - 수수료 흐름 트리 */
+.fee-flow-tree .fee-node {
+	border-left: 2px solid var(--border-color);
+	transition: all 0.2s ease;
+}
+
+.fee-flow-tree .fee-node:hover {
+	background-color: var(--sidebar-hover-bg);
+}
+
+.fee-flow-tree .fee-node-root {
+	border-left-color: transparent;
+}
+
+/* 상태 뱃지 커스텀 */
+.badge-completed {
+	background-color: rgba(25, 135, 84, 0.1);
+	color: #198754;
+	border: 1px solid rgba(25, 135, 84, 0.25);
+}
+
+.badge-failed {
+	background-color: rgba(220, 53, 69, 0.1);
+	color: #dc3545;
+	border: 1px solid rgba(220, 53, 69, 0.25);
+}
+
+.badge-pending {
+	background-color: rgba(255, 193, 7, 0.1);
+	color: #ffc107;
+	border: 1px solid rgba(255, 193, 7, 0.25);
+}
+
+/* ========================================= */
+/* DataTables Dark Mode Override             */
+/* ========================================= */
+
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_length select,
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_filter input {
+	background-color: var(--bg-secondary);
+	color: var(--text-main);
+	border-color: var(--border-color);
+}
+
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_info,
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_length label,
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_filter label {
+	color: var(--text-muted);
+}
+
+[data-bs-theme="dark"] table.dataTable thead th {
+	background-color: var(--sidebar-active-bg);
+	color: var(--text-main);
+	border-bottom-color: var(--border-color);
+}
+
+/* ========================================= */
+/* Error Page Styles                         */
+/* ========================================= */
+
+.error-page-container {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* ========================================= */
+/* Footer Styles                             */
+/* ========================================= */
+
+.footer {
+	background-color: var(--bg-secondary);
+	border-top-color: var(--border-color) !important;
+}
+
+/* ========================================= */
+/* Responsive Layout                         */
+/* ========================================= */
+
+@media (min-width: 992px) {
+	.sidebar {
+		width: 260px;
+		min-width: 260px;
+		min-height: calc(100vh - 56px);
+	}
+}
+
+@media (max-width: 991.98px) {
+	.main-content {
+		width: 100%;
+	}
+}
+
