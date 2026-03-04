@@ -39,13 +39,13 @@
 				<span>수수료 및 정산</span>
 			</h6>
 			<li class="nav-item">
-				<a class="nav-link d-flex align-items-center gap-2" th:href="@{/settlement/request}">
+				<a class="nav-link d-flex align-items-center gap-2" th:classappend="${currentPage == 'settlement-request' ? 'active' : ''}" th:href="@{/settlement/request}">
 					<i class="bi bi-calculator"></i>
 					정산 요청
 				</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link d-flex align-items-center gap-2" th:href="@{/settlement/history}">
+				<a class="nav-link d-flex align-items-center gap-2" th:classappend="${currentPage == 'settlement-history' ? 'active' : ''}" th:href="@{/settlement/history}">
 					<i class="bi bi-receipt"></i>
 					정산 내역
 				</a>
