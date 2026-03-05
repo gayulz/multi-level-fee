@@ -19,6 +19,17 @@ spring:
       hibernate:
         format_sql: true
 
+  # RabbitMQ 재시도 설정
+  rabbitmq:
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000ms
+          max-attempts: 3
+          max-interval: 5000ms
+          multiplier: 2.0
+
 # Logging (테스트 시 INFO 레벨)
 logging:
   level:
