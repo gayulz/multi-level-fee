@@ -1,0 +1,26 @@
+# 통합 테스트 환경 프로파일 설정
+spring:
+  # RabbitMQ 자동 설정 비활성화 (Docker 없이 테스트 가능)
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+  # H2 Database 설정 (테스트용 - 별도 DB)
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# Logging (테스트 시 INFO 레벨)
+logging:
+  level:
+    com.example.settlement: INFO
+    org.hibernate.SQL: DEBUG
