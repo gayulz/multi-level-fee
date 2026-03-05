@@ -2,7 +2,11 @@
 spring:
   # RabbitMQ 자동 설정 비활성화 (Docker 없이 테스트 가능)
   autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+  main:
+    allow-bean-definition-overriding: true
 
   # H2 Database 설정 (테스트용 - 별도 DB)
   datasource:

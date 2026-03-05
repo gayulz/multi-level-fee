@@ -4,10 +4,14 @@ import com.example.settlement.domain.entity.SettlementNode;
 import com.example.settlement.domain.repository.SettlementNodeRepository;
 import com.example.settlement.dto.SettlementRequest;
 import com.example.settlement.dto.SettlementResult;
+import com.example.settlement.messaging.SettlementMessageConsumer;
+import com.example.settlement.messaging.SettlementMessageProducer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +31,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 class SettlementServiceTest {
 
+    @MockBean
+    private RabbitTemplate rabbitTemplate;
+    @MockBean
+    private SettlementMessageConsumer settlementMessageConsumer;
+    @MockBean
+    private SettlementMessageProducer settlementMessageProducer;
     @Autowired
     private SettlementService settlementService;
 
