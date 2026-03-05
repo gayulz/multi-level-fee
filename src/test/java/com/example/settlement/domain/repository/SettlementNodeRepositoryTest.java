@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,7 +40,7 @@ class SettlementNodeRepositoryTest {
         repository.save(root);
 
         // When
-        Optional<SettlementNode> found = repository.findById(root.getId());
+        Optional<SettlementNode> found = repository.findById(Objects.requireNonNull(root.getId()));
 
         // Then
         assertThat(found).isPresent();

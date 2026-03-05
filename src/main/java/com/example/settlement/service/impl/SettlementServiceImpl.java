@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * [NEW] 정산 서비스 구현체.
@@ -68,7 +69,7 @@ public class SettlementServiceImpl implements SettlementService {
     public SettlementNode createNode(NodeCreateRequest request) {
         SettlementNode parent = null;
         if (request.parentId() != null) {
-            parent = settlementNodeRepository.findById(request.parentId())
+            parent = settlementNodeRepository.findById(Objects.requireNonNull(request.parentId()))
                     .orElseThrow(() -> new IllegalArgumentException("부모 노드가 존재하지 않습니다. ID: " + request.parentId()));
         }
 
