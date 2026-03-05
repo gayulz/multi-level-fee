@@ -1,114 +1,149 @@
 # Tree-Based Multi-Tier Settlement Engine
 
-(트리 기반 다단계 수수료 정산 엔진)
+> 트리 기반 다단계 수수료 비동기 정산 엔진 🌳
 
-## 프로젝트 개요 (Overview)
+![Java](https://img.shields.io/badge/Java-17-007396?style=for-the-badge&logo=java&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3.2-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
+![Spring Data JPA](https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Message_Queue-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Runtime-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![H2](https://img.shields.io/badge/H2-Test_DB-blue?style=for-the-badge)
 
-본 프로젝트는 판매망, 프랜차이즈, 다단계 조직 등 계층형(Tree) 구조를 가진 비즈니스 환경에서 발생하는 수익을 각 계층의 지정된 수수료율에 따라 자동으로 분배하는 **비동기 정산 엔진(Settlement Engine)**입니다.
+<br/>
 
-단순한 1:1 정산이 아닌 다단계 깊이(Depth)를 가진 노드 간의 복잡한 정산 비율을 계산하며, 소수점 단위의 낙전(Dust) 처리와 대용량 트래픽 처리를 위한 메시지 큐 비동기 아키텍처를 도입하여 시스템의 안정성과 정확성을 극대화하는 것을 목표로 설계되었습니다.
+판매망, 프랜차이즈, 에이전시 등 **N-Depth 계층형(Tree) 구조를 가진 비즈니스 환경**에서 발생하는 결제 대금을 각 계층의 지정된 수수료율에 따라 자동으로 분배하는 **백엔드 정산 시스템**입니다.
 
-## 개발 동기 및 목적 (Motivation)
+트래픽 병목을 방지하기 위한 **RabbitMQ 비동기 메시징 처리**와 금액 오차(낙전)를 방어하는 **분배 알고리즘(DFS)** 이 핵심인 프로젝트입니다.
 
-- **복잡한 분배 알고리즘 구현**: 단순 배열 순회가 아닌 계층 구조(Tree)를 DFS 방식으로 순회하며 `1/N` 하향식 분배 알고리즘을 구현하는 아키텍처 설계 역량을 구체화하기 위함입니다.
-- **금융 데이터의 정합성 확보**: 정산 과정에서 필연적으로 발생하는 소수점 이하 금액(낙전)을 유실 없이 추적하고 최상위 노드에 귀속시켜, Java `BigDecimal`을 활용한 금액 계산의 무결성을 보장하고자 했습니다.
-- **안정적인 비동기 처리 구조**: 외부 결제 시스템과의 연동 시 타 시스템과의 강결합을 낮추고, 단일 스레드 병목으로 인한 지연을 최소화하기 위해 RabbitMQ를 도입하여 처리 성능 및 구조적 안정성을 도모했습니다.
-- **방어적 프로그래밍과 자동화 테스트**: 장애나 네트워크 이슈 발생 시 데이터 유실을 방지하는 메시지 재시도(Retry) 메커니즘을 적용하였으며, 기능 단위부터 E2E 구간까지 Mock 객체를 활용한 격리형 테스트 코드를 작성해 시스템의 신뢰도를 확보했습니다.
+---
 
-## 핵심 기능 (Core Features)
+## 📋 목차
 
-### 1. 계층형 트리 기반 정산 로직 (DFS)
+1. [기획 배경 및 개발 목적](#-기획-배경-및-개발-목적)
+2. [시스템 아키텍처](#-시스템-아키텍처)
+3. [핵심 기술 및 트러블슈팅](#-핵심-기술-및-트러블슈팅-trouble-shooting)
+4. [알고리즘: 정산 로직 시나리오](#-알고리즘-정산-로직-시나리오)
+5. [프로젝트 실행 방법](#-프로젝트-실행-방법)
 
-- 본사(Root)에서 시작하여 각 대리점(Leaf)으로 이어지는 무한 깊이(N-Depth)의 트리 구조를 처리합니다.
-- 부모 계층에서 자신의 수수료(%)를 제한 차액을 자식 노드들의 수에 맞춰 `1/N` 동등하게 나눈 후, 재귀적으로 하위 정산을 수행합니다.
+---
 
-### 2. 낙전(Dust) 보정 시스템
+## 💡 기획 배경 및 개발 목적
 
-- 한국 원화(KRW) 기준 1원 미만의 소수점 금액이 분산될 때 `RoundingMode.FLOOR`(소수점 내림) 정책을 사용합니다.
-- 재귀 호출이 모두 끝난 뒤, 원금에서 계산된 전체 수수료 총합을 뺀 나머지(누락된 1원 단위 자투리 금액)를 모두 모아 최상위 루트 노드의 수익으로 강제 합산하여 정확한 100% 매칭을 유지합니다.
+단순한 1:1 결제/정산을 넘어, 복잡한 비즈니스 모델(상위/하위 대리점 수익 분배)을 기술적으로 풀어내는 과제입니다.
 
-### 3. 메시지 큐 기반 대용량 비동기 정산 (RabbitMQ)
+- **복잡한 알고리즘 설계**: 배열 순회로는 불가능한 1:N:N 관계의 트리를 DFS(깊이 우선 탐색)로 순회하며 하향식(1/N) 분배 처리.
+- **금융 데이터의 무결성 보장**: 분배 과정에서 발생하는 1원 미만의 소수점 오차(낙전, Dust)를 추적하여 손실 없이 최상위 노드에 귀속시키는 로직 구현.
+- **대용량 트래픽 방어**: 동기 방식의 DB Lock 및 Timeout을 방지하기 위해 정산 요청을 Message Queue에 적재 후 백그라운드 워커가 순차적으로 안전하게 소화하도록 설계.
 
-- 대량의 외부 결제/정산 요청을 즉시 DB에 반영하지 않고 RabbitMQ `Queue`에 적재하여 백그라운드에서 순차적으로 안전하게 소화합니다.
-- 단순 컨슈밍 로직 에러 외에 DB 데드락이나 일시적 타임아웃이 발생할 경우를 대비하여 `Exponential Backoff` 설정된 Retry 정책을 통해 지정된 횟수만큼 재시도 후 실패 풀(Dead Letter)로 분리될 수 있는 기초 구조를 갖췄습니다.
+---
 
-## 기술 스택 (Tech Stack)
-
-### Backend
-
-- **Java 17** : Record 패턴, 향상된 Switch문 등 모던 자바 문법 활용
-- **Spring Boot 3.3.2** : 애플리케이션 프레임워크 기반 구성
-- **Spring Data JPA, Hibernate** : 객체 관계 매핑 및 데이터 영속성 관리
-- **QueryDSL 5.0** : 컴파일 타임 안정성을 가진 동적 쿼리 및 트리 노드 페치 조인(Fetch Join) 최적화
-
-### Infrastructure & Messaging
-
-- **RabbitMQ (Spring AMQP)** : 대용량 비동기 메시징 처리
-- **H2 / PostgreSQL** : 테스트(In-Memory) 및 런타임 영속성 처리
-- **Docker** : 메시지 브로커 로컬 및 격리 환경 컨테이너 구성
-
-### Frontend & Build
-
-- **Thymeleaf** : 백오피스 Admin 대시보드 및 디버깅용 UI 렌더링
-- **Gradle 8.0+** : 프로젝트 의존성 관리 및 빌드
-
-## 소프트웨어 아키텍처 (Architecture)
+## 🏗 시스템 아키텍처
 
 ```mermaid
 flowchart TD
-    API[External API / Producer] -->|JSON Request| Queue((RabbitMQ Exchange))
-    Queue -->|Consume| C[Settlement Listener]
-    C --> S[Settlement Service]
+    Client((Client)) -->|정산 요청| Controller[Web Controller]
+    Controller -->|JSON| RabbitMQ{RabbitMQ Exchange}
 
-    subgraph Core Engine
-        S -->|1. DFS & 1/N| Logic[Recursive Math Logic]
-        Logic -->|2. Floor & Dust| Dust[Root Node Correction]
+    subgraph Async Worker
+        RabbitMQ -->|Queue Polling| Consumer[Message Consumer]
+        Consumer --> Service[Settlement Service]
+
+        subgraph Core Engine
+            Service -->|1. DFS Tree Traversal| DFS[1/N 하향식 분배]
+            DFS -->|2. Floor Rounding| Dust[소수점 낙전 보정]
+        end
     end
 
-    S -->|FetchJoin Tree| DB[(Database)]
+    Service <-->|Fetch Join| DB[(PostgreSQL / H2)]
 ```
 
-## 비즈니스 로직 예시 (Calculation Logic Example)
+---
 
-**시나리오**: 단가가 10,000원인 상품. <br/>
-트리 배치: **본사(10%) -> 지사A(5%), 지사B(5%) -> 대리점 4개점 (각 3%)**
+## 🔥 핵심 기술 및 트러블슈팅 (Trouble Shooting)
 
-1. **상위자 지분 취득**: 본사 수수료 계산 (10,000원 \* 10% = 1,000원)
-2. **잔액 분배**: 남은 9,000원을 자식 노드인 지사 2곳으로 1/2 하여 4,500원씩 분배
-3. **하위 지사 계산**: 대상자 각각 (4,500원 \* 5% = 225원 수수료 획득)
-4. **리프 대리점 분배/계산**: 지사가 남긴 (4500-225)=4275원을 각각 하위 대리점으로 1/2 분배.
-   - 단가 2,137원 지급 (소수점 절삭 발생) -> 대리점 수수료: 2,137 \* 3% = 64원.
-5. **낙전 보정**: 전체 합산 수수료(1,706원)를 원금에서 제한 차액(8,294원)을 검출해 본사 최종 수익으로 합산.
-6. **최종 본사 수익**: `9,294원` 처리.
+포트폴리오의 핵심인 **'문제 해결 과정'**입니다. 자세한 내용은 토글을 클릭하여 확인할 수 있습니다.
 
-## 로컬 환경 실행 가이드 (How to Run)
+<details>
+<summary><b>1. N-Depth 순회에 따른 N+1 문제 해결 (QueryDSL Fetch Join)</b></summary>
+<div markdown="1">
+  <br/>
+  
+  **Problem:** <br/>
+  정산을 위해 하위 대리점을 조회할 때마다 `SELECT` 쿼리가 발생하는 N+1 문제가 있었습니다. 계층이 깊어질수록 쿼리 수가 기하급수적으로 늘어나 DB 커넥션 풀이 고갈될 위험이 있었습니다.
 
-본 프로젝트는 의존성만 확보되면 로컬에서 즉시 구동 및 테스트할 수 있습니다.
+**Solution:** <br/>
+`QueryDSL`을 적용하여 루트 노드를 조회할 때 `.leftJoin(node.children).fetchJoin()`을 사용하여 자식 노드들을 메모리 컨텍스트에 한 번에 로드했습니다. 이로 인해 쿼리 단 1번으로 트리 전체(혹은 설정한 Depth까지)를 가져오도록 성능을 최적화했습니다.
 
-### 1. RabbitMQ 로컬 구동 (Docker)
+</div>
+</details>
 
-애플리케이션은 기본적으로 로컬호스트(localhost)의 5672 포트를 바라봅니다.
+<details>
+<summary><b>2. 1원 미만 소수점 오차(낙전) 누수 오류 해결</b></summary>
+<div markdown="1">
+  <br/>
+
+**Problem:** <br/>
+10,000원을 3개의 대리점(각 3%)으로 1/3 분배할 때, 잔여 금액이 `3333.3333...`원이 되어 DB에 저장할 때 소수점 단위의 금액이 유실되는(전체 합계가 10,000원이 되지 않는) 금융 버그가 있었습니다.
+
+**Solution:** <br/>
+Java의 `BigDecimal`과 `RoundingMode.FLOOR`(소수점 내림)를 적용하여 모든 하위 노드는 소수점 이하를 버린 정수 금액으로 배분했습니다.  
+ 그리고 순회가 끝난 후, **`전체 원금 - 하위 노드 지급 총계 = 낙전(Dust)`** 공식을 통해 남은 소수점 누락분 1~2원을 **가장 상위의 루트 노드의 수익으로 강제 편입**시키는 보정 알고리즘을 추가하여 정합성을 100% 맞췄습니다.
+
+</div>
+</details>
+
+<details>
+<summary><b>3. 메시징 큐 테스트 파편화 및 CI/CD 환경 고려 (Test Isolation)</b></summary>
+<div markdown="1">
+  <br/>
+
+**Problem:** <br/>
+로컬 환경을 넘어 외부 CI(GitHub Actions) 환경이나 폐쇄망에서 통합 테스트(`@SpringBootTest`) 실행 시, 실제 RabbitMQ 서버가 없어 커넥션 타임아웃이 발생해 테스트가 블로킹(무한 대기)되는 현상이 있었습니다.
+
+**Solution:** <br/>
+스프링 컨텍스트 로딩 시 RabbitMQ `AutoConfiguration`을 `exclude` 하고, 테스트 환경에서는 `@MockBean`을 활용해 `RabbitTemplate`과 `Listener` 컴포넌트들을 격리(Isolation)시켰습니다. 외부 인프라 의존성 없이 로직 흐름과 메시지 발송 여부(`Mockito.verify()`)만 검증하도록 변경하여 빌드 속도를 30초에서 **5초 이내로 단축**했습니다.
+
+</div>
+</details>
+
+---
+
+## 🧮 알고리즘: 정산 로직 시나리오
+
+**예시**: 결제 금액 `10,000원` / 분배 트리: **본사(10%) → 지사 2곳(각 5%) → 대리점 4곳(각 3%)**
+
+|   단계   | 처리 대상      | 로직 설명                                                                                                     |         수익 발생         |           잔여 배분금            |
+| :------: | :------------- | :------------------------------------------------------------------------------------------------------------ | :-----------------------: | :------------------------------: |
+|  **1**   | **본사**       | 원금 10,000원 × 10% 우선 취득                                                                                 |         `1,000원`         |            `9,000원`             |
+|  **2**   | **지사 2곳**   | 잔여금 9,000원을 1/2로 나눔 (4,500원씩) <br/> 4,500원 × 5% 취득 (각 지사당 225원)                             | 각 `225원`<br/>(총 450원) | 하위로 넘길 돈:<br/>각 `4,275원` |
+|  **3**   | **대리점 4곳** | 지사가 넘긴 4,275원을 1/2로 나눔 (2,137원 - 0.5원 소수점 **버림**) <br/> 2,137원 × 3% 취득                    | 각 `64원`<br/>(총 256원)  |                -                 |
+|  **4**   | **낙전 보정**  | 배분된 총 수수료 (1,000 + 450 + 256 = 1,706원) <br/> 원금 10,000원에서 제외하면 `8,294원`의 초과 잔여금 발생. |         `8,294원`         |              `0원`               |
+| **결과** | **최종**       | **본사는 초기 할당 1,000명 + 낙전 보정 8,294원 = `최종 9,294원` 획득**                                        |         10,000원          |            100% 매칭             |
+
+---
+
+## 🚀 프로젝트 실행 방법
+
+### 1. RabbitMQ 인프라 실행 (Docker)
 
 ```bash
 docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:management
 ```
 
-### 2. 프로젝트 빌드 및 실행
+### 2. 프로젝트 빌드 및 부트
 
 ```bash
-# 빌드 및 백그라운드 패키징
 ./gradlew clean build -x test
-
-# 어플리케이션 부트
 ./gradlew bootRun
 ```
 
-- 서버 진입 경로: `http://localhost:8080/`
+- 웹 인터페이스: [http://localhost:8080/](http://localhost:8080/)
+- H2 Database: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
 
-### 3. 테스트 코드 검증
+### 3. 고립형 인메모리 테스트 (인프라 무관)
 
 ```bash
 ./gradlew test
 ```
 
-- 본 프로젝트의 통합/E2E 테스트는 폐쇄망이나 브로커(RabbitMQ) 미설치 환경에서도 Build가 가능하도록 `@MockBean`을 활용하여 **독립 고립성**을 유지하고 있습니다. 외부 환경 의존성 없이 정상적으로 테스트 실행이 가능합니다.
+- 실제 브로커 연결 없이 Mocking + H2를 통해 빠른 빌드를 보장합니다.
