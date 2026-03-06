@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,6 +51,15 @@ public class SettlementNode {
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<SettlementNode> children = new ArrayList<>();
+
+    /**
+     * Organization과 1:1 매핑.
+     * nullable=true: 기존 테스트 데이터와의 호환성 유지.
+     * Organization 삭제 시 SettlementNode도 함께 삭제됩니다 (CASCADE).
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "org_id", unique = true)
+    private Organization organization;
 
     /**
      * [NEW] 정산 노드 생성자.
