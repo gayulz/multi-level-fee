@@ -59,5 +59,6 @@ shrimp-data/
 shrimp-rules.md
 
 # Documentation files
+.claude/
 docs/
 mdFolder/
