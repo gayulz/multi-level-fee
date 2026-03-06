@@ -57,6 +57,17 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * [NEW] 정적 리소스를 찾지 못했을 때의 예외 (favicon.ico 등) (404)
+     * 불필요한 Error 로그를 남기지 않도록 처리합니다.
+     */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(
+            org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("RESOURCE_NOT_FOUND", "요청하신 자원을 찾을 수 없습니다."));
+    }
+
+    /**
      * [NEW] 기타 모든 서버 오류 (500)
      */
     @ExceptionHandler(Exception.class)

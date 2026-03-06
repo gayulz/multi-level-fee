@@ -43,7 +43,7 @@
                         </div>
                     </div>
                     <h3 class="mb-2 fw-bold" th:text="${'₩' + #numbers.formatInteger(totalAmount, 0, 'COMMA')}">₩1,250,000</h3>
-                    <p class="mb-0 text-success small">
+                    <p class="mb-0 text-stat-up small">
                         <i class="bi bi-arrow-up-right me-1"></i>+12.5% 이번 주
                     </p>
                 </div>
@@ -54,12 +54,12 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <h6 class="card-title mb-0 text-muted">신규 노드</h6>
-                        <div class="p-2 bg-success bg-opacity-10 rounded text-success">
+                        <div class="p-2 bg-warning bg-opacity-10 rounded text-warning">
                             <i class="bi bi-diagram-3 fs-5"></i>
                         </div>
                     </div>
                     <h3 class="mb-2 fw-bold" th:text="${totalNodes}">42</h3>
-                    <p class="mb-0 text-success small">
+                    <p class="mb-0 text-stat-up small">
                         <i class="bi bi-arrow-up-right me-1"></i>+4.2% 이번 주
                     </p>
                 </div>
@@ -70,12 +70,12 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <h6 class="card-title mb-0 text-muted">처리 건수</h6>
-                        <div class="p-2 bg-info bg-opacity-10 rounded text-info">
+                        <div class="p-2 bg-primary bg-opacity-10 rounded text-primary">
                             <i class="bi bi-receipt fs-5"></i>
                         </div>
                     </div>
                     <h3 class="mb-2 fw-bold" th:text="${todaySettlements}">1,452</h3>
-                    <p class="mb-0 text-danger small">
+                    <p class="mb-0 text-stat-down small">
                         <i class="bi bi-arrow-down-right me-1"></i>-2.1% 이번 주
                     </p>
                 </div>
@@ -91,7 +91,7 @@
                         </div>
                     </div>
                     <h3 class="mb-2 fw-bold" th:text="${avgProcessTime + ' ms'}">8,924</h3>
-                    <p class="mb-0 text-success small">
+                    <p class="mb-0 text-stat-up small">
                         <i class="bi bi-arrow-up-right me-1"></i>+9.2% 이번 주
                     </p>
                 </div>

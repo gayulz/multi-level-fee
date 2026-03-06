@@ -1,0 +1,255 @@
+/*
+ * [NEW] 웰컴 페이지 전용 스타일
+ *
+ * Suit 폰트와 지정된 포인트 컬러를 활용하여 Glassmorphism 효과와 3D 느낌 구현.
+ *
+ * @author gayul.kim
+ * @since 2026-03-06
+ */
+
+/* =========================================
+   1. Font Face (SUIT 폰트 세트)
+========================================= */
+@font-face {
+  font-family: "Suit";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Thin.woff2")
+    format("woff2");
+  font-weight: 100;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Suit";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-ExtraLight.woff2")
+    format("woff2");
+  font-weight: 200;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Suit";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Light.woff2")
+    format("woff2");
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Suit";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Regular.woff2")
+    format("woff2");
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Suit";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Suit";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-SemiBold.woff2")
+    format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Suit";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Suit";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-ExtraBold.woff2")
+    format("woff2");
+  font-weight: 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Suit";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Heavy.woff2")
+    format("woff2");
+  font-weight: 900;
+  font-display: swap;
+}
+
+/* =========================================
+   2. Body & Background Options
+========================================= */
+body.welcome-body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* 스크롤 방지 */
+  font-family: "Suit", sans-serif;
+  background-color: #0b021d; /* Iframe 로딩 전에 보일 다크 베이스 톤 */
+}
+
+/* =========================================
+   3. Spline 3D Scene Area
+========================================= */
+.spline-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1; /* 바닥에 깔리는 레이어 */
+}
+
+.spline-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+}
+
+/* =========================================
+   4. UI Overlay & Glass Panel
+========================================= */
+.overlay-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2; /* 3D 레이어 위 */
+  pointer-events: none; /* 뒤쪽 Spline 화면의 마우스 인식을 방해하지 않게 통과 */
+
+  /* 배치: 3D 캐릭터들의 노트북 시선에 가깝게 하단부 쪽에 띄우도록 Flex 조정 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 12vh; /* 하단 마진 (사람 얼굴이 가려지지 않게 데스크톱에서 더 내림) */
+}
+
+.glass-panel {
+  pointer-events: auto; /* Glass Panel 컴포넌트에 한해서만 클릭 이벤트 복구 */
+  background: rgba(25, 6, 90, 0.45); /* Blur가 없어진 대신 명도 대비를 위해 투명도를 올림 */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 2.5rem 3.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateZ(0); /* GPU 가속 힌트 부여 (렌더링 안정화) */
+  will-change: transform;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.glass-panel:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* =========================================
+   5. Typography
+========================================= */
+.settle-tree-title {
+  font-weight: 900; /* Heavy */
+  font-size: 5rem; /* 아주 큰 텍스트 */
+  margin: 0;
+  letter-spacing: -2px;
+
+  /* 텍스트 그라데이션 - 포인트컬러 조합 */
+  /* #f05cfa(핑크) 에서 시작해서 #d76750(오렌지) 로 부드럽게 이어지는 텍스트 */
+  background: linear-gradient(135deg, #f05cfa 0%, #d76750 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* 입체감을 살리는 그림자 (filter: drop-shadow 활용) */
+  filter: drop-shadow(0px 8px 10px rgba(0, 0, 0, 0.6));
+}
+
+.title-sub {
+  font-weight: 300;
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.85); /* 흰색 반투명 */
+  margin-top: -5px;
+  letter-spacing: 2px;
+}
+
+/* =========================================
+   6. Custom Interactive Buttons
+========================================= */
+.interactive-btn {
+  font-family: "Suit", sans-serif;
+  font-weight: 700; /* Bold */
+  font-size: 1.15rem;
+  padding: 0.8rem 2.5rem;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Login 버튼 - #19065a 네이비 포인트 */
+.btn-login {
+  background: linear-gradient(135deg, #2e106b, #19065a);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 5px 15px rgba(25, 6, 90, 0.4);
+}
+
+.btn-login:hover {
+  background: linear-gradient(135deg, #19065a, #0f033a);
+  color: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(25, 6, 90, 0.7);
+}
+
+/* Sign Up 버튼 - 핑크 #f05cfa, 오렌지 #d76750 그라데이션 포인트 */
+.btn-signup {
+  background: linear-gradient(135deg, #f05cfa, #d76750);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 5px 15px rgba(240, 92, 250, 0.3);
+}
+
+.btn-signup:hover {
+  background: linear-gradient(135deg, #d76750, #b24b37);
+  color: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(215, 103, 80, 0.5);
+}
+
+/* 클릭 효과 */
+.interactive-btn:active {
+  transform: scale(0.96);
+}
+
+/* =========================================
+   7. Responsive Query (태블릿 및 모바일)
+========================================= */
+@media (max-width: 768px) {
+  .settle-tree-title {
+    font-size: 3.5rem;
+  }
+  .glass-panel {
+    padding: 2rem 2.5rem;
+  }
+  .overlay-container {
+    padding-bottom: 5vh; /* 하단 마진 축소 (모바일도 동일하게 더 내림) */
+  }
+}

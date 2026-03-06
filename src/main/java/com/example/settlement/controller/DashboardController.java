@@ -27,7 +27,7 @@ public class DashboardController {
 	 * @param model Model 객체
 	 * @return 대시보드 페이지 뷰 이름
 	 */
-	@GetMapping("/")
+	@GetMapping("/dashboard")
 	public String dashboard(Model model) {
 		// 요약 카드 데이터
 		model.addAttribute("totalNodes", 15);
@@ -55,13 +55,12 @@ public class DashboardController {
 
 		for (int i = 1; i <= 5; i++) {
 			list.add(Map.of(
-				"id", (long) i,
-				"orderId", String.format("ORD-20260221-%03d", i),
-				"amount", 10_000L * i,
-				"totalFee", (long) (10_000L * i * 0.1705),
-				"status", i <= 3 ? "COMPLETED" : (i == 4 ? "PENDING" : "FAILED"),
-				"createdAt", LocalDateTime.now().minusHours(i)
-			));
+					"id", (long) i,
+					"orderId", String.format("ORD-20260221-%03d", i),
+					"amount", 10_000L * i,
+					"totalFee", (long) (10_000L * i * 0.1705),
+					"status", i <= 3 ? "COMPLETED" : (i == 4 ? "PENDING" : "FAILED"),
+					"createdAt", LocalDateTime.now().minusHours(i)));
 		}
 
 		return list;
