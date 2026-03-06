@@ -1,24 +1,10 @@
-# Stage 1: Build Image
-FROM gradle:8.8-jdk17 AS builder
-WORKDIR /app
-
-# 의존성 캐싱을 위해 설정 파일 먼저 복사
-COPY build.gradle settings.gradle ./
-COPY gradle ./gradle
-
-# 의존성 다운로드 (소스 코드 변경 시에도 캐시 유지)
-RUN gradle dependencies --no-daemon
-
-# 소스 코드 복사 및 빌드
-COPY src ./src
-RUN gradle clean build -x test --no-daemon
-
-# Stage 2: Runtime Image (경량 JRE 기반)
+# GitHub Actions에서 빌드된 JAR 파일을 받아 실행하는 Runtime 전용 Dockerfile
+# (Gradle 빌드는 GitHub Actions에서 수행)
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# 빌드 스테이지에서 생성된 JAR 파일 복사
-COPY --from=builder /app/build/libs/*SNAPSHOT.jar app.jar
+# GitHub Actions에서 빌드 후 서버로 전송된 JAR 파일을 복사
+COPY build/libs/*.jar app.jar
 
 # 컨테이너 포트 개방
 EXPOSE 8080
