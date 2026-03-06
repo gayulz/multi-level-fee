@@ -60,5 +60,6 @@ shrimp-rules.md
 
 # Documentation files
 .claude/
+.agents/
 docs/
 mdFolder/
