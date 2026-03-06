@@ -50,7 +50,6 @@ src/main/generated/
 
 # Application properties with secrets
 application-local.yml
-application-prod.yml
 
 # Docker
 docker-compose.override.yml
