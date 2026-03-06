@@ -108,11 +108,9 @@
   --shadow: 0 10px 30px rgba(25, 6, 90, 0.1);
 
   /*
-   * [MIG] Bootstrap Dark Theme 제일 큰 문제 해결
-   * data-bs-theme="dark" 적용 시 Bootstrap이 --bs-body-color를
-   * 연회색(#dee2e6)으로 고치기 때문에 카드 쪸 h3 숨자,
-   * 테이블 텍스트가 전부 회색으로 보임.
-   * 네이비(#19065a)로 강제 교체하여 시인성 확보.
+   * [MIG] 포인트 컬러 시인성 개선
+   * 전역 본문 및 제목 색상을 다시 Navy(#19065a)로 설정 (페이지 제목, 일반 텍스트용)
+   * 입력 폼(input)은 파일 하단에서 개별적으로 흰색 처리하여 가독성 동시 확보
    */
   --bs-body-color: #19065a;
   --bs-body-color-rgb: 25, 6, 90;
@@ -297,8 +295,8 @@ body {
 
 [data-bs-theme="dark"] .dataTables_wrapper .dataTables_length select,
 [data-bs-theme="dark"] .dataTables_wrapper .dataTables_filter input {
-	background-color: var(--bg-secondary);
-	color: var(--text-main);
+	background-color: rgba(255, 255, 255, 0.5); /* [MIG] 시인성 개선을 위한 밝은 투명 배경 */
+	color: #19065a !important; /* [MIG] 텍스트 navy 고정 */
 	border-color: var(--border-color);
 }
 
@@ -605,11 +603,15 @@ body.auth-body {
 	color: #19065a !important;
 }
 
-/* 카드 내 모든 텍스트: 네이비 (input 제외) */
+/* 전역 제목(h1~h6) 색상: 네이비 */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+	color: #19065a !important;
+}
+
+/* 카드 내 모든 텍스트: 네이비 (input/select 예외 처리) */
 .card,
-.card h1, .card h2, .card h3,
-.card h4, .card h5, .card h6,
-.card p, .card span:not(.input-group-text),
+.card p, 
 .card .fw-bold, .card .fw-medium {
 	color: #19065a;
 }
@@ -620,13 +622,14 @@ body.auth-body {
 .form-control:focus,
 .form-select:focus,
 [data-bs-theme="dark"] .form-control,
-[data-bs-theme="dark"] .form-select {
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] select.form-select {
 	color: #ffffff !important; /* 어두운 배경엗 맞춰 흰색으로 강제 고정 */
 }
 
 /* placeholder 및 선택되지 않은 option 색상 */
 .form-control::placeholder {
-	color: rgba(255, 255, 255, 0.5) !important;
+	color: rgba(255, 255, 255, 0.6) !important;
 }
 
 .form-select option {
@@ -636,7 +639,7 @@ body.auth-body {
 
 /* [MIG] "정산 대상 노드를 선택하세요" (disabled placeholder option) */
 .form-select option:disabled {
-	color: rgba(255, 255, 255, 0.45) !important;
+	color: rgba(255, 255, 255, 0.6) !important;
 }
 
 /* 테이블 텍스트: 네이비 */
@@ -666,5 +669,73 @@ body.auth-body {
 .table .fw-bold,
 .table .fw-medium {
 	color: #19065a !important;
+}
+
+/* ========================================= */
+/* [FINAL FIX] 정산 요청 폼 입력 필드 시인성 보정  */
+/* ========================================= */
+body [data-bs-theme="dark"] .form-control,
+body [data-bs-theme="dark"] .form-select,
+body [data-bs-theme="dark"] select.form-control,
+body [data-bs-theme="dark"] select.form-select,
+#orderId, #amount, #rootNodeId {
+	color: #ffffff !important;
+	background-color: #2b3035 !important; /* 배경도 확실히 다크하게 고정 */
+}
+
+/* 플레이스홀더: 흰색 붔투명도 60% */
+body [data-bs-theme="dark"] .form-control::placeholder,
+body [data-bs-theme="dark"] .form-select::placeholder {
+	color: rgba(255, 255, 255, 0.6) !important;
+	opacity: 1 !important;
+}
+
+/* Select Option 내부 텍스트 */
+body [data-bs-theme="dark"] select option {
+	color: #ffffff !important;
+	background-color: #212529 !important;
+}
+
+/* 선택되지 않은 placeholder option 전용 */
+select.form-select option:disabled,
+#rootNodeId option:disabled {
+	color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* ========================================= */
+/* [MIG] 추가 시인성 및 포인트 컬러 보정        */
+/* ========================================= */
+
+/* 정산 요청: 결제 금액 앞 ₩ 기호가 든 영역 */
+.input-group-text {
+	background-color: rgba(25, 6, 90, 0.04) !important;
+	color: #19065a !important;
+	border-color: rgba(25, 6, 90, 0.15) !important;
+}
+
+/* 페이지네이션: 포인트 컬러(핑크/오렌지) 그라데이션 적용 */
+.pagination .page-item.active .page-link {
+	background: linear-gradient(135deg, #f05cfa, #d76750) !important;
+	border-color: transparent !important;
+	color: #ffffff !important;
+	box-shadow: 0 4px 10px rgba(240, 92, 250, 0.3);
+}
+
+.pagination .page-link {
+	color: #19065a !important;
+	background-color: rgba(255, 255, 255, 0.5) !important;
+	border: 1px solid rgba(25, 6, 90, 0.12) !important;
+	font-family: "Suit", sans-serif;
+}
+
+.pagination .page-link:hover {
+	background-color: rgba(25, 6, 90, 0.08) !important;
+}
+
+/* DataTables "Show X entries" 라벨 색상 보정 */
+.dataTables_length label,
+.dataTables_info {
+	color: #19065a !important;
+	font-weight: 500;
 }
 
