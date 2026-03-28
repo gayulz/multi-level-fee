@@ -28,7 +28,7 @@
                 <h2 class="auth-title" style="font-size: 1.8rem;">Create an account</h2>
             </div>
             
-            <form th:action="@{/signup}" method="post">
+            <form th:action="@{/auth/signup}" method="post">
                 <!-- 아이디/이메일 영역 (이메일 인증 버튼 포함) -->
                 <div class="form-group">
                     <label class="form-label" for="email">Email <span class="required">*</span></label>
@@ -90,7 +90,7 @@
             </form>
             
             <div class="auth-footer text-start mt-4">
-                Already have an account? <a href="/login" th:href="@{/login}" class="auth-link">Log In</a>
+                Already have an account? <a href="/auth/login" th:href="@{/auth/login}" class="auth-link">Log In</a>
             </div>
             
         </div>

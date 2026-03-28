@@ -56,6 +56,20 @@ public interface SettlementService {
     com.example.settlement.domain.entity.SettlementRequest getRequest(Long id);
 
     /**
+     * [NEW] 정산 요청 상세 조회 (DTO 변환).
+     *
+     * <p>
+     * 상세 페이지용으로 Entity를 SettlementDetailDto로 변환하여 반환합니다.
+     * Fetch Join으로 organization, requester를 함께 로딩합니다.
+     * </p>
+     *
+     * @param id 정산 요청 ID
+     * @return 정산 상세 DTO
+     * @author gayul.kim
+     */
+    com.example.settlement.dto.response.SettlementDetailDto getRequestDetail(Long id);
+
+    /**
      * [NEW] 사용자의 정산 요청 목록 조회.
      */
     List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByUser(User user);
@@ -76,9 +90,11 @@ public interface SettlementService {
     /**
      * [NEW] 최근 정산 요청 N 건 조회 (대시보드 요약 표 용).
      *
+     * Fetch Join으로 organization, requester를 함께 로딩합니다.
+     *
      * @author gayul.kim
      * @param limit 조회 건수
-     * @return 정렬된 정산 요청 목록
+     * @return 정렬된 정산 요청 목록 (organization, requester 포함)
      */
     List<com.example.settlement.domain.entity.SettlementRequest> getRecentRequests(int limit);
 }

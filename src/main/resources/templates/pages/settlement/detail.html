@@ -84,11 +84,12 @@
                             </tr>
                             <tr>
                                 <td class="text-muted ps-4">처리 일시</td>
-                                <td class="text-end pe-4" th:text="${#temporals.format(settlement.settledAt, 'yyyy-MM-dd HH:mm:ss')}">2026-03-04 10:00:00</td>
+                                <td class="text-end pe-4" th:if="${settlement.settledAt != null}" th:text="${#temporals.format(settlement.settledAt, 'yyyy-MM-dd HH:mm:ss')}">2026-03-04 10:00:00</td>
+                                <td class="text-end pe-4 text-muted" th:unless="${settlement.settledAt != null}">진행 중</td>
                             </tr>
                             <tr>
                                 <td class="text-muted ps-4">비고</td>
-                                <td class="text-end pe-4" th:text="${settlement.remark}">정상 처리 완료</td>
+                                <td class="text-end pe-4" th:text="${settlement.remark != null ? settlement.remark : '없음'}">정상 처리 완료</td>
                             </tr>
                         </tbody>
                     </table>
@@ -131,6 +132,11 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr th:if="${#lists.isEmpty(feeDetails)}">
+                                    <td colspan="3" class="text-center text-muted py-4">
+                                        <i class="bi bi-info-circle me-1"></i>수수료 배분 내역이 아직 계산되지 않았습니다.
+                                    </td>
+                                </tr>
                                 <tr th:each="detail : ${feeDetails}">
                                     <td class="ps-4">
                                         <!-- 트리 깊이에 따른 들여쓰기 -->

@@ -111,7 +111,11 @@ public class SettlementViewController {
     public String detail(@PathVariable Long id, Model model) {
         model.addAttribute("currentPage", "settlement-history");
         model.addAttribute("pageTitle", "정산 상세");
-        model.addAttribute("request", settlementService.getRequest(id));
+
+        var detailDto = settlementService.getRequestDetail(id);
+        model.addAttribute("settlement", detailDto);
+        model.addAttribute("feeDetails", detailDto.feeDetails());
+
         return "pages/settlement/detail";
     }
 

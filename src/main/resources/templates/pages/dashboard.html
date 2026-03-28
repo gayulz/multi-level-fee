@@ -103,7 +103,7 @@
     <div class="card">
     	<div class="card-header py-3 d-flex justify-content-between align-items-center">
     		<h5 class="mb-0 fw-bold">최근 정산 내역</h5>
-    		<a href="#" class="btn btn-sm btn-outline-primary">모두 보기</a>
+    		<a th:href="@{/settlement/history}" class="btn btn-sm btn-outline-primary">모두 보기</a>
     	</div>
     	<div class="card-body p-0">
     		<div class="table-responsive">
@@ -121,9 +121,11 @@
     					<tr th:each="settlement : ${recentSettlements}">
     						<td class="ps-4 fw-medium" th:text="${settlement.orderId}">ORD-001</td>
     						<td>
-								<span th:if="${settlement.status == 'COMPLETED'}" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">완료됨</span>
-								<span th:if="${settlement.status == 'PENDING'}" class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 rounded-pill">처리 중</span>
-								<span th:if="${settlement.status == 'FAILED'}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 rounded-pill">실패함</span>
+								<span th:if="${settlement.status.name() == 'COMPLETED'}" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">완료됨</span>
+								<span th:if="${settlement.status.name() == 'PENDING'}" class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 rounded-pill">대기 중</span>
+								<span th:if="${settlement.status.name() == 'AGENCY_APPROVED'}" class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1 rounded-pill">대리점 승인</span>
+								<span th:if="${settlement.status.name() == 'BRANCH_APPROVED'}" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill">지사 승인</span>
+								<span th:if="${settlement.status.name() == 'REJECTED'}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 rounded-pill">반려됨</span>
 							</td>
     						<td th:text="${'노드 ID: ' + settlement.id}">종로 대리점</td>
     						<td class="fw-bold" th:text="${'₩' + #numbers.formatInteger(settlement.amount, 0, 'COMMA')}">₩45,000</td>

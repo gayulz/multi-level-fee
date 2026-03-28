@@ -103,7 +103,7 @@
                             <td>
                                 <span class="d-flex align-items-center gap-1">
                                     <i class="bi bi-diagram-3 text-muted"></i>
-                                    <span th:text="${s.organization.name}">본사</span>
+                                    <span th:text="${s.organization.orgName}">본사</span>
                                 </span>
                             </td>
                             <td class="text-end fw-bold" th:text="${'₩' + #numbers.formatInteger(s.amount, 0, 'COMMA')}">₩100,000</td>
@@ -117,7 +117,7 @@
                             </td>
                             <td class="text-muted" th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}">2026-03-04 10:00</td>
                             <td class="text-center">
-                                <a th:href="@{/settlement/detail/{id}(id=${s.requestId})}" class="btn btn-sm btn-outline-primary">
+                                <a th:href="@{/settlement/detail/{id}(id=${s.id})}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i>
                                 </a>
                             </td>

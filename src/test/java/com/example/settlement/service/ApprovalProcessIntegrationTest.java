@@ -100,24 +100,24 @@ class ApprovalProcessIntegrationTest {
         assertThat(request.getCurrentApprovalLevel()).isEqualTo(1);
 
         // When (2): 대리점 관리자 승인
-        approvalService.approve(request.getRequestId(), agencyAdmin, "대리점 검토 완료");
-        request = settlementService.getRequest(request.getRequestId()); // 영속성 컨텍스트 초기화 안했다면 상태 갱신 필요
+        approvalService.approve(request.getId(), agencyAdmin, "대리점 검토 완료");
+        request = settlementService.getRequest(request.getId()); // 영속성 컨텍스트 초기화 안했다면 상태 갱신 필요
 
         // Then (2): 지사 승인 대기 상태
         assertThat(request.getStatus()).isEqualTo(SettlementStatus.AGENCY_APPROVED);
         assertThat(request.getCurrentApprovalLevel()).isEqualTo(2);
 
         // When (3): 지사 관리자 승인
-        approvalService.approve(request.getRequestId(), branchAdmin, "지사 검토 완료");
-        request = settlementService.getRequest(request.getRequestId());
+        approvalService.approve(request.getId(), branchAdmin, "지사 검토 완료");
+        request = settlementService.getRequest(request.getId());
 
         // Then (3): 본사(최종) 승인 대기 상태
         assertThat(request.getStatus()).isEqualTo(SettlementStatus.BRANCH_APPROVED);
         assertThat(request.getCurrentApprovalLevel()).isEqualTo(3);
 
         // When (4): 본사 관리자 최종 승인
-        approvalService.approve(request.getRequestId(), hqAdmin, "최종 승인");
-        request = settlementService.getRequest(request.getRequestId());
+        approvalService.approve(request.getId(), hqAdmin, "최종 승인");
+        request = settlementService.getRequest(request.getId());
 
         // Then (4): 처리 완료 상태
         assertThat(request.getStatus()).isEqualTo(SettlementStatus.COMPLETED);

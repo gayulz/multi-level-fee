@@ -123,11 +123,10 @@ public class SettlementServiceImpl implements SettlementService {
     @Override
     @Transactional(readOnly = true)
     public java.util.List<com.example.settlement.domain.entity.SettlementRequest> getRecentRequests(int limit) {
-        return settlementRequestRepository.findAll(
-                org.springframework.data.domain.PageRequest.of(0, limit,
-                        org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC,
-                                "createdAt")))
-                .getContent();
+        // Fetch Join으로 organization, requester 함께 로딩 (LazyInitializationException 방지)
+        return settlementRequestRepository.findAllWithDetailsOrderByCreatedAtDesc().stream()
+                .limit(limit)
+                .toList();
     }
 
     @Override
@@ -137,10 +136,32 @@ public class SettlementServiceImpl implements SettlementService {
                 .orElseThrow(() -> new IllegalArgumentException("정산 요청을 찾을 수 없습니다"));
     }
 
+    /**
+     * [NEW] 정산 요청 상세 조회 (DTO 변환).
+     *
+     * <p>
+     * Fetch Join으로 organization, requester를 함께 로딩한 뒤
+     * SettlementDetailDto로 변환하여 반환합니다.
+     * </p>
+     *
+     * @param id 정산 요청 ID
+     * @return 정산 상세 DTO
+     * @author gayul.kim
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public com.example.settlement.dto.response.SettlementDetailDto getRequestDetail(Long id) {
+        com.example.settlement.domain.entity.SettlementRequest entity =
+                settlementRequestRepository.findByIdWithDetails(id)
+                        .orElseThrow(() -> new IllegalArgumentException("정산 요청을 찾을 수 없습니다"));
+        return com.example.settlement.dto.response.SettlementDetailDto.from(entity);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByUser(User user) {
-        return settlementRequestRepository.findByRequesterOrderByCreatedAtDesc(user);
+        // Fetch Join으로 organization, requester 함께 로딩 (LazyInitializationException 방지)
+        return settlementRequestRepository.findByRequesterWithDetails(user);
     }
 
     @Override
@@ -148,7 +169,8 @@ public class SettlementServiceImpl implements SettlementService {
     public List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganization(Long orgId) {
         Organization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new IllegalArgumentException("조직을 찾을 수 없습니다"));
-        return settlementRequestRepository.findByOrganization(org);
+        // Fetch Join으로 organization, requester 함께 로딩 (LazyInitializationException 방지)
+        return settlementRequestRepository.findByOrganizationWithDetails(org);
     }
 
     /**
