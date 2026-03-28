@@ -25,6 +25,7 @@
                 </a>
 			</li>
 			
+			<th:block sec:authorize="hasAnyRole('SUPER_ADMIN', 'ADMIN')">
 			<h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted fw-bold">
 				<span>정산 노드 관리</span>
 			</h6>
@@ -34,6 +35,19 @@
 					노드 현황
 				</a>
 			</li>
+			</th:block>
+			
+			<th:block sec:authorize="hasRole('SUPER_ADMIN')">
+			<h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted fw-bold">
+				<span>시스템 관리</span>
+			</h6>
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2" th:classappend="${currentPage == 'admin-users' ? 'active' : ''}" th:href="@{/admin/users}">
+					<i class="bi bi-people"></i>
+					사용자 관리
+				</a>
+			</li>
+			</th:block>
 			
 			<h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted fw-bold">
 				<span>수수료 및 정산</span>
@@ -56,6 +70,7 @@
 		
 		<ul class="nav flex-column mb-4 px-3 w-100">
 			<!-- 환경설정 부분 등 -->
+			<!-- 설정 및 로그아웃 버튼 -->
 			<li class="nav-item">
 				<a class="nav-link d-flex align-items-center gap-2" href="#">
 					<i class="bi bi-gear"></i>
@@ -63,16 +78,13 @@
 				</a>
 			</li>
 			<li class="nav-item">
-				                <a class="nav-link d-flex align-items-center gap-2" th:classappend="${currentPage == 'nodes' ? 'active' : ''}" th:href="@{/nodes}">
-                    <i class="bi bi-file-earmark-text"></i>
-                    Nodes
-                </a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link d-flex align-items-center gap-2" href="#">
-					<i class="bi bi-box-arrow-right"></i>
-					로그아웃
-				</a>
+				<!-- sidebar 로그아웃: form POST 방식으로 전환을 위해 스크립트로 폼 submit 또는 헤더와 동일하게 form 버튼으로 구현 -->
+				<form th:action="@{/auth/logout}" method="post" class="d-inline w-100">
+					<button type="submit" class="nav-link d-flex align-items-center gap-2 border-0 bg-transparent w-100 text-start">
+						<i class="bi bi-box-arrow-right"></i>
+						로그아웃
+					</button>
+				</form>
 			</li>
 		</ul>
 	</div>

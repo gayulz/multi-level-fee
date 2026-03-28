@@ -55,4 +55,17 @@ public class CustomErrorController implements ErrorController {
 
         return "error/error";
     }
+
+    /**
+     * [NEW] 403 Forbidden 에러 페이지 핸들러
+     *
+     * SecurityConfig에서 accessDeniedPage로 설정된 경로를 처리합니다.
+     *
+     * @author gayul.kim
+     * @return 403 에러 페이지 뷰 이름
+     */
+    @RequestMapping("/error/403")
+    public String accessDenied() {
+        return "error/403";
+    }
 }

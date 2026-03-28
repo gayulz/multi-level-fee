@@ -57,9 +57,19 @@
       </a>
       <ul class="dropdown-menu dropdown-menu-end text-small shadow">
         <li><a class="dropdown-item" href="#">설정</a></li>
-        <li><a class="dropdown-item" href="#">프로필</a></li>
+        <li><a class="dropdown-item" href="#">프로필
+            <span class="d-block small text-muted">
+                <span sec:authentication="principal.name">사용자명</span>
+            </span>
+        </a></li>
         <li><hr class="dropdown-divider" /></li>
-        <li><a class="dropdown-item" href="#">로그아웃</a></li>
+        <li>
+            <form th:action="@{/auth/logout}" method="post" class="dropdown-item p-0">
+                <button type="submit" class="btn btn-link dropdown-item w-100 text-start m-0 rounded-0">
+                    로그아웃
+                </button>
+            </form>
+        </li>
       </ul>
     </div>
   </div>
