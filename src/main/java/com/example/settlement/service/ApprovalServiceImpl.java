@@ -5,6 +5,7 @@ import com.example.settlement.domain.entity.User;
 import com.example.settlement.domain.entity.enums.UserRole;
 import com.example.settlement.domain.repository.SettlementRequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ public class ApprovalServiceImpl implements ApprovalService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     public void approve(Long requestId, User approver, String comment) {
         SettlementRequest request = settlementRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("정산 요청을 찾을 수 없습니다"));
@@ -39,6 +41,7 @@ public class ApprovalServiceImpl implements ApprovalService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     public void reject(Long requestId, User approver, String reason) {
         SettlementRequest request = settlementRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("정산 요청을 찾을 수 없습니다"));
@@ -68,6 +71,7 @@ public class ApprovalServiceImpl implements ApprovalService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     public List<SettlementRequest> getPendingRequestsForApprover(User approver) {
         int approverLevel = approver.getOrganization().getLevel();
         // 대리점 관리자(level=3) -> approvalLevel=1 대기 목록 조회

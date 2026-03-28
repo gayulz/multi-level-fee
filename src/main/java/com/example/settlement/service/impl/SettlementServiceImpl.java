@@ -13,6 +13,7 @@ import com.example.settlement.domain.repository.SettlementRequestRepository;
 import com.example.settlement.dto.request.SettlementRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public SettlementResult calculate(SettlementRequest request) {
         // 1. 루트 노드 조회 (fetchJoin으로 한 번에 트리 일부 조회)
         SettlementNode rootNode = settlementNodeRepository.findByIdWithChildren(request.rootNodeId())
@@ -73,6 +75,7 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public SettlementNode createNode(NodeCreateRequest request) {
         SettlementNode parent = null;
         if (request.parentId() != null) {
@@ -90,12 +93,14 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public List<SettlementNode> getRootNodes() {
         return settlementNodeRepository.findAllRootNodes();
     }
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('USER')")
     public com.example.settlement.domain.entity.SettlementRequest createRequest(SettlementRequestDto dto,
             User requester) {
         SettlementNode rootNode = settlementNodeRepository.findById(dto.rootNodeId())
@@ -116,12 +121,14 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public long getTotalRequests() {
         return settlementRequestRepository.count();
     }
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public java.util.List<com.example.settlement.domain.entity.SettlementRequest> getRecentRequests(int limit) {
         // Fetch Join으로 organization, requester 함께 로딩 (LazyInitializationException 방지)
         return settlementRequestRepository.findAllWithDetailsOrderByCreatedAtDesc().stream()
@@ -131,6 +138,7 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public com.example.settlement.domain.entity.SettlementRequest getRequest(Long id) {
         return settlementRequestRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("정산 요청을 찾을 수 없습니다"));
@@ -150,6 +158,7 @@ public class SettlementServiceImpl implements SettlementService {
      */
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("isAuthenticated()")
     public com.example.settlement.dto.response.SettlementDetailDto getRequestDetail(Long id) {
         com.example.settlement.domain.entity.SettlementRequest entity =
                 settlementRequestRepository.findByIdWithDetails(id)
@@ -159,6 +168,7 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("#user.userId == principal.userId or hasRole('SUPER_ADMIN')")
     public List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByUser(User user) {
         // Fetch Join으로 organization, requester 함께 로딩 (LazyInitializationException 방지)
         return settlementRequestRepository.findByRequesterWithDetails(user);
@@ -166,6 +176,7 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasRole('ADMIN') and #orgId == principal.organization.orgId)")
     public List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganization(Long orgId) {
         Organization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new IllegalArgumentException("조직을 찾을 수 없습니다"));

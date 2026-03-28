@@ -4,6 +4,7 @@ import com.example.settlement.domain.entity.Organization;
 import com.example.settlement.domain.entity.enums.OrgType;
 import com.example.settlement.domain.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public Organization createOrganization(String name, OrgType type, Long parentId) {
         Organization parent = null;
         if (parentId != null) {
@@ -46,22 +48,26 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     public Organization getOrganization(Long id) {
         return organizationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("조직을 찾을 수 없습니다: id=" + id));
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     public List<Organization> getAllOrganizations() {
         return organizationRepository.findAll();
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     public List<Organization> getRootOrganizations() {
         return organizationRepository.findByParentIsNull();
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     public List<Organization> getChildOrganizations(Long parentId) {
         Organization parent = getOrganization(parentId);
         return parent.getChildren();
@@ -69,6 +75,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public void updateOrganization(Long id, String name) {
         Organization org = getOrganization(id);
         org.updateOrgName(name);
@@ -76,6 +83,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public void deleteOrganization(Long id) {
         Organization org = getOrganization(id);
         if (!org.getChildren().isEmpty()) {

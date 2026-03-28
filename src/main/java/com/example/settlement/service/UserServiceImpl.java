@@ -8,6 +8,7 @@ import com.example.settlement.domain.repository.OrganizationRepository;
 import com.example.settlement.domain.repository.UserRepository;
 import com.example.settlement.dto.request.SignupRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,18 +60,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN') or #id == principal.userId")
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: id=" + id));
     }
 
     @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN') or #email == principal.username")
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: email=" + email));
     }
 
     @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasRole('ADMIN') and #orgId == principal.organization.orgId)")
     public List<User> getUsersByOrganization(Long orgId) {
         Organization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new IllegalArgumentException("조직을 찾을 수 없습니다: id=" + orgId));
@@ -78,6 +82,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasRole('ADMIN') and #orgId == principal.organization.orgId)")
     public List<User> getPendingUsers(Long orgId) {
         // QueryDSL 등 커스텀 메소드가 필요하지만 여기서는 스트림을 사용해 필터링하거나
         // JPA 메소드를 추가할 수도 있음. 이 예제에서는 기본 JPA 사용 시
@@ -88,6 +93,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     public void approveUser(Long userId, Long approverId) {
         User user = getUserById(userId);
         User approver = getUserById(approverId);
@@ -99,6 +105,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     public void rejectUser(Long userId, Long approverId, String reason) {
         User user = getUserById(userId);
         user.reject(reason);
@@ -106,6 +113,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public void changeUserRole(Long userId, UserRole role) {
         User user = getUserById(userId);
         user.changeRole(role);
@@ -113,16 +121,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
     @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public List<User> getAllPendingUsers() {
         return userRepository.findByStatus(UserStatus.PENDING);
     }
 
     @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public long getActiveUsersCount() {
         return userRepository.findByStatus(UserStatus.APPROVED).size();
     }
