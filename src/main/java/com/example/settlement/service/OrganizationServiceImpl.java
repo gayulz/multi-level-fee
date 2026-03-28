@@ -55,7 +55,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    @PreAuthorize("isAuthenticated()")
     public List<Organization> getAllOrganizations() {
         return organizationRepository.findAll();
     }
