@@ -143,6 +143,44 @@ public class User {
         return user;
     }
 
+    /**
+     * [NEW] 초기 데이터 세팅용 SUPER_ADMIN 생성 (앱 기동 시 자동 생성).
+     *
+     * <p>
+     * DataInitializer에서만 사용합니다.
+     * 바로 로그인 가능한 활성 상태(APPROVED, emailVerified=true)로 생성됩니다.
+     * </p>
+     *
+     * @param email           이메일
+     * @param encodedPassword BCrypt 암호화된 비밀번호
+     * @param name            이름
+     * @param phone           연락처
+     * @param organization    소속 조직
+     * @return 로그인 가능한 SUPER_ADMIN User
+     * @author gayul.kim
+     */
+    public static User createSuperAdmin(
+            String email,
+            String encodedPassword,
+            String name,
+            String phone,
+            Organization organization) {
+        User user = new User();
+        user.email = email;
+        user.password = encodedPassword;
+        user.name = name;
+        user.phone = phone;
+        user.organization = organization;
+        user.role = UserRole.ROLE_SUPER_ADMIN;
+        user.privacyAgreed = true;
+        user.emailVerified = true; // 이싹 인증 통과
+        user.status = UserStatus.APPROVED; // 승인 완료
+        user.active = true;
+        user.approvedAt = LocalDateTime.now();
+        user.requestedAt = LocalDateTime.now();
+        return user;
+    }
+
     // =========================================================
     // 비즈니스 메서드 - 이메일 인증
     // =========================================================
@@ -241,6 +279,17 @@ public class User {
      */
     public boolean hasRole(UserRole role) {
         return this.role == role;
+    }
+
+    /**
+     * [NEW] 사용자 권한 변경.
+     *
+     * @param role 변경할 권한
+     * @author gayul.kim
+     */
+    public void changeRole(UserRole role) {
+        this.role = role;
+        this.updatedAt = LocalDateTime.now();
     }
 
     /**

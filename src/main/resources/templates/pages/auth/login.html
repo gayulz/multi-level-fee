@@ -68,10 +68,10 @@
                         <div class="auth-subtitle">We're so excited to see you again!</div>
                     </div>
                     
-                    <form th:action="@{/login}" method="post">
+                    <form th:action="@{/auth/login}" method="post">
                         <div class="form-group">
                             <label class="form-label" for="email">Email or ID <span class="required">*</span></label>
-                            <input type="email" id="email" name="username" class="form-control-liquid" placeholder="admin@settletree.com" required>
+                            <input type="email" id="email" name="email" class="form-control-liquid" placeholder="admin@sattletree.io" required>
                         </div>
                         
                         <div class="form-group">

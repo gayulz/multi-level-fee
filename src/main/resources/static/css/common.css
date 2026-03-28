@@ -1,0 +1,41 @@
+/* SUIT 폰트 로드 */
+@font-face {
+  font-family: "SUIT";
+  src: url("/fonts/SUIT/SUIT-Variable.woff2") format("woff2");
+}
+
+/* Base CSS imports */
+@import url("/css/glass-panel.css");
+@import url("/css/gradient-button.css");
+
+/* CSS 변수 정의 */
+:root {
+  /* 베이스 컬러 */
+  --base-dark: #0a0a0a;
+  --base-navy: #19065a;
+
+  /* 포인트 컬러 */
+  --point-pink: #f05cfa;
+  --point-orange: #d76750;
+
+  /* 그라데이션 */
+  --gradient-primary: linear-gradient(135deg, #19065a, #f05cfa);
+  --gradient-secondary: linear-gradient(135deg, #d76750, #f05cfa);
+
+  /* 글래스모피즘 */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-backdrop-blur: blur(10px);
+}
+
+* {
+  font-family: "SUIT", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--base-dark);
+  color: #ffffff;
+}

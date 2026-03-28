@@ -4,6 +4,8 @@ import com.example.settlement.domain.entity.SettlementNode;
 import com.example.settlement.dto.NodeCreateRequest;
 import com.example.settlement.dto.SettlementRequest;
 import com.example.settlement.dto.SettlementResult;
+import com.example.settlement.domain.entity.User;
+import com.example.settlement.dto.request.SettlementRequestDto;
 
 import java.util.List;
 
@@ -42,4 +44,41 @@ public interface SettlementService {
      * @return 부모가 없는 루트 노드 목록
      */
     List<SettlementNode> getRootNodes();
+
+    /**
+     * [NEW] 사용자의 정산 요청 생성.
+     */
+    com.example.settlement.domain.entity.SettlementRequest createRequest(SettlementRequestDto dto, User requester);
+
+    /**
+     * [NEW] 정산 요청 단건 조회.
+     */
+    com.example.settlement.domain.entity.SettlementRequest getRequest(Long id);
+
+    /**
+     * [NEW] 사용자의 정산 요청 목록 조회.
+     */
+    List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByUser(User user);
+
+    /**
+     * [NEW] 조직별 정산 요청 목록 조회.
+     */
+    List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganization(Long orgId);
+
+    /**
+     * [NEW] 전체 정산 요청 총 건수 조회 (SUPER_ADMIN 대시보드용).
+     *
+     * @author gayul.kim
+     * @return 전체 정산 요청 수
+     */
+    long getTotalRequests();
+
+    /**
+     * [NEW] 최근 정산 요청 N 건 조회 (대시보드 요약 표 용).
+     *
+     * @author gayul.kim
+     * @param limit 조회 건수
+     * @return 정렬된 정산 요청 목록
+     */
+    List<com.example.settlement.domain.entity.SettlementRequest> getRecentRequests(int limit);
 }

@@ -1,0 +1,22 @@
+.btn-gradient {
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 2rem;
+  color: #ffffff;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(240, 92, 250, 0.4);
+}
+
+.btn-secondary {
+  background: var(--gradient-secondary);
+}

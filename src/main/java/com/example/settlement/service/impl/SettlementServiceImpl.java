@@ -6,6 +6,11 @@ import com.example.settlement.dto.NodeCreateRequest;
 import com.example.settlement.dto.SettlementRequest;
 import com.example.settlement.dto.SettlementResult;
 import com.example.settlement.service.SettlementService;
+import com.example.settlement.domain.entity.Organization;
+import com.example.settlement.domain.entity.User;
+import com.example.settlement.domain.repository.OrganizationRepository;
+import com.example.settlement.domain.repository.SettlementRequestRepository;
+import com.example.settlement.dto.request.SettlementRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +37,8 @@ import java.util.Objects;
 public class SettlementServiceImpl implements SettlementService {
 
     private final SettlementNodeRepository settlementNodeRepository;
+    private final SettlementRequestRepository settlementRequestRepository;
+    private final OrganizationRepository organizationRepository;
 
     @Override
     @Transactional
@@ -85,6 +92,63 @@ public class SettlementServiceImpl implements SettlementService {
     @Transactional(readOnly = true)
     public List<SettlementNode> getRootNodes() {
         return settlementNodeRepository.findAllRootNodes();
+    }
+
+    @Override
+    @Transactional
+    public com.example.settlement.domain.entity.SettlementRequest createRequest(SettlementRequestDto dto,
+            User requester) {
+        SettlementNode rootNode = settlementNodeRepository.findById(dto.rootNodeId())
+                .orElseThrow(() -> new IllegalArgumentException("정산 노드를 찾을 수 없습니다"));
+
+        // rootNode 연관 추후 구현일 수 있어서마 실제 요청에 rootNode는 저장하지 않습니다 (DTO에 rootNodeId를 통해 확인)
+        // 평정서를 저장합니다
+        com.example.settlement.domain.entity.SettlementRequest request = com.example.settlement.domain.entity.SettlementRequest
+                .create(
+                        dto.orderId(),
+                        dto.amount(),
+                        dto.description(),
+                        requester,
+                        requester.getOrganization());
+
+        return settlementRequestRepository.save(request);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getTotalRequests() {
+        return settlementRequestRepository.count();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<com.example.settlement.domain.entity.SettlementRequest> getRecentRequests(int limit) {
+        return settlementRequestRepository.findAll(
+                org.springframework.data.domain.PageRequest.of(0, limit,
+                        org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC,
+                                "createdAt")))
+                .getContent();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.example.settlement.domain.entity.SettlementRequest getRequest(Long id) {
+        return settlementRequestRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("정산 요청을 찾을 수 없습니다"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByUser(User user) {
+        return settlementRequestRepository.findByRequesterOrderByCreatedAtDesc(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganization(Long orgId) {
+        Organization org = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new IllegalArgumentException("조직을 찾을 수 없습니다"));
+        return settlementRequestRepository.findByOrganization(org);
     }
 
     /**

@@ -103,19 +103,21 @@
                             <td>
                                 <span class="d-flex align-items-center gap-1">
                                     <i class="bi bi-diagram-3 text-muted"></i>
-                                    <span th:text="${s.rootNodeName}">본사</span>
+                                    <span th:text="${s.organization.name}">본사</span>
                                 </span>
                             </td>
                             <td class="text-end fw-bold" th:text="${'₩' + #numbers.formatInteger(s.amount, 0, 'COMMA')}">₩100,000</td>
-                            <td class="text-end text-point-navy fw-medium" th:text="${'₩' + #numbers.formatInteger(s.totalFee, 0, 'COMMA')}">₩17,050</td>
+                            <td class="text-end text-point-navy fw-medium" th:text="${s.feeAmount != null ? '₩' + #numbers.formatInteger(s.feeAmount, 0, 'COMMA') : '-'}">₩17,050</td>
                             <td class="text-center">
-                                <span th:if="${s.status == 'COMPLETED'}" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">완료</span>
-                                <span th:if="${s.status == 'PENDING'}" class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 rounded-pill">처리 중</span>
-                                <span th:if="${s.status == 'FAILED'}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 rounded-pill">실패</span>
+                                <span th:if="${s.status.name() == 'COMPLETED'}" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">완료</span>
+                                <span th:if="${s.status.name() == 'PENDING'}" class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 rounded-pill">대기</span>
+                                <span th:if="${s.status.name() == 'AGENCY_APPROVED'}" class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1 rounded-pill">대리점승인</span>
+                                <span th:if="${s.status.name() == 'BRANCH_APPROVED'}" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill">지사승인</span>
+                                <span th:if="${s.status.name() == 'REJECTED'}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 rounded-pill">반려</span>
                             </td>
-                            <td class="text-muted" th:text="${#temporals.format(s.settledAt, 'yyyy-MM-dd HH:mm')}">2026-03-04 10:00</td>
+                            <td class="text-muted" th:text="${#temporals.format(s.createdAt, 'yyyy-MM-dd HH:mm')}">2026-03-04 10:00</td>
                             <td class="text-center">
-                                <a th:href="@{/settlement/detail/{id}(id=${s.id})}" class="btn btn-sm btn-outline-primary">
+                                <a th:href="@{/settlement/detail/{id}(id=${s.requestId})}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i>
                                 </a>
                             </td>

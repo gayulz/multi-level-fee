@@ -111,7 +111,49 @@ public class SettlementNode {
      *
      * @return 자식이 없으면 true
      */
+    /**
+     * [NEW] 리프 노드 여부 확인.
+     *
+     * @return 자식이 없으면 true
+     */
     public boolean isLeaf() {
         return this.children.isEmpty();
+    }
+
+    /**
+     * [NEW] 루트 정산 노드 생성 (부모 없음).
+     *
+     * @param name         노드명
+     * @param organization 소속 조직
+     * @param feeRate      수수료율
+     * @return 루트 SettlementNode
+     * @author gayul.kim
+     */
+    public static SettlementNode createRoot(String name, Organization organization, BigDecimal feeRate) {
+        SettlementNode node = new SettlementNode();
+        node.name = name;
+        node.feeRate = feeRate;
+        node.organization = organization;
+        return node;
+    }
+
+    /**
+     * [NEW] 자식 정산 노드 생성 (양방향 연관관계 설정 포함).
+     *
+     * @param name         노드명
+     * @param organization 소속 조직
+     * @param feeRate      수수료율
+     * @param parent       부모 노드
+     * @return 자식 SettlementNode
+     * @author gayul.kim
+     */
+    public static SettlementNode createChild(String name, Organization organization,
+            BigDecimal feeRate, SettlementNode parent) {
+        SettlementNode node = new SettlementNode();
+        node.name = name;
+        node.feeRate = feeRate;
+        node.organization = organization;
+        parent.addChild(node);
+        return node;
     }
 }
