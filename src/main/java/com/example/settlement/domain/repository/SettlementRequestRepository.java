@@ -95,7 +95,7 @@ public interface SettlementRequestRepository
            "JOIN FETCH s.organization " +
            "JOIN FETCH s.requester " +
            "ORDER BY s.createdAt DESC")
-    List<SettlementRequest> findAllWithDetailsOrderByCreatedAtDesc();
+    List<SettlementRequest> findAllWithDetailsOrderByCreatedAtDesc(org.springframework.data.domain.Pageable pageable);
 
     /**
      * [NEW] 정산 요청 단건 조회 (Fetch Join으로 organization, requester 함께 로딩).

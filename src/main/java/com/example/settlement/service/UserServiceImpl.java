@@ -135,6 +135,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public long getActiveUsersCount() {
-        return userRepository.findByStatus(UserStatus.APPROVED).size();
+        // [MIG] 메모리 폭발 방지를 위해 .size() 대신 count 연산 수행
+        return userRepository.countByStatus(UserStatus.APPROVED);
     }
 }

@@ -130,10 +130,10 @@ public class SettlementServiceImpl implements SettlementService {
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public java.util.List<com.example.settlement.domain.entity.SettlementRequest> getRecentRequests(int limit) {
-        // Fetch Join으로 organization, requester 함께 로딩 (LazyInitializationException 방지)
-        return settlementRequestRepository.findAllWithDetailsOrderByCreatedAtDesc().stream()
-                .limit(limit)
-                .toList();
+        // [MIG] Fetch Join과 결합된 Pageable을 사용하여 DB 레벨에서 최적화된 최신 내역 N개 조회
+        return settlementRequestRepository.findAllWithDetailsOrderByCreatedAtDesc(
+                org.springframework.data.domain.PageRequest.of(0, limit)
+        );
     }
 
     @Override

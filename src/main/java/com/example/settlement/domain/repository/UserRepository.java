@@ -41,6 +41,16 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
     List<User> findByStatus(UserStatus status);
 
     /**
+     * [MIG] 가입 상태로 활성 사용자 수 카운팅 (JPA 카운트 쿼리 최적화).
+     *
+     * @param status 가입 상태
+     * @return 사용자 수
+     * @author gayul.kim
+     * @since 2026-03-29
+     */
+    long countByStatus(UserStatus status);
+
+    /**
      * 이메일 중복 여부 확인 (회원가입 시 사용).
      *
      * @param email 이메일
