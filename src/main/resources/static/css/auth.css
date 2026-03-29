@@ -77,13 +77,13 @@ body.auth-body {
 
 /* Liquid Glass Panel 디자인 */
 .glass-panel-auth {
-    background: rgba(255, 255, 255, 0.6); /* 밝은 화이트 글래스 기반 */
-    backdrop-filter: blur(30px) saturate(130%);
-    -webkit-backdrop-filter: blur(30px) saturate(130%);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 15px 35px rgba(25, 6, 90, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.8);
-    border-radius: 28px;
-    padding: 3rem 3.5rem;
+    background: rgba(255, 255, 255, 0.85); /* 더 불투명하게 */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: none;
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--border-radius-xl);
+    padding: var(--space-2xl) var(--space-3xl);
     width: 100%;
     z-index: 10;
     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -155,12 +155,12 @@ body.auth-body {
 .form-control-liquid {
     width: 100%;
     background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(25, 6, 90, 0.2);
-    border-radius: 12px;
+    border: 1px solid var(--border-color, rgba(25, 6, 90, 0.2));
+    border-radius: var(--border-radius-md);
     padding: 0.8rem 1rem;
     font-family: inherit;
     font-size: 1rem;
-    color: #19065a;
+    color: var(--text-heading, #19065a);
     transition: all 0.3s ease;
     outline: none;
     box-sizing: border-box;
@@ -211,13 +211,13 @@ select.form-control-liquid option {
 .btn-verify {
     background: rgba(25, 6, 90, 0.05);
     border: 1px solid rgba(25, 6, 90, 0.15);
-    color: #19065a;
-    border-radius: 12px;
+    color: var(--text-heading, #19065a);
+    border-radius: var(--border-radius-pill); /* 로그인/가입 주요 버튼과 동일한 알약형 통일 */
     padding: 0 1rem;
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     white-space: nowrap;
 }
 
@@ -316,7 +316,7 @@ select.form-control-liquid option {
     font-weight: 700;
     font-size: 1.15rem;
     padding: 0.9rem;
-    border-radius: 12px; /* 디자인 통일성을 위해 모서리를 라운드 처리 */
+    border-radius: var(--border-radius-pill); /* 알약형 */
     border: none;
     color: #ffffff;
     cursor: pointer;
