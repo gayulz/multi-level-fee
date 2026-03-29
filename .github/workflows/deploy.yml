@@ -48,7 +48,7 @@ jobs:
           host: ${{ secrets.GCP_HOST }} # GCP VM 외부 IP (예: 34.64.108.71)
           username: ${{ secrets.GCP_USERNAME }} # GCP SSH 유저명 (예: sk01087901519)
           key: ${{ secrets.GCP_SSH_KEY }} # GCP SSH 개인키 (-----BEGIN OPENSSH...)
-          source: "build/libs/*.jar"
+          source: "build/libs/*.jar,docker-compose.yml,Dockerfile"
           target: "/home/${{ secrets.GCP_USERNAME }}/multi-level-fee/"
           strip_components: 0 # 경로 구조 그대로 유지
 
@@ -61,6 +61,5 @@ jobs:
           key: ${{ secrets.GCP_SSH_KEY }}
           script: |
             cd ~/multi-level-fee
-            git pull
             docker compose up -d --build --force-recreate
             docker compose ps
