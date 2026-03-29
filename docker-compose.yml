@@ -57,6 +57,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
     restart: unless-stopped
 
 volumes:
