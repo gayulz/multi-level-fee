@@ -43,3 +43,4 @@ spring:
 logging:
   level:
     com.example.settlement: INFO
+    org.springframework.security: DEBUG
