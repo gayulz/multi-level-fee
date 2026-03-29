@@ -23,6 +23,9 @@
 	<!-- Custom CSS -->
 	<link th:href="@{/css/style.css}" rel="stylesheet">
 	
+	<!-- 페이지별 CSS 주입 포인트 -->
+	<th:block layout:fragment="css"></th:block>
+	
 	<!-- 스크립트 (헤더 스크롤 이벤트 등) -->
 	<script th:src="@{/js/main.js}"></script>
 </head>

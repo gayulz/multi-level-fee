@@ -945,3 +945,290 @@ select.form-select option:disabled,
 	font-weight: 500;
 }
 
+/* ===================================================== */
+/* [Phase 4] sendr.ai 미니멀 테이블                       */
+/* ===================================================== */
+.table-minimal {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+.table-minimal thead th {
+	background: transparent;
+	border-bottom: 1px solid var(--border-color);
+	padding: var(--space-md) var(--space-sm);
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--text-muted);
+	text-align: left;
+}
+
+.table-minimal tbody td {
+	padding: var(--space-md) var(--space-sm);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	color: var(--text-body);
+	font-size: 14px;
+	vertical-align: middle;
+	min-height: 56px;
+}
+
+.table-minimal tbody tr {
+	transition: background-color 0.2s ease;
+}
+
+.table-minimal tbody tr:hover {
+	background: var(--bg-section);
+}
+
+/* ===================================================== */
+/* [Phase 4] 상태 뱃지 (알약형, sendr.ai 스타일)           */
+/* ===================================================== */
+.status-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 12px;
+	border-radius: var(--border-radius-pill);
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.status-badge.completed {
+	background: rgba(16, 185, 129, 0.1);
+	color: var(--color-success);
+}
+
+.status-badge.pending {
+	background: rgba(245, 158, 11, 0.1);
+	color: var(--color-warning);
+}
+
+.status-badge.rejected {
+	background: rgba(239, 68, 68, 0.1);
+	color: var(--color-danger);
+}
+
+.status-badge.agency-approved {
+	background: rgba(167, 139, 250, 0.1);
+	color: var(--color-info);
+}
+
+.status-badge.branch-approved {
+	background: rgba(25, 6, 90, 0.08);
+	color: var(--color-primary);
+}
+
+/* ===================================================== */
+/* [Phase 4] 필터 칩 (sendr.ai 스타일)                    */
+/* ===================================================== */
+.filter-chips {
+	display: flex;
+	gap: var(--space-sm);
+	flex-wrap: wrap;
+	margin-bottom: var(--space-lg);
+}
+
+.chip {
+	padding: 6px 16px;
+	border-radius: var(--border-radius-pill);
+	border: 1px solid var(--border-color);
+	background: transparent;
+	color: var(--text-body);
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	text-decoration: none;
+}
+
+.chip:hover {
+	background: var(--bg-section);
+	border-color: var(--color-primary);
+	color: var(--color-primary);
+}
+
+.chip.active {
+	background: var(--color-primary);
+	border-color: var(--color-primary);
+	color: #FFFFFF;
+}
+
+/* ===================================================== */
+/* [Fix] DataTables 건씩 보기 select 드롭다운 겹침 수정   */
+/* ===================================================== */
+.dataTables_length select {
+	appearance: auto;
+	-webkit-appearance: auto;
+	padding: 2px 24px 2px 8px;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-sm);
+	background-color: var(--bg-card);
+	color: var(--text-body);
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	min-width: 60px;
+}
+
+.dataTables_length label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 13px;
+	color: var(--text-muted);
+}
+
+/* ===================================================== */
+/* [Fix] 조직 트리 레벨 뱃지 및 가독성 개선              */
+/* ===================================================== */
+
+/* 조직 트리 기본 초기화 */
+.org-tree {
+	list-style: none;
+	padding-left: 0;
+	margin: 0;
+}
+
+.org-tree li {
+	margin-bottom: var(--space-xs);
+}
+
+/* 레벨별 좌측 구분 바 */
+.org-node.org-level-1 {
+	border-left: 3px solid var(--color-primary);
+	padding-left: var(--space-md);
+	background: rgba(25, 6, 90, 0.03);
+	border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+}
+
+.org-node.org-level-2 {
+	border-left: 3px solid var(--color-accent);
+	padding-left: var(--space-md);
+	background: rgba(240, 92, 250, 0.02);
+	border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+}
+
+.org-node.org-level-3 {
+	border-left: 3px solid var(--color-info);
+	padding-left: var(--space-md);
+	background: rgba(167, 139, 250, 0.02);
+	border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+}
+
+/* 조직 레벨 뱃지 */
+.org-level-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	border-radius: var(--border-radius-pill);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.3px;
+	flex-shrink: 0;
+}
+
+.org-level-badge.hq {
+	background: rgba(25, 6, 90, 0.1);
+	color: var(--color-primary);
+}
+
+.org-level-badge.branch {
+	background: rgba(240, 92, 250, 0.1);
+	color: var(--color-accent);
+}
+
+.org-level-badge.agency {
+	background: rgba(167, 139, 250, 0.1);
+	color: var(--color-info);
+}
+
+/* org-name 폰트 개선 */
+.org-name {
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--text-heading);
+}
+
+/* org-count 뱃지 */
+.org-count {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--text-muted);
+	background: var(--bg-section);
+	padding: 2px 10px;
+	border-radius: var(--border-radius-pill);
+	border: 1px solid var(--border-color);
+}
+
+/* org-node:hover 시 미세한 부풀림 효과 제거 및 선명도 유지 */
+.org-node:hover {
+	background: rgba(var(--color-primary-rgb), 0.05);
+}
+
+/* ===================================================== */
+/* [New] Dashboard 전용 섹션 카드 스타일                 */
+/* ===================================================== */
+.dashboard-section-card {
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-lg);
+	padding: var(--space-lg);
+	box-shadow: var(--card-shadow);
+	margin-bottom: var(--space-lg);
+}
+
+.section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: var(--space-lg);
+}
+
+.section-title {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--text-heading);
+	margin: 0;
+}
+
+/* ===================================================== */
+/* [Enhanced] 조직 트리 가이드라인 (Tree Structure)      */
+/* ===================================================== */
+
+.org-tree .children {
+	list-style: none;
+	padding-left: 32px; /* 들여쓰기 확대 */
+	margin-top: 4px;
+	margin-left: 14px;
+	border-left: 2px solid rgba(25, 6, 90, 0.08); /* 더 굵고 반투명한 선 */
+	position: relative;
+}
+
+/* 수평 연결선 (L자형 효과) */
+.org-tree li {
+	position: relative;
+}
+
+.org-tree .children > li::before {
+	content: "";
+	position: absolute;
+	left: -32px;
+	top: 24px;
+	width: 24px;
+	height: 2px;
+	background: rgba(25, 6, 90, 0.08); /* 부모 수직선과 색상 통일 */
+}
+
+/* 마지막 자식 노드에서 수직선이 길게 남지 않도록 보정 */
+.org-tree .children > li:last-child::after {
+	content: "";
+	position: absolute;
+	left: -33px;
+	top: 24px;
+	bottom: 0;
+	width: 4px;
+	background: var(--bg-card); /* 배경색으로 덮어서 선을 자름 */
+}
+

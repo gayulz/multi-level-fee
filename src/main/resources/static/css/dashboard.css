@@ -31,23 +31,66 @@
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== [Phase 4] sendr.ai 통계 카드 그리드 ===== */
+.dashboard-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: var(--space-lg);
+	margin-bottom: var(--space-2xl);
+}
+
+/* sendr.ai 통계 카드 */
+.stat-card {
+	background: var(--bg-card);
+	border: none;
+	border-radius: var(--border-radius-lg);
+	padding: var(--space-xl);
+	box-shadow: var(--shadow-sm);
+	transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+	box-shadow: var(--shadow-md);
+	transform: translateY(-2px);
+}
+
+/* 아이콘 박스 */
+.stat-icon {
+	width: 48px;
+	height: 48px;
+	background: var(--color-accent-soft);
+	border-radius: var(--border-radius-md);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: var(--space-md);
+}
+
+.stat-icon .bi {
+	font-size: 24px;
+	color: var(--color-accent);
+}
+
 .stat-label {
-	font-size: 0.875rem;
-	color: var(--bs-secondary);
-	margin-bottom: 0.5rem;
+	font-size: 13px;
 	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--text-muted);
+	margin-bottom: var(--space-sm);
 }
 
 .stat-value {
-	font-size: 2rem;
-	font-weight: 700;
-	color: var(--bs-primary);
+	font-size: 32px;
+	font-weight: 800;
+	color: var(--text-heading);
+	margin-bottom: var(--space-sm);
 }
 
 .stat-value-lg {
 	font-size: 3rem;
 	font-weight: 700;
-	color: var(--bs-primary);
+	color: var(--color-primary);
 }
 
 /* 글래스 패널 */
@@ -120,16 +163,7 @@
 	border: 1px solid rgba(13, 110, 253, 0.3);
 }
 
-/* 조직 트리 스타일 */
-.org-tree {
-	list-style: none;
-	padding-left: 0;
-}
-
-.org-tree li {
-	margin: 0.5rem 0;
-}
-
+/* [MIGRATION_OLD] org-tree 스타일은 style.css [Fix]로 이전 - 충돌 방지를 위해 주석 처리
 .org-tree .org-node {
 	background: rgba(255, 255, 255, 0.03);
 	border: 1px solid rgba(255, 255, 255, 0.1);
@@ -168,6 +202,8 @@
 	padding-left: 2rem;
 	margin-top: 0.5rem;
 }
+*/
+
 
 /* 반응형 */
 @media (max-width: 768px) {
