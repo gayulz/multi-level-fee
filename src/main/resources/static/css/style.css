@@ -251,15 +251,70 @@ body {
 	color: var(--text-heading);
 }
 
-/* Header Custom Styles */
+/* ===== [MIG] Task 2.2: sendr.ai Sticky 블러 헤더 =====
+ * position: sticky, backdrop-filter blur(12px), 56px 고정 높이
+ * @author gayul.kim
+ * @since 2026-03-29
+ */
 .header-top {
-  background-color: var(--header-bg);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  transition: background-color 0.3s ease;
-  z-index: 1040;
-  backdrop-filter: blur(20px) saturate(120%);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
+	position: sticky;                          /* Sticky 고정 */
+	top: 0;
+	background: var(--bg-header);              /* rgba(255,255,255,0.85) */
+	border-bottom: 1px solid var(--border-color);
+	box-shadow: var(--shadow-xs);              /* 최소한의 그림자 */
+	backdrop-filter: blur(12px);               /* sendr.ai 블러 효과 */
+	-webkit-backdrop-filter: blur(12px);
+	transition: all 0.2s ease;
+	z-index: 1040;
+	height: var(--header-height);              /* 56px 고정 */
+	display: flex;
+	align-items: center;
+	padding: 0 var(--space-xl);                /* 좌우 32px 여백 */
+}
+
+/* 스크롤 시 그림자 증가 (JS에서 .scrolled 클래스 토글) */
+.header-top.scrolled {
+	box-shadow: var(--shadow-sm);
+	background: rgba(255, 255, 255, 0.95);
+}
+
+/* 헤더 내부 요소 정렬 */
+.header-top .container-fluid {
+	padding: 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+}
+
+/* 로고/브랜드 스타일 */
+.brand {
+	font-weight: 700;
+	font-size: 18px;
+	color: var(--text-heading);
+	text-decoration: none;
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	transition: opacity 0.2s ease;
+}
+
+.brand:hover {
+	opacity: 0.8;
+	color: var(--text-heading);
+}
+
+/* 우측 아이콘/프로필 영역 */
+.header-actions {
+	display: flex;
+	align-items: center;
+	gap: var(--space-md);
+}
+
+.header-actions .btn {
+	padding: 8px 16px;
+	font-size: 13px;
+	border-radius: var(--border-radius-pill);
 }
 
 /* ===== sendr.ai 소프트 섀도우 카드 ===== */
@@ -643,13 +698,54 @@ body {
 	flex-shrink: 0;
 }
 
-/* ========================================= */
-/* Footer Styles                             */
-/* ========================================= */
-
+/* ===== [MIG] Task 2.3: sendr.ai 심플 푸터 =====
+ * background: #F8F9FC, 좌우 정렬 레이아웃
+ * @author gayul.kim
+ * @since 2026-03-29
+ */
 .footer {
-	background-color: var(--bg-secondary);
-	border-top-color: var(--border-color) !important;
+	background: #F8F9FC;
+	border-top: 1px solid var(--border-color);
+	padding: 48px 32px;
+	margin-top: 80px;
+	color: var(--text-muted);
+}
+
+.footer-content {
+	max-width: 1200px;
+	margin: 0 auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.footer-copyright {
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.footer-links {
+	display: flex;
+	gap: 24px;
+}
+
+.footer-links a {
+	color: var(--text-muted);
+	text-decoration: none;
+	font-size: 13px;
+	transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+	color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+	.footer-content {
+		flex-direction: column;
+		gap: 16px;
+		text-align: center;
+	}
 }
 
 /* ========================================= */
@@ -716,30 +812,40 @@ h1, h2, h3, h4, h5, h6,
 	color: #19065a;
 }
 
-/* [MIG] 폼 입력 요소 시인성 보정 (Drak Background Input / Select) */
-.form-control,
-.form-select,
-.form-control:focus,
-.form-select:focus,
-[data-bs-theme="dark"] .form-control,
-[data-bs-theme="dark"] .form-select,
-[data-bs-theme="dark"] select.form-select {
-	color: #ffffff !important; /* 어두운 배경엗 맞춰 흰색으로 강제 고정 */
+/* Form Controls: White Base 보정 */
+.form-control, .form-select {
+	background-color: #FFFFFF !important;
+	border: 1px solid var(--border-color) !important;
+	color: var(--text-body) !important;
+	padding: 0.6rem 1rem !important;
+	font-size: 14px !important;
+	border-radius: var(--border-radius-md) !important;
+	transition: all 0.2s ease !important;
 }
 
-/* placeholder 및 선택되지 않은 option 색상 */
+.form-control:focus, .form-select:focus {
+	border-color: var(--color-accent) !important;
+	box-shadow: 0 0 0 4px var(--color-accent-soft) !important;
+	background-color: #FFFFFF !important;
+}
+
+/* [MIG] 다크모드 강제 텍스트 색상 제거 */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+	color: var(--text-body) !important;
+}
+
 .form-control::placeholder {
-	color: rgba(255, 255, 255, 0.6) !important;
+	color: rgba(25, 6, 90, 0.4) !important;
 }
 
 .form-select option {
-	background-color: #212529;
-	color: #ffffff;
+	background-color: #FFFFFF;
+	color: var(--text-body);
 }
 
-/* [MIG] "정산 대상 노드를 선택하세요" (disabled placeholder option) */
 .form-select option:disabled {
-	color: rgba(255, 255, 255, 0.6) !important;
+	color: rgba(25, 6, 90, 0.4) !important;
 }
 
 /* 테이블 텍스트: 네이비 */

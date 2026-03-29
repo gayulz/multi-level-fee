@@ -1,76 +1,79 @@
 <!--
-  [NEW] 상단 헤더 모듈
-  
-  반응형 오프캔버스 토글버튼 및 다크/라이트 테마 스위처 포함
-  
+  [MIG] Task 2.2: 헤더 Sticky 블러 배경 적용 - sendr.ai 스타일
+
+  - SattleTree 브랜드로 로고 변경
+  - .brand 클래스, .header-actions 래퍼 추가
+  - Thymeleaf sec:authentication 태그 유지
+  - 모바일 오프캔버스 토글 유지
+
   @author gayul.kim
-  @since 2026-02-25
+  @since 2026-03-29
 -->
 <header
   th:fragment="header"
-  class="header-top sticky-top p-3 d-flex align-items-center justify-content-between"
+  class="header-top"
 >
-  <div class="d-flex align-items-center">
-    <!-- 모바일용 오프캔버스 토글 버튼 (데스크톱에선 숨김) -->
-    <button
-      class="btn btn-outline-secondary d-lg-none me-2"
-      type="button"
-      data-bs-toggle="offcanvas"
-      data-bs-target="#sidebarMenu"
-      aria-controls="sidebarMenu"
-    >
-      <i class="bi bi-list"></i>
-    </button>
-
-    <!-- 로고 영역 -->
-    <a
-      class="navbar-brand fw-bold mb-0 text-decoration-none text-main"
-      th:href="@{/dashboard}"
-    >
-      <i class="bi bi-box-fill text-primary me-1"></i> Admin Dashboard
-    </a>
-  </div>
-
-  <div class="d-flex align-items-center gap-3">
-    <!-- 검색 버튼 (아이콘) -->
-    <button class="btn btn-link text-muted p-0 text-decoration-none">
-      <i class="bi bi-search fs-5"></i>
-    </button>
-
-    <!-- (테마 토글러 제거 - 시스템 전체 다크 모드 고정) -->
-
-    <!-- 프로필 아바타 -->
-    <div class="dropdown">
-      <a
-        href="#"
-        class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
-        data-bs-toggle="dropdown"
-        aria-expanded="false"
+  <div class="container-fluid">
+    <div class="d-flex align-items-center gap-3">
+      <!-- 모바일용 오프캔버스 토글 버튼 (데스크톱에선 숨김) -->
+      <button
+        class="btn btn-outline-secondary d-lg-none"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#sidebarMenu"
+        aria-controls="sidebarMenu"
+        style="padding: 6px 10px; border-radius: var(--border-radius-md);"
       >
-        <img
-          src="https://github.com/mdo.png"
-          alt="mdo"
-          width="32"
-          height="32"
-          class="rounded-circle"
-        />
+        <i class="bi bi-list"></i>
+      </button>
+
+      <!-- 로고 / 브랜드 -->
+      <a class="brand" th:href="@{/dashboard}">
+        <i class="bi bi-tree" style="color: var(--color-accent); font-size: 20px;"></i>
+        <span>SattleTree</span>
       </a>
-      <ul class="dropdown-menu dropdown-menu-end text-small shadow">
-        <li><a class="dropdown-item" href="#">설정</a></li>
-        <li><a class="dropdown-item" href="#">프로필
-            <span class="d-block small text-muted">
-                <span sec:authentication="principal.name">사용자명</span>
-            </span>
-        </a></li>
-        <li><hr class="dropdown-divider" /></li>
-        <li>
+    </div>
+
+    <!-- 우측: 액션 영역 -->
+    <div class="header-actions">
+      <!-- 검색 버튼 -->
+      <button class="btn btn-light d-none d-md-flex align-items-center gap-1"
+              style="font-size: 13px; color: var(--text-muted);">
+        <i class="bi bi-search"></i>
+      </button>
+
+      <!-- 프로필 드롭다운 -->
+      <div class="dropdown">
+        <a
+          href="#"
+          class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          style="color: var(--text-body);"
+        >
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-accent-soft);
+                      border: 2px solid var(--color-accent); display: flex; align-items: center;
+                      justify-content: center;">
+            <i class="bi bi-person-fill" style="color: var(--color-accent); font-size: 16px;"></i>
+          </div>
+          <span class="d-none d-md-inline fw-500" style="font-size: 14px;"
+                sec:authentication="principal.name">사용자명</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border: 1px solid var(--border-color); border-radius: var(--border-radius-md);">
+          <li><a class="dropdown-item" href="#" style="font-size: 14px;">설정</a></li>
+          <li><a class="dropdown-item" href="#" style="font-size: 14px;">프로필</a></li>
+          <li><hr class="dropdown-divider" style="border-color: var(--border-color);"></li>
+          <li>
             <form th:action="@{/auth/logout}" method="post" class="dropdown-item p-0">
-                <button type="submit" class="btn btn-link dropdown-item w-100 text-start m-0 rounded-0">
-                    로그아웃
-                </button>
+              <button type="submit"
+                      class="btn btn-link dropdown-item w-100 text-start m-0 rounded-0"
+                      style="font-size: 14px; color: var(--color-danger);">
+                <i class="bi bi-box-arrow-right me-1"></i>로그아웃
+              </button>
             </form>
-        </li>
-      </ul>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </header>

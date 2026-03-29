@@ -52,6 +52,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      JAVA_TOOL_OPTIONS: "-Xms256m -Xmx256m"
     depends_on:
       postgres:
         condition: service_healthy

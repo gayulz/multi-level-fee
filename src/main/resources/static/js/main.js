@@ -8,9 +8,21 @@
  * @since 2026-02-25
  */
 
-// ThemeManager 제거 (프로젝트 전체를 다크모드 / Liquid Glass 테마로 단일화)
 document.addEventListener("DOMContentLoaded", () => {
-  document.documentElement.setAttribute("data-bs-theme", "dark");
+	// [MIG] 강제 다크모드 설정 제거 (Phase 2: White Base 전환)
+	// document.documentElement.setAttribute('data-bs-theme', 'dark');
+
+	// 헤더 스크롤 효과 (Task 2.2)
+	const header = document.querySelector('.header-top');
+	if (header) {
+		window.addEventListener('scroll', () => {
+			if (window.scrollY > 10) {
+				header.classList.add('scrolled');
+			} else {
+				header.classList.remove('scrolled');
+			}
+		});
+	}
 });
 
 /**
