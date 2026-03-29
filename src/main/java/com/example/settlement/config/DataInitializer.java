@@ -45,7 +45,7 @@ import java.math.BigDecimal;
  */
 @Slf4j
 @Component
-@Profile("!test")
+@Profile("none") // [MIG] 프로덕션 유사 환경을 위해 기동 시 자동 데이터 생성 비활성화
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationRunner {
 
@@ -58,9 +58,17 @@ public class DataInitializer implements ApplicationRunner {
         @Override
         @Transactional
         public void run(ApplicationArguments args) {
-                // 이미 데이터가 존재하면 중복 삽입 방지
+                // 이미 데이터가 존재하면 중복 삽입 방지 로직 개선
                 if (organizationRepository.count() > 0) {
-                        log.info("[DataInitializer] 초기 데이터가 이미 존재합니다. 삽입을 건너뜁니다.");
+                        log.info("[DataInitializer] 조직 데이터가 이미 존재합니다.");
+                        long reqCount = settlementRequestRepository.count();
+                        if (reqCount < 250) {
+                                int needCount = (int) (250 - reqCount);
+                                log.info("[DataInitializer] 정산 내역이 부족하여 추가 {}건을 생성합니다.", needCount);
+                                generateFakeSettlementRequests(needCount);
+                        } else {
+                                log.info("[DataInitializer] 정산 내역도 충분하여 데이터 초기화를 건너뜁니다.");
+                        }
                         return;
                 }
 
@@ -189,23 +197,46 @@ public class DataInitializer implements ApplicationRunner {
                 log.info("[DataInitializer] 가상 데이터 생성 완료: 노드 5개 추가, 직원 30명 추가");
 
                 // ===========================
-                // 5. 가상 정산 내역 50건 생성
+                // 5. 가상 정산 내역 50건 초기 생성 (없는 경우)
                 // ===========================
-                log.info("[DataInitializer] 가상 정산 내역 50건 생성 시작...");
+                log.info("[DataInitializer] 초기 세팅 - 정산 내역 50건 생성 시작...");
+                generateFakeSettlementRequests(50);
+                log.info("========================================");
+                log.info("[DataInitializer] 초기 데이터 생성 완료");
+                log.info("===== 로그인 계정 정보 =====");
+                log.info("  SUPER_ADMIN : admin@sattletree.io / admin1234");
+                log.info("  가상 사용자 : user1@sattletree.io ~ user30@sattletree.io / user1234");
+                log.info("========================================");
+        }
+
+        /**
+         * [MIG] 지정된 건수만큼 가상 정산 내역을 생성합니다. (중복 없는 orderId 활용)
+         *
+         * @author gayul.kim
+         * @param count 생성할 정산 내역 개수
+         */
+        private void generateFakeSettlementRequests(int count) {
                 java.util.List<User> allUsers = userRepository.findAll();
+                if (allUsers.isEmpty()) return;
+
+                // 권한 기반 승인자 검색
+                User superAdmin = allUsers.stream().filter(u -> u.getRole() == UserRole.ROLE_SUPER_ADMIN).findFirst().orElse(allUsers.get(0));
+                User branchAdmin = allUsers.stream().filter(u -> u.getRole() == UserRole.ROLE_ADMIN).findFirst().orElse(allUsers.get(0));
+
                 java.util.Random random = new java.util.Random();
                 LocalDateTime now = LocalDateTime.now();
 
-                for (int i = 1; i <= 50; i++) {
+                for (int i = 1; i <= count; i++) {
                         User requester = allUsers.get(random.nextInt(allUsers.size()));
                         BigDecimal amount = BigDecimal.valueOf(10000 + random.nextInt(990000));
+                        // 나노초와 랜덤 인덱스로 무조건 고유한 orderId 발급 (중복방지)
                         String orderId = "ORD-" + now.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"))
-                                        + "-" + String.format("%03d", i);
+                                        + "-" + ((System.nanoTime() / 1000) % 100000) + String.format("%03d", i);
 
                         SettlementRequest request = SettlementRequest.create(
                                         orderId,
                                         amount,
-                                        "가상 정산 요청 테스트 #" + i,
+                                        "가상 정산 데이터 주입 #" + i,
                                         requester,
                                         requester.getOrganization());
 
@@ -215,44 +246,35 @@ public class DataInitializer implements ApplicationRunner {
                                 // PENDING (기본값)
                         } else if (statusSeed < 50) {
                                 // AGENCY_APPROVED
-                                request.approve(branchAdmin, "대리점 승인 테스트");
+                                request.approve(branchAdmin, "대리점 1차 자동 승인");
                         } else if (statusSeed < 60) {
                                 // BRANCH_APPROVED
                                 request.approve(branchAdmin, "대리점 승인");
-                                request.approve(branchAdmin, "지사 승인 테스트");
+                                request.approve(branchAdmin, "지사 2차 자동 승인");
                         } else if (statusSeed < 90) {
                                 // COMPLETED
                                 request.approve(branchAdmin, "대리점 승인");
                                 request.approve(branchAdmin, "지사 승인");
-                                request.approve(superAdmin, "최종 승인 완료");
+                                request.approve(superAdmin, "최종 본사 자동 승인");
                                 request.setSettlementAmounts(request.getAmount().multiply(new BigDecimal("0.05")),
                                                 request.getAmount().multiply(new BigDecimal("0.95")));
                         } else {
                                 // REJECTED
-                                request.reject(branchAdmin, "서류 미비로 인한 반려 테스트");
+                                request.reject(branchAdmin, "자동 요건 미달로 반려");
                         }
 
-                        // 작성일 랜덤 분산 (최근 7일)
-                        java.lang.reflect.Field createdAtField = null;
+                        // 작성일 랜덤 분산 (최근 14일)
                         try {
-                                createdAtField = SettlementRequest.class.getDeclaredField("createdAt");
+                                java.lang.reflect.Field createdAtField = SettlementRequest.class.getDeclaredField("createdAt");
                                 createdAtField.setAccessible(true);
-                                createdAtField.set(request,
-                                                now.minusDays(random.nextInt(7)).minusHours(random.nextInt(24)));
+                                createdAtField.set(request, now.minusDays(random.nextInt(14)).minusHours(random.nextInt(24)));
                         } catch (Exception e) {
                                 // 필드 설정 실패 시 기본 생성일 유지
                         }
 
                         settlementRequestRepository.save(request);
                 }
-
-                log.info("[DataInitializer] 가상 정산 내역 50건 생성 완료");
-                log.info("========================================");
-                log.info("[DataInitializer] 초기 데이터 생성 완료");
-                log.info("===== 로그인 계정 정보 =====");
-                log.info("  SUPER_ADMIN : admin@sattletree.io / admin1234");
-                log.info("  가상 사용자 : user1@sattletree.io ~ user30@sattletree.io / user1234");
-                log.info("========================================");
+                log.info("[DataInitializer] 가상 정산 내역 {}건 상세주입 완료", count);
         }
 
         /**

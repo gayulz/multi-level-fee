@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 언어 및 커뮤니케이션 규칙
+
+- **기본 응답 언어**: 한국어
+- **코드 주석**: 한국어로 작성
+- **커밋 메시지**: 한국어로 작성
+- **문서화**: 한국어로 작성
+- **변수명/함수명**: 영어 (코드 표준 준수)
+
 ## 프로젝트 개요
 
 **SattleTree** - 계층형 조직 기반 다단계 정산 승인 시스템
@@ -20,16 +28,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | 구분 | 기술 |
 |------|------|
 | Language | Java 17 (LTS) |
-| Framework | Spring Boot 3.2.x |
-| Build | Gradle (Groovy) |
+| Framework | Spring Boot 3.3.2 |
+| Build | Gradle 8.8 (Groovy) |
 | Security | Spring Security 6.x |
 | ORM | Spring Data JPA |
 | Query | QueryDSL 5.0 |
 | Messaging | RabbitMQ (Direct Exchange) |
 | Database | PostgreSQL (Production), H2 (Test) |
-| Frontend | Thymeleaf + Bootstrap 5 |
+| Frontend | Thymeleaf + Bootstrap 5 + Thymeleaf Layout Dialect |
 | Design | SUIT 폰트, 글래스모피즘 |
-| Test | @SpringBootTest (통합 테스트) |
+| DTO Mapping | MapStruct 1.5.5 |
+| Validation | Spring Validation |
+| Test | @SpringBootTest (통합 테스트), @MockBean (RabbitMQ 격리) |
 
 ## 아키텍처
 
@@ -171,27 +181,61 @@ src/main/resources/
 
 ## 빌드 및 실행
 
-```bash
-# 빌드
-./gradlew build
+### 환경 프로파일
 
-# 테스트 실행
+| 프로파일 | 설명 | DB | RabbitMQ |
+|---------|------|----|----|
+| `local` | 로컬 개발 환경 | H2 | localhost:5672 |
+| `test` | 테스트 환경 | H2 (in-memory) | Mock (@MockBean) |
+| `prod` | 운영 환경 | PostgreSQL | 외부 서버 |
+
+### 빌드 및 실행 명령어
+
+```bash
+# 빌드 (테스트 제외)
+./gradlew clean build -x test
+
+# 테스트 실행 (RabbitMQ Mock으로 격리)
 ./gradlew test
 
 # 단일 테스트 실행
 ./gradlew test --tests "OrganizationRepositoryTest"
 
+# QueryDSL Q클래스 생성
+./gradlew compileJava
+# build/generated/querydsl 경로에 Q클래스 생성됨
+
 # 애플리케이션 실행 (local 프로파일)
 ./gradlew bootRun --args='--spring.profiles.active=local'
 
-# Docker Compose로 전체 환경 실행
+# 애플리케이션 실행 (prod 프로파일)
+./gradlew bootRun --args='--spring.profiles.active=prod'
+
+# Docker Compose로 전체 환경 실행 (PostgreSQL + RabbitMQ)
 docker-compose up -d
 
 # RabbitMQ Management UI
 # http://localhost:15672 (guest/guest)
+
+# H2 Console (local 프로파일 실행 시)
+# http://localhost:8080/h2-console
 ```
 
 ## 핵심 도메인 개념
+
+### 핵심 알고리즘: 정산 분배 로직
+
+**DFS(깊이 우선 탐색) 기반 하향식 분배**:
+1. 원금에서 각 노드의 수수료율(%)을 우선 취득
+2. 잔여 금액을 하위 노드 개수(N)로 균등 분할 (1/N)
+3. 소수점은 `RoundingMode.FLOOR`로 내림 처리
+4. 순회 완료 후 남은 낙전(Dust)을 루트 노드에 귀속
+
+**예시**: 10,000원 / 본사(10%) → 지사2(각 5%) → 대리점4(각 3%)
+- 본사: 1,000원 + 낙전 8,294원 = **9,294원**
+- 지사: 각 225원 (총 450원)
+- 대리점: 각 64원 (총 256원)
+- **합계: 10,000원 (100% 정합성 보장)**
 
 ### Organization (조직)
 - Self-Reference Tree 구조 (`parent`, `children`)
@@ -333,9 +377,9 @@ docker-compose up -d
 
 ```groovy
 implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
-annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
+annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
 ```
 
 Q클래스 생성:
@@ -344,10 +388,26 @@ Q클래스 생성:
 # build/generated/querydsl 경로에 Q클래스 생성됨
 ```
 
+## MapStruct 설정
+
+DTO 변환을 위한 MapStruct 설정:
+
+```groovy
+implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+```
+
+**주의**: Lombok과 함께 사용 시 `lombok-mapstruct-binding` 필수
+
 ## 테스트 전략
 
-- **단위 테스트 지양**: Mockito 대신 `@SpringBootTest` 기반 통합 테스트 선호
+- **통합 테스트 선호**: Mockito 대신 `@SpringBootTest` 기반 통합 테스트 선호
 - **실제 DB 연동**: H2 인메모리 DB로 Repository 검증
+- **외부 의존성 격리**: RabbitMQ는 `@MockBean`으로 격리하여 빠른 빌드 (5초 이내)
+  - `RabbitTemplate`, `RabbitListener` Mock 처리
+  - `Mockito.verify()`로 메시지 발송 여부만 검증
+  - CI/CD 환경에서 외부 인프라 없이 테스트 가능
 - **N+1 문제 검증**: QueryDSL `fetchJoin`으로 해결 확인
 - **보안 테스트**: `@WithMockUser`로 권한별 접근 제어 검증
 
@@ -383,13 +443,32 @@ Q클래스 생성:
 - **SQL Injection 방어**: JPA Prepared Statement 사용
 - **권한 검증**: @PreAuthorize 어노테이션으로 메서드 레벨 보안
 
+## 주요 트러블슈팅
+
+### 1. N+1 문제 해결 (QueryDSL Fetch Join)
+- **문제**: 계층 깊이만큼 SELECT 쿼리 반복 발생
+- **해결**: `leftJoin().fetchJoin()`으로 한 번에 로드 (쿼리 1회)
+
+### 2. 소수점 낙전 누수 방지
+- **문제**: 1/N 분배 시 소수점 오차로 전체 합계 불일치
+- **해결**: `BigDecimal` + `RoundingMode.FLOOR` + 낙전 보정 알고리즘
+
+### 3. RabbitMQ 테스트 격리
+- **문제**: CI 환경에서 RabbitMQ 커넥션 타임아웃으로 빌드 블로킹
+- **해결**: `@MockBean`으로 격리, 빌드 시간 30초 → 5초 단축
+
+### 4. 다계층 권한 제어
+- **문제**: 본사/지사/대리점별 권한 구분 필요
+- **해결**: Spring Security + `@PreAuthorize` 2단계 방어
+
 ## 참고 문서
 
 - `docs/DATABASE_DESIGN.md`: DB 스키마 및 ERD
 - `docs/AUTH_DESIGN.md`: 권한 체계 및 Spring Security 설정
 - `docs/ARCHITECTURE.md`: 시스템 아키텍처 및 비즈니스 로직
 - `docs/PRD.md`: Product Requirement Document (상세 요구사항)
-- `ROADMAP.md`: 단계별 Task 정의 및 체크리스트
+- `docs/ROADMAP.md`: 단계별 Task 정의 및 체크리스트
+- `.claude/rules/`: 코딩 스타일, 아키텍처, 보안 등 상세 규칙
 
 ## 코딩 컨벤션
 
