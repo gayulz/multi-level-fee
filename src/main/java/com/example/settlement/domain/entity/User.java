@@ -338,6 +338,23 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * [NEW] 개인정보 수정 (이름, 연락처).
+     *
+     * <p>
+     * 이메일 변경은 불가능합니다.
+     * </p>
+     *
+     * @param name  수정할 이름
+     * @param phone 수정할 연락처
+     * @author gayul.kim
+     */
+    public void updateProfile(String name, String phone) {
+        this.name = name;
+        this.phone = phone;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     // =========================================================
     // 생명주기 콜백
     // =========================================================

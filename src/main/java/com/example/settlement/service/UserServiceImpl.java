@@ -138,4 +138,32 @@ public class UserServiceImpl implements UserService {
         // [MIG] 메모리 폭발 방지를 위해 .size() 대신 count 연산 수행
         return userRepository.countByStatus(UserStatus.APPROVED);
     }
+
+    @Override
+    @Transactional
+    @PreAuthorize("#userId == principal.userId")
+    public void updateProfile(Long userId, String name, String phone) {
+        User user = getUserById(userId);
+
+        // 이름, 연락처만 수정 가능 (이메일 변경 불가)
+        user.updateProfile(name, phone);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("#userId == principal.userId")
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = getUserById(userId);
+
+        // 현재 비밀번호 검증
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다");
+        }
+
+        // 새 비밀번호 암호화 및 변경
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.changePassword(encodedPassword);
+        userRepository.save(user);
+    }
 }

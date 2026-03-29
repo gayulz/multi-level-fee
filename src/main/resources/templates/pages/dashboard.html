@@ -1,141 +1,182 @@
-<!--
-  [NEW] 대시보드 페이지 UI 검증용
-  
-  Envato Elements 스타일 UI 위젯 구현
-  
-  @author gayul.kim
-  @since 2026-02-25
--->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layout/default}">
 
+<!-- 페이지 타이틀 -->
 <head>
-    <title>경영정보 대시보드</title>
+	<title>대시보드 - SattleTree</title>
 </head>
 
-<body>
-<div layout:fragment="content">
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
-        <h1 class="h2 fw-bold">Dashboard</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <div class="btn-group me-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary">공유</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary">내보내기</button>
-            </div>
-            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1">
-                <i class="bi bi-calendar3"></i>
-                이번 주
-            </button>
-        </div>
-    </div>
+<!-- 페이지별 CSS -->
+<th:block layout:fragment="css">
+	<link rel="stylesheet" href="/css/dashboard.css">
+</th:block>
 
-    <!-- Stat Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="card-title mb-0 text-muted">총 정산액</h6>
-                        <div class="p-2 bg-primary bg-opacity-10 rounded text-primary">
-                            <i class="bi bi-currency-dollar fs-5"></i>
-                        </div>
-                    </div>
-                    <h3 class="mb-2 fw-bold" th:text="${'₩' + #numbers.formatInteger(totalAmount, 0, 'COMMA')}">₩1,250,000</h3>
-                    <p class="mb-0 text-stat-up small">
-                        <i class="bi bi-arrow-up-right me-1"></i>+12.5% 이번 주
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="card-title mb-0 text-muted">신규 노드</h6>
-                        <div class="p-2 bg-warning bg-opacity-10 rounded text-warning">
-                            <i class="bi bi-diagram-3 fs-5"></i>
-                        </div>
-                    </div>
-                    <h3 class="mb-2 fw-bold" th:text="${totalNodes}">42</h3>
-                    <p class="mb-0 text-stat-up small">
-                        <i class="bi bi-arrow-up-right me-1"></i>+4.2% 이번 주
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="card-title mb-0 text-muted">처리 건수</h6>
-                        <div class="p-2 bg-primary bg-opacity-10 rounded text-primary">
-                            <i class="bi bi-receipt fs-5"></i>
-                        </div>
-                    </div>
-                    <h3 class="mb-2 fw-bold" th:text="${todaySettlements}">1,452</h3>
-                    <p class="mb-0 text-stat-down small">
-                        <i class="bi bi-arrow-down-right me-1"></i>-2.1% 이번 주
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="card-title mb-0 text-muted">활성 유저</h6>
-                        <div class="p-2 bg-warning bg-opacity-10 rounded text-warning">
-                            <i class="bi bi-people fs-5"></i>
-                        </div>
-                    </div>
-                    <h3 class="mb-2 fw-bold" th:text="${avgProcessTime + ' ms'}">8,924</h3>
-                    <p class="mb-0 text-stat-up small">
-                        <i class="bi bi-arrow-up-right me-1"></i>+9.2% 이번 주
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Recent Transactions Table -->
-    <div class="card">
-    	<div class="card-header py-3 d-flex justify-content-between align-items-center">
-    		<h5 class="mb-0 fw-bold">최근 정산 내역</h5>
-    		<a th:href="@{/settlement/history}" class="btn btn-sm btn-outline-primary">모두 보기</a>
-    	</div>
-    	<div class="card-body p-0">
-    		<div class="table-responsive">
-    			<table class="table table-hover align-middle mb-0">
-    				<thead class="table-light">
-    					<tr>
-    						<th scope="col" class="ps-4">주문 ID</th>
-    						<th scope="col">처리 상태</th>
-    						<th scope="col">대상 노드</th>
-    						<th scope="col">금액</th>
-    						<th scope="col">요청 일시</th>
-    					</tr>
-    				</thead>
-    				<tbody>
-    					<tr th:each="settlement : ${recentSettlements}">
-    						<td class="ps-4 fw-medium" th:text="${settlement.orderId}">ORD-001</td>
-    						<td>
-								<span th:if="${settlement.status.name() == 'COMPLETED'}" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">완료됨</span>
-								<span th:if="${settlement.status.name() == 'PENDING'}" class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 rounded-pill">대기 중</span>
-								<span th:if="${settlement.status.name() == 'AGENCY_APPROVED'}" class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1 rounded-pill">대리점 승인</span>
-								<span th:if="${settlement.status.name() == 'BRANCH_APPROVED'}" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill">지사 승인</span>
-								<span th:if="${settlement.status.name() == 'REJECTED'}" class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 rounded-pill">반려됨</span>
-							</td>
-    						<td th:text="${'노드 ID: ' + settlement.id}">종로 대리점</td>
-    						<td class="fw-bold" th:text="${'₩' + #numbers.formatInteger(settlement.amount, 0, 'COMMA')}">₩45,000</td>
-    						<td class="text-muted" th:text="${#temporals.format(settlement.createdAt, 'yyyy-MM-dd HH:mm')}">2026-02-25 10:23 AM</td>
-    					</tr>
-    				</tbody>
-    			</table>
-    		</div>
-    	</div>
-    </div>
+<!-- 컨텐츠 -->
+<div layout:fragment="content">
+	<div class="container-fluid py-4">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h2 class="page-title mb-0">대시보드</h2>
+			<div class="text-muted">
+				<span th:text="${user.name}">사용자</span>님, 환영합니다!
+			</div>
+		</div>
+
+		<!-- 통계 카드 -->
+		<div class="row g-3 mb-4">
+			<!-- 전체 요청 수 -->
+			<div class="col-md-6 col-lg-3">
+				<div class="glass-card-sm">
+					<div class="stat-label">전체 정산 요청</div>
+					<div class="stat-value" th:text="${statistics.totalRequests}">0</div>
+				</div>
+			</div>
+
+			<!-- 승인 대기 -->
+			<div class="col-md-6 col-lg-3">
+				<div class="glass-card-sm">
+					<div class="stat-label">승인 대기</div>
+					<div class="stat-value text-warning" th:text="${statistics.pendingRequests}">0</div>
+				</div>
+			</div>
+
+			<!-- 승인 완료 -->
+			<div class="col-md-6 col-lg-3">
+				<div class="glass-card-sm">
+					<div class="stat-label">승인 완료</div>
+					<div class="stat-value text-success" th:text="${statistics.approvedRequests}">0</div>
+				</div>
+			</div>
+
+			<!-- 총 정산 금액 -->
+			<div class="col-md-6 col-lg-3">
+				<div class="glass-card-sm">
+					<div class="stat-label">총 정산 금액</div>
+					<div class="stat-value" th:text="${'₩' + #numbers.formatInteger(statistics.totalAmount, 0, 'COMMA')}">₩0</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row g-4">
+			<!-- 최근 정산 요청 -->
+			<div class="col-lg-8">
+				<div class="glass-panel">
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h4 class="section-title mb-0">최근 정산 요청</h4>
+						<a th:href="@{/settlements}" class="btn btn-sm btn-outline-primary">전체 보기</a>
+					</div>
+
+					<div class="table-responsive" th:if="${not #lists.isEmpty(recentSettlements)}">
+						<table class="table mb-0">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>요청자</th>
+									<th>조직</th>
+									<th>금액</th>
+									<th>상태</th>
+									<th>요청일</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="settlement : ${recentSettlements}" th:data-settlement-id="${settlement.id}">
+									<td th:text="${settlement.id}">1</td>
+									<td th:text="${settlement.requesterName}">홍길동</td>
+									<td th:text="${settlement.organizationName}">본사</td>
+									<td th:text="${'₩' + #numbers.formatInteger(settlement.amount, 0, 'COMMA')}">₩1,000,000</td>
+									<td>
+										<span th:class="'badge badge-' + ${settlement.status.toLowerCase()}"
+										      th:text="${settlement.statusText}">
+											승인 대기
+										</span>
+									</td>
+									<td th:text="${settlement.createdAt}">2025-01-30 14:30</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					<div th:if="${#lists.isEmpty(recentSettlements)}" class="text-center py-5">
+						<p class="text-muted mb-0">정산 요청이 없습니다.</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- 활성 사용자 및 추가 통계 -->
+			<div class="col-lg-4">
+				<div class="glass-panel mb-4">
+					<h4 class="section-title mb-3">활성 사용자</h4>
+					<div class="text-center py-3">
+						<div class="stat-value-lg" th:text="${statistics.activeUsers}">0</div>
+						<div class="stat-label mt-2">명</div>
+					</div>
+				</div>
+
+				<!-- 추가 통계 카드 -->
+				<div class="glass-panel">
+					<h4 class="section-title mb-3">반려된 요청</h4>
+					<div class="text-center py-3">
+						<div class="stat-value-lg text-danger" th:text="${statistics.rejectedRequests}">0</div>
+						<div class="stat-label mt-2">건</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 조직 트리 (ADMIN 이상만 표시) -->
+		<div class="row g-4 mt-2" sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')" th:if="${organizationTree != null}">
+			<div class="col-12">
+				<div class="glass-panel">
+					<h4 class="section-title mb-3">조직 구조</h4>
+
+					<!-- 조직 트리 재귀 렌더링 -->
+					<ul class="org-tree">
+						<li>
+							<div class="org-node">
+								<div>
+									<span class="org-name" th:text="${organizationTree.name}">본사</span>
+									<span class="org-type" th:text="${'(' + organizationTree.type + ')'}"></span>
+								</div>
+								<span class="org-count" th:text="${organizationTree.requestCount + '건'}">0건</span>
+							</div>
+
+							<!-- 하위 조직 재귀 렌더링 -->
+							<ul class="children" th:if="${not #lists.isEmpty(organizationTree.children)}">
+								<li th:each="child : ${organizationTree.children}">
+									<div class="org-node">
+										<div>
+											<span class="org-name" th:text="${child.name}">지사</span>
+											<span class="org-type" th:text="${'(' + child.type + ')'}"></span>
+										</div>
+										<span class="org-count" th:text="${child.requestCount + '건'}">0건</span>
+									</div>
+
+									<!-- 3단계 하위 조직 -->
+									<ul class="children" th:if="${not #lists.isEmpty(child.children)}">
+										<li th:each="grandchild : ${child.children}">
+											<div class="org-node">
+												<div>
+													<span class="org-name" th:text="${grandchild.name}">대리점</span>
+													<span class="org-type" th:text="${'(' + grandchild.type + ')'}"></span>
+												</div>
+												<span class="org-count" th:text="${grandchild.requestCount + '건'}">0건</span>
+											</div>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
-</body>
+
+<!-- 페이지별 JS -->
+<th:block layout:fragment="script">
+	<script src="/js/dashboard.js"></script>
+</th:block>
 </html>

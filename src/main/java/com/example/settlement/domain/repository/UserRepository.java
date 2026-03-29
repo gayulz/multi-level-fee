@@ -65,4 +65,17 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
      * @return 사용자 (없으면 Optional.empty)
      */
     Optional<User> findByEmailVerificationToken(String token);
+
+    /**
+     * [NEW] 조직 ID 목록과 상태로 활성 사용자 수 카운팅.
+     *
+     * @param orgIds 조직 ID 목록
+     * @param status 가입 상태
+     * @return 사용자 수
+     * @author gayul.kim
+     */
+    Long countByOrganizationOrgIdInAndStatus(
+            List<Long> orgIds,
+            UserStatus status
+    );
 }

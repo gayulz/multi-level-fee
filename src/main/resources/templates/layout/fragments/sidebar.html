@@ -1,88 +1,94 @@
 <!--
-  [NEW] 측면 메뉴바 모듈
-  
-  Bootstrap Offcanvas-lg 구조를 사용한 반응형 사이드바
-  데스크톱에서는 좌측 고정, 모바일에서는 좌측 슬라이딩(Offcanvas) 패널로 열림
-  
+  [MIG] Task 2.1: 사이드바 미니멀 디자인 적용 - sendr.ai 스타일
+
+  sendr.ai 섹션 카테고리 라벨(OVERVIEW, SETTLEMENT, SYSTEM) 추가
+  Bootstrap Offcanvas-lg 반응형 구조 유지
+  Thymeleaf Security 태그(sec:authorize) 유지
+
   @author gayul.kim
-  @since 2026-02-25
+  @since 2026-03-29
 -->
 <nav class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel" th:fragment="sidebar">
 	<div class="offcanvas-header border-bottom">
 		<h5 class="offcanvas-title" id="sidebarMenuLabel">
-			<i class="bi bi-box-fill text-primary me-1"></i> Admin Menu
+			<i class="bi bi-tree text-primary me-1"></i> SattleTree
 		</h5>
 		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
 	</div>
-	
+
 	<div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
 		<ul class="nav flex-column mb-auto px-3 w-100">
-			<!-- 대시보드 -->
+
+			<!-- ===== OVERVIEW 섹션 ===== -->
+			<span class="nav-section-label">Overview</span>
 			<li class="nav-item">
-				                <a class="nav-link d-flex align-items-center gap-2" th:classappend="${currentPage == 'dashboard' ? 'active' : ''}" aria-current="page" th:href="@{/dashboard}">
-                    <i class="bi bi-house-door"></i>
-                    Dashboard
-                </a>
+				<a class="nav-link d-flex align-items-center gap-2"
+				   th:classappend="${currentPage == 'dashboard' ? 'active' : ''}"
+				   aria-current="page"
+				   th:href="@{/dashboard}">
+					<i class="bi bi-grid"></i>
+					<span>Dashboard</span>
+				</a>
 			</li>
-			
+
+			<!-- ===== SETTLEMENT 섹션 ===== -->
+			<span class="nav-section-label">Settlement</span>
 			<th:block sec:authorize="hasAnyRole('SUPER_ADMIN', 'ADMIN')">
-			<h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted fw-bold">
-				<span>정산 노드 관리</span>
-			</h6>
-			<li class="nav-item">
-				<a class="nav-link d-flex align-items-center gap-2" th:href="@{/nodes}">
-					<i class="bi bi-diagram-3"></i>
-					노드 현황
-				</a>
-			</li>
+				<li class="nav-item">
+					<a class="nav-link d-flex align-items-center gap-2"
+					   th:classappend="${currentPage == 'nodes' ? 'active' : ''}"
+					   th:href="@{/nodes}">
+						<i class="bi bi-diagram-3"></i>
+						<span>노드 현황</span>
+					</a>
+				</li>
 			</th:block>
-			
-			<th:block sec:authorize="hasRole('SUPER_ADMIN')">
-			<h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted fw-bold">
-				<span>시스템 관리</span>
-			</h6>
 			<li class="nav-item">
-				<a class="nav-link d-flex align-items-center gap-2" th:classappend="${currentPage == 'admin-users' ? 'active' : ''}" th:href="@{/admin/users}">
-					<i class="bi bi-people"></i>
-					사용자 관리
-				</a>
-			</li>
-			</th:block>
-			
-			<h6 class="sidebar-heading px-3 mt-4 mb-2 text-muted fw-bold">
-				<span>수수료 및 정산</span>
-			</h6>
-			<li class="nav-item">
-				<a class="nav-link d-flex align-items-center gap-2" th:classappend="${currentPage == 'settlement-request' ? 'active' : ''}" th:href="@{/settlement/request}">
+				<a class="nav-link d-flex align-items-center gap-2"
+				   th:classappend="${currentPage == 'settlement-request' ? 'active' : ''}"
+				   th:href="@{/settlement/request}">
 					<i class="bi bi-calculator"></i>
-					정산 요청
+					<span>정산 요청</span>
 				</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link d-flex align-items-center gap-2" th:classappend="${currentPage == 'settlement-history' ? 'active' : ''}" th:href="@{/settlement/history}">
+				<a class="nav-link d-flex align-items-center gap-2"
+				   th:classappend="${currentPage == 'settlement-history' ? 'active' : ''}"
+				   th:href="@{/settlement/history}">
 					<i class="bi bi-receipt"></i>
-					정산 내역
+					<span>정산 내역</span>
 				</a>
 			</li>
+
+			<!-- ===== SYSTEM 섹션 ===== -->
+			<th:block sec:authorize="hasRole('SUPER_ADMIN')">
+				<span class="nav-section-label">System</span>
+				<li class="nav-item">
+					<a class="nav-link d-flex align-items-center gap-2"
+					   th:classappend="${currentPage == 'admin-users' ? 'active' : ''}"
+					   th:href="@{/admin/users}">
+						<i class="bi bi-people"></i>
+						<span>사용자 관리</span>
+					</a>
+				</li>
+			</th:block>
+
 		</ul>
-		
-		<hr class="my-3 mx-3 text-muted">
-		
+
+		<hr class="my-3 mx-3" style="border-color: var(--border-color);">
+
 		<ul class="nav flex-column mb-4 px-3 w-100">
-			<!-- 환경설정 부분 등 -->
-			<!-- 설정 및 로그아웃 버튼 -->
 			<li class="nav-item">
 				<a class="nav-link d-flex align-items-center gap-2" href="#">
 					<i class="bi bi-gear"></i>
-					설정
+					<span>설정</span>
 				</a>
 			</li>
 			<li class="nav-item">
-				<!-- sidebar 로그아웃: form POST 방식으로 전환을 위해 스크립트로 폼 submit 또는 헤더와 동일하게 form 버튼으로 구현 -->
 				<form th:action="@{/auth/logout}" method="post" class="d-inline w-100">
 					<button type="submit" class="nav-link d-flex align-items-center gap-2 border-0 bg-transparent w-100 text-start">
 						<i class="bi bi-box-arrow-right"></i>
-						로그아웃
+						<span>로그아웃</span>
 					</button>
 				</form>
 			</li>

@@ -62,7 +62,9 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     @PreAuthorize("isAuthenticated()")
     public List<Organization> getRootOrganizations() {
-        return organizationRepository.findByParentIsNull();
+        return organizationRepository.findByParentIsNull()
+                .map(List::of)  // Optional<Organization>을 List로 변환
+                .orElse(List.of());  // 없으면 빈 리스트 반환
     }
 
     @Override
