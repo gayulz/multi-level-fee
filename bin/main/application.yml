@@ -1,0 +1,19 @@
+spring:
+  profiles:
+    active: local
+  application:
+    name: settlement
+
+  # Thymeleaf 공통 설정
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.security: DEBUG

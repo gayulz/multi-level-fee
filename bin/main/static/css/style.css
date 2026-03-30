@@ -1,0 +1,1234 @@
+/*
+ * [NEW] 정산 시스템 어드민 대시보드 커스텀 스타일
+ * 
+ * Bootstrap 5의 data-bs-theme을 지원하는 다크모드/라이트모드 CSS Variables 설정.
+ * Envato Elements KYXSX2X 스타일 참조 (반응형, 부드러운 섀도우, 둥근 모서리 등)
+ * 
+ * [MIG] 2026-03-06: Liquid Glass 포인트 컬러 통일 & 시인성 보정
+ *   - Bootstrap 기본 파란색(#0d6efd) Bootstrap 버튼/배경/텍스트 클래스를 포인트 컬러로 전면 오버라이드
+ *   - 밝은 배경 위 밝은 글씨 시인성 문제 해결용 유틸리티 클래스 추가
+ *
+ * @author gayul.kim
+ * @since 2026-02-25
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+/* SUIT 폰트 전역 적용 (welcome.css 와 동기화) */
+@font-face {
+	font-family: "Suit";
+	src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Regular.woff2") format("woff2");
+	font-weight: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Suit";
+	src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-SemiBold.woff2") format("woff2");
+	font-weight: 600;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Suit";
+	src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Bold.woff2") format("woff2");
+	font-weight: 700;
+	font-display: swap;
+}
+
+/* Light Mode (sendr.ai Pattern) Variables */
+:root {
+  /* ===== 폰트 ===== */
+  --font-family-base: "Suit", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* ===== 배경 (sendr.ai White Base) ===== */
+  --bg-page: #FFFFFF;
+  --bg-section: #F8F9FC;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #FAFBFE;
+  --bg-header: rgba(255, 255, 255, 0.85);
+  --bg-input: #F3F4F8;
+
+  /* ===== 텍스트 (Navy 기반) ===== */
+  --text-heading: #19065a;
+  --text-body: #3D3560;
+  --text-muted: #6b5c8c;
+  --text-on-primary: #FFFFFF;
+
+  /* ===== 포인트 컬러 ===== */
+  --color-primary: #19065a;
+  --color-accent: #f05cfa;
+  --color-accent-soft: rgba(240, 92, 250, 0.08);
+  --color-secondary: #d76750;
+
+  /* ===== 상태 컬러 ===== */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #A78BFA;
+
+  /* ===== 테두리 & 그림자 (sendr.ai 소프트 스타일) ===== */
+  --border-color: #E8E4F0;
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 24px;
+  --border-radius-pill: 9999px;
+
+  --shadow-xs: 0 1px 2px rgba(25, 6, 90, 0.04);
+  --shadow-sm: 0 2px 8px rgba(25, 6, 90, 0.06);
+  --shadow-md: 0 4px 24px rgba(25, 6, 90, 0.08);
+  --shadow-lg: 0 8px 40px rgba(25, 6, 90, 0.12);
+
+  /* ===== 간격 체계 (sendr.ai 넓은 여백) ===== */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 80px;
+
+  /* ===== 레이아웃 ===== */
+  --sidebar-width: 260px;
+  --header-height: 56px;
+
+  /* ===== 하위 호환 별칭 (Phase 6에서 제거 예정) ===== */
+  --bg-primary: var(--bg-page);
+  --bg-secondary: var(--bg-card);
+  --text-main: var(--text-body);
+  --card-border: var(--border-color);
+  --shadow: var(--shadow-lg);
+
+  /* 기존 컴포넌트 변수 호환 */
+  --sidebar-bg: var(--bg-sidebar);
+  --sidebar-text: var(--text-body);
+  --sidebar-hover-bg: var(--bg-section);
+  --sidebar-active-bg: var(--color-accent-soft);
+  --header-bg: var(--bg-header);
+  --card-bg: var(--bg-card);
+}
+
+/* Dark Mode Variables (Liquid Glass Base) */
+[data-bs-theme="dark"] {
+  /* Colors */
+  --bg-primary: transparent;
+  --bg-secondary: rgba(255, 255, 255, 0.5);
+  --text-main: #19065a;
+  --text-muted: #6b5c8c;
+  --border-color: rgba(25, 6, 90, 0.15);
+
+  /*
+   * [MIG] Bootstrap CSS Variable 오버라이드
+   * primary → 네이비(#19065a), secondary → 보라(#6b5c8c)
+   * success → 핑크(#f05cfa), warning → 오렌지(#d76750)
+   * danger  → 오렌지(#d76750), info    → 핑크(#f05cfa)
+   * 주의: 버튼은 아래 .btn 셀렉터 오버라이드로 별도 처리
+   */
+  --bs-primary: #19065a;
+  --bs-primary-rgb: 25, 6, 90;
+
+  --bs-secondary: #6b5c8c;
+  --bs-secondary-rgb: 107, 92, 140;
+
+  --bs-success: #2ecc7a; /* 완료 상태 - 가독성 있는 녹색 유지 */
+  --bs-success-rgb: 46, 204, 122;
+
+  --bs-warning: #d76750; /* Orange */
+  --bs-warning-rgb: 215, 103, 80;
+
+  --bs-danger: #d76750; /* Orange mapped */
+  --bs-danger-rgb: 215, 103, 80;
+
+  --bs-info: #9b59b6; /* 보라 계열로 분리해 하늘색과 구분 */
+  --bs-info-rgb: 155, 89, 182;
+
+  --sidebar-bg: rgba(255, 255, 255, 0.6);
+  --sidebar-text: #19065a;
+  --sidebar-hover-bg: rgba(25, 6, 90, 0.05);
+  /* [MIG] 핑크(#f05cfa) → 네이비 계열으로 수정: 사이드바 활성 메뉴 배경이 모두 핑크로 보이던 근본 원인 */
+  --sidebar-active-bg: rgba(25, 6, 90, 0.1);
+
+  --header-bg: rgba(255, 255, 255, 0.6);
+  --card-bg: rgba(255, 255, 255, 0.5);
+  --card-border: rgba(25, 6, 90, 0.1);
+  --shadow-sm: 0 4px 15px rgba(25, 6, 90, 0.05);
+  --shadow: 0 10px 30px rgba(25, 6, 90, 0.1);
+
+  /*
+   * [MIG] 포인트 컬러 시인성 개선
+   * 전역 본문 및 제목 색상을 다시 Navy(#19065a)로 설정 (페이지 제목, 일반 텍스트용)
+   * 입력 폼(input)은 파일 하단에서 개별적으로 흰색 처리하여 가독성 동시 확보
+   */
+  --bs-body-color: #19065a;
+  --bs-body-color-rgb: 25, 6, 90;
+  --bs-heading-color: #19065a;
+  --bs-table-color: #19065a;
+  --bs-table-color-rgb: 25, 6, 90;
+}
+
+body {
+  font-family: var(--font-family-base);
+  background-color: var(--bg-page);      /* 변경: --bg-primary → --bg-page */
+  color: var(--text-body);               /* 변경: --text-main → --text-body */
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+  margin: 0;
+  padding: 0;
+  /* sendr.ai 스타일: 깔끔한 흰색 배경 */
+}
+
+/* ===== [MIG] Task 2.1: sendr.ai 미니멀 사이드바 =====
+ * backdrop-filter 제거, 섹션 라벨, 핑크 포인트 active 스타일 적용
+ * @author gayul.kim
+ * @since 2026-03-29
+ */
+.sidebar {
+	background: var(--bg-sidebar);             /* #FAFBFE - 연한 블루 화이트 */
+	border-right: 1px solid var(--border-color);
+	box-shadow: var(--shadow-xs);              /* 최소한의 그림자 */
+	transition: background-color 0.2s ease;
+	/* backdrop-filter 제거: sendr.ai는 순수 배경색 사용 */
+}
+
+/* 섹션 카테고리 라벨 (sendr.ai 스타일) */
+.sidebar .nav-section-label {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 1.5px;
+	color: var(--text-muted);
+	padding: var(--space-md) var(--space-sm) var(--space-sm);
+	margin-top: var(--space-lg);
+	display: block;
+}
+
+.sidebar .nav-section-label:first-child {
+	margin-top: var(--space-sm);
+}
+
+.sidebar .nav-link {
+	color: var(--text-body);
+	border-radius: var(--border-radius-md) !important;  /* 12px */
+	padding: 10px 12px !important;
+	margin-bottom: 4px;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-weight: 500;
+	font-size: 14px;
+}
+
+.sidebar .nav-link:hover {
+	background-color: rgba(25, 6, 90, 0.05) !important;
+	color: var(--text-heading) !important;
+	transform: translateX(2px);
+}
+
+/* 활성 메뉴: 연한 핑크 배경 + 핑크 포인트 바 (sendr.ai 스타일) */
+.sidebar .nav-link.active {
+	background: var(--color-accent-soft) !important;
+	border-left: 3px solid var(--color-accent) !important;
+	color: var(--text-heading) !important;
+	font-weight: 600 !important;
+	transform: translateX(0);
+}
+
+.sidebar .nav-link.active .bi {
+	color: var(--color-accent);                /* 활성 아이콘 핑크 */
+}
+
+/* 아이콘 크기 통일 */
+.sidebar .nav-link .bi {
+	font-size: 18px;
+	flex-shrink: 0;
+	color: var(--text-muted);
+	transition: color 0.2s ease;
+}
+
+.sidebar .nav-link:hover .bi {
+	color: var(--text-heading);
+}
+
+/* ===== [MIG] Task 2.2: sendr.ai Sticky 블러 헤더 =====
+ * position: sticky, backdrop-filter blur(12px), 56px 고정 높이
+ * @author gayul.kim
+ * @since 2026-03-29
+ */
+.header-top {
+	position: sticky;                          /* Sticky 고정 */
+	top: 0;
+	background: var(--bg-header);              /* rgba(255,255,255,0.85) */
+	border-bottom: 1px solid var(--border-color);
+	box-shadow: var(--shadow-xs);              /* 최소한의 그림자 */
+	backdrop-filter: blur(12px);               /* sendr.ai 블러 효과 */
+	-webkit-backdrop-filter: blur(12px);
+	transition: all 0.2s ease;
+	z-index: 1040;
+	height: var(--header-height);              /* 56px 고정 */
+	display: flex;
+	align-items: center;
+	padding: 0 var(--space-xl);                /* 좌우 32px 여백 */
+}
+
+/* 스크롤 시 그림자 증가 (JS에서 .scrolled 클래스 토글) */
+.header-top.scrolled {
+	box-shadow: var(--shadow-sm);
+	background: rgba(255, 255, 255, 0.95);
+}
+
+/* 헤더 내부 요소 정렬 */
+.header-top .container-fluid {
+	padding: 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+}
+
+/* 로고/브랜드 스타일 */
+.brand {
+	font-weight: 700;
+	font-size: 18px;
+	color: var(--text-heading);
+	text-decoration: none;
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	transition: opacity 0.2s ease;
+}
+
+.brand:hover {
+	opacity: 0.8;
+	color: var(--text-heading);
+}
+
+/* 우측 아이콘/프로필 영역 */
+.header-actions {
+	display: flex;
+	align-items: center;
+	gap: var(--space-md);
+}
+
+.header-actions .btn {
+	padding: 8px 16px;
+	font-size: 13px;
+	border-radius: var(--border-radius-pill);
+}
+
+/* ===== sendr.ai 소프트 섀도우 카드 ===== */
+.card {
+  background: var(--bg-card);
+  border: none;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
+  padding: var(--space-lg);
+  /* backdrop-filter 제거: sendr.ai는 블러 효과 사용 안 함 */
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.card-body {
+  padding: 0;
+}
+
+/* Utilities */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.border-bottom {
+  border-bottom-color: var(--border-color) !important;
+}
+
+.border-right {
+  border-right: 1px solid var(--border-color) !important;
+}
+
+/* ========================================= */
+/* jsTree Custom Theme (Light / Dark Mode)   */
+/* ========================================= */
+
+.jstree-default .jstree-anchor {
+	font-family: var(--font-family-base);
+	color: var(--text-main) !important;
+	transition: all 0.2s ease-in-out;
+}
+
+/* Dark Mode Overrides for jsTree */
+[data-bs-theme="dark"] .jstree-default .jstree-clicked {
+	background: var(--sidebar-active-bg) !important;
+	color: var(--text-main) !important;
+	border-radius: 4px;
+	box-shadow: none;
+}
+
+[data-bs-theme="dark"] .jstree-default .jstree-hovered {
+	background: var(--sidebar-hover-bg) !important;
+	color: var(--text-main) !important;
+	border-radius: 4px;
+	box-shadow: none;
+}
+
+[data-bs-theme="dark"] .jstree-default .jstree-wholerow-hovered {
+	background: var(--sidebar-hover-bg) !important;
+}
+
+[data-bs-theme="dark"] .jstree-default .jstree-wholerow-clicked {
+	background: var(--sidebar-active-bg) !important;
+}
+
+/* Make tree nodes less congested */
+.jstree-default .jstree-node {
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+/* Fix Bootstrap Icon size alignment in jsTree */
+.jstree-default .jstree-themeicon.bi {
+	background-image: none !important;
+	font-size: 1.1rem;
+	line-height: 24px;
+	margin-top: -2px;
+}
+
+/* ========================================= */
+/* Settlement Result Styles                  */
+/* ========================================= */
+
+/* 정산 결과 카드 - 수수료 흐름 트리 */
+.fee-flow-tree .fee-node {
+	border-left: 2px solid var(--border-color);
+	transition: all 0.2s ease;
+}
+
+.fee-flow-tree .fee-node:hover {
+	background-color: var(--sidebar-hover-bg);
+}
+
+.fee-flow-tree .fee-node-root {
+	border-left-color: transparent;
+}
+
+/* 상태 뱃지 커스텀 (Liquid Glass 대응 포인트 컬러) */
+.badge-completed {
+	background-color: rgba(240, 92, 250, 0.15); /* Pink Point */
+	color: #f05cfa;
+	border: 1px solid rgba(240, 92, 250, 0.3);
+}
+
+.badge-failed {
+	background-color: rgba(215, 103, 80, 0.15); /* Orange Point */
+	color: #d76750;
+	border: 1px solid rgba(215, 103, 80, 0.3);
+}
+
+.badge-pending {
+	background-color: rgba(215, 103, 80, 0.15); /* Orange Point */
+	color: #d76750;
+	border: 1px solid rgba(215, 103, 80, 0.3);
+}
+
+/* ========================================= */
+/* DataTables Dark Mode Override             */
+/* ========================================= */
+
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_length select,
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_filter input {
+	background-color: rgba(255, 255, 255, 0.5); /* [MIG] 시인성 개선을 위한 밝은 투명 배경 */
+	color: #19065a !important; /* [MIG] 텍스트 navy 고정 */
+	border-color: var(--border-color);
+}
+
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_info,
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_length label,
+[data-bs-theme="dark"] .dataTables_wrapper .dataTables_filter label {
+	color: var(--text-muted);
+}
+
+[data-bs-theme="dark"] table.dataTable thead th {
+	background-color: rgba(25, 6, 90, 0.05);
+	color: var(--text-main);
+	border-bottom-color: var(--border-color);
+}
+[data-bs-theme="dark"] .table-light {
+    background-color: rgba(25, 6, 90, 0.05);
+    color: var(--text-main);
+}
+[data-bs-theme="dark"] .table {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--text-main);
+    --bs-table-border-color: var(--border-color);
+    --bs-table-hover-bg: rgba(25, 6, 90, 0.05);
+    color: var(--text-main);
+}
+[data-bs-theme="dark"] .table>:not(caption)>*>* {
+    background-color: transparent !important;
+}
+
+/* ========================================= */
+/* Error Page Styles                         */
+/* ========================================= */
+
+.error-page-container {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* ========================================= */
+/* sendr.ai 알약형 버튼 시스템                */
+/* ========================================= */
+
+/* Primary: Navy 채움 (sendr.ai Black 버튼 대체) */
+.btn-primary {
+	background: var(--color-primary) !important;
+	border: none !important;
+	color: var(--text-on-primary) !important;
+	font-family: var(--font-family-base);
+	font-weight: 600;
+	font-size: 14px;
+	letter-spacing: 0.01em;
+	border-radius: var(--border-radius-pill) !important;
+	padding: 10px 24px;
+	transition: all 0.2s ease;
+	box-shadow: var(--shadow-sm);
+	cursor: pointer;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+	background: #0f033a !important;
+	transform: translateY(-1px);
+	box-shadow: var(--shadow-md);
+	opacity: 0.92;
+}
+
+.btn-primary:active {
+	transform: scale(0.97);
+	box-shadow: var(--shadow-xs);
+}
+
+/* Secondary: 흰색 + 테두리 (sendr.ai White Button) */
+.btn-outline-primary {
+	background: transparent !important;
+	border: 1px solid var(--border-color) !important;
+	color: var(--color-primary) !important;
+	font-family: var(--font-family-base);
+	font-weight: 600;
+	font-size: 14px;
+	border-radius: var(--border-radius-pill) !important;
+	padding: 10px 24px;
+	transition: all 0.2s ease;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+	background: var(--bg-section) !important;
+	border-color: var(--color-primary) !important;
+	color: var(--color-primary) !important;
+	transform: translateY(-1px);
+	box-shadow: var(--shadow-sm);
+}
+
+/* Accent: 핑크 (CTA 강조용) */
+.btn-accent {
+	background: linear-gradient(135deg, var(--color-accent), var(--color-secondary)) !important;
+	border: none !important;
+	color: #FFFFFF !important;
+	font-family: var(--font-family-base);
+	font-weight: 600;
+	font-size: 14px;
+	border-radius: var(--border-radius-pill) !important;
+	padding: 10px 24px;
+	transition: all 0.2s ease;
+	box-shadow: var(--shadow-sm);
+}
+
+.btn-accent:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 8px 24px rgba(240, 92, 250, 0.4);
+}
+
+/* Light (취소 버튼) */
+.btn-light {
+	background: rgba(255, 255, 255, 0.7) !important;
+	border: 1px solid var(--border-color) !important;
+	color: var(--text-muted) !important;
+	font-family: var(--font-family-base);
+	font-weight: 500;
+	font-size: 14px;
+	border-radius: var(--border-radius-pill) !important;
+	padding: 10px 24px;
+	transition: all 0.2s ease;
+}
+
+.btn-light:hover {
+	background: var(--bg-section) !important;
+	color: var(--text-body) !important;
+}
+
+/* ========================================= */
+/* bg-primary / text-primary 포인트 컬러화  */
+/* (카드 내 아이콘 배경, 뱃지 등에 적용)     */
+/* ========================================= */
+
+/* bg-primary 아이콘 컨테이너 → 네이비 계열 */
+.bg-primary.bg-opacity-10 {
+	background-color: rgba(25, 6, 90, 0.08) !important;
+}
+
+/* text-primary → 네이비 */
+.text-primary {
+	color: #19065a !important;
+}
+
+/* badge text-primary (수수료율 뱃지 등) */
+.badge.text-primary {
+	color: #19065a !important;
+	background-color: rgba(25, 6, 90, 0.08) !important;
+	border-color: rgba(25, 6, 90, 0.2) !important;
+}
+
+/* text-success → 가독성 있는 녹색 (COMPLETED 상태 등) */
+.text-success {
+	color: #1a9e5c !important;
+}
+
+/* badge text-success */
+.badge.text-success {
+	color: #1a9e5c !important;
+	background-color: rgba(26, 158, 92, 0.1) !important;
+	border-color: rgba(26, 158, 92, 0.25) !important;
+}
+
+/* bg-success 아이콘 배경 */
+.bg-success.bg-opacity-10 {
+	background-color: rgba(26, 158, 92, 0.08) !important;
+}
+
+/* text-warning → 오렌지 포인트 */
+.text-warning {
+	color: #d76750 !important;
+}
+
+/* badge text-warning */
+.badge.text-warning {
+	color: #d76750 !important;
+	background-color: rgba(215, 103, 80, 0.1) !important;
+	border-color: rgba(215, 103, 80, 0.25) !important;
+}
+
+/* bg-warning 아이콘 배경 */
+.bg-warning.bg-opacity-10 {
+	background-color: rgba(215, 103, 80, 0.08) !important;
+}
+
+/* text-danger → 오렌지 포인트 (경고/실패) */
+.text-danger {
+	color: #d76750 !important;
+}
+
+/* badge text-danger */
+.badge.text-danger {
+	color: #d76750 !important;
+	background-color: rgba(215, 103, 80, 0.1) !important;
+	border-color: rgba(215, 103, 80, 0.25) !important;
+}
+
+/* text-info → 핑크 포인트 (detail 페이지 아이콘 등) */
+.text-info {
+	color: #f05cfa !important;
+}
+
+/* ========================================= */
+/* 시인성 보정 유틸리티 클래스               */
+/* ========================================= */
+
+/* 대시보드 통계 증가 텍스트 (초록 계열, 눈에 잘 보임) */
+.text-stat-up {
+	color: #1a9e5c !important;
+	font-weight: 600;
+}
+
+/* 대시보드 통계 감소 텍스트 (오렌지, 포인트 컬러) */
+.text-stat-down {
+	color: #d76750 !important;
+	font-weight: 600;
+}
+
+/* 포인트 핑크 텍스트 (수수료액, 강조 텍스트) */
+.text-point-pink {
+	color: #c03dce !important; /* 핑크를 약간 어둡게 — 흰 배경에서 가독성 확보 */
+	font-weight: 600;
+}
+
+/* 포인트 네이비 텍스트 */
+.text-point-navy {
+	color: #19065a !important;
+	font-weight: 600;
+}
+
+/* Tip/안내 박스 (bg-primary 대신 네이비 계열 유리 효과) */
+.tip-box {
+	background: rgba(25, 6, 90, 0.06);
+	border: 1px solid rgba(25, 6, 90, 0.18);
+	color: #19065a;
+	border-radius: 12px;
+	padding: 1rem 1.25rem;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.tip-box .bi {
+	color: #d76750; /* 오렌지 포인트 아이콘 */
+	flex-shrink: 0;
+}
+
+/* ===== [MIG] Task 2.3: sendr.ai 심플 푸터 =====
+ * background: #F8F9FC, 좌우 정렬 레이아웃
+ * @author gayul.kim
+ * @since 2026-03-29
+ */
+.footer {
+	background: #F8F9FC;
+	border-top: 1px solid var(--border-color);
+	padding: 48px 32px;
+	margin-top: 80px;
+	color: var(--text-muted);
+}
+
+.footer-content {
+	max-width: 1200px;
+	margin: 0 auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.footer-copyright {
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.footer-links {
+	display: flex;
+	gap: 24px;
+}
+
+.footer-links a {
+	color: var(--text-muted);
+	text-decoration: none;
+	font-size: 13px;
+	transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+	color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+	.footer-content {
+		flex-direction: column;
+		gap: 16px;
+		text-align: center;
+	}
+}
+
+/* ========================================= */
+/* Responsive Layout                         */
+/* ========================================= */
+
+@media (min-width: 992px) {
+	.sidebar {
+		width: 260px;
+		min-width: 260px;
+		min-height: calc(100vh - 56px);
+	}
+}
+
+@media (max-width: 991.98px) {
+	.main-content {
+		width: 100%;
+	}
+}
+
+/* ========================================= */
+/* [MIG] Task 2.1 완료: 사이드바 강제 오버라이드  */
+/* 상단 .sidebar 규칙으로 통합됨 (2026-03-29)     */
+/* 이 블록은 sendr.ai 스타일로 대체됨              */
+/* ========================================= */
+
+/* 최종 active 상태 최우선 보장 */
+body .sidebar .nav-link.active {
+	background: var(--color-accent-soft) !important;
+	border-left: 3px solid var(--color-accent) !important;
+	color: var(--text-heading) !important;
+	font-weight: 600 !important;
+	border-radius: var(--border-radius-md) !important;
+}
+
+body .sidebar .nav-link:hover {
+	background-color: rgba(25, 6, 90, 0.05) !important;
+	color: var(--text-heading) !important;
+}
+
+/* ========================================= */
+/* [MIG] 텍스트 시인성 최종 강제 오버라이드   */
+/* Bootstrap Dark Theme의 연회색(#dee2e6)    */
+/* 기본 텍스트 색상을 네이비로 완전 교체      */
+/* ========================================= */
+
+/* body 기본 텍스트: 네이비 */
+body,
+[data-bs-theme="dark"] body,
+body.auth-body {
+	color: #19065a !important;
+}
+
+/* 전역 제목(h1~h6) 색상: 네이비 */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+	color: #19065a !important;
+}
+
+/* 카드 내 모든 텍스트: 네이비 (input/select 예외 처리) */
+.card,
+.card p, 
+.card .fw-bold, .card .fw-medium {
+	color: #19065a;
+}
+
+/* Form Controls: White Base 보정 */
+.form-control, .form-select {
+	background-color: #FFFFFF !important;
+	border: 1px solid var(--border-color) !important;
+	color: var(--text-body) !important;
+	padding: 0.6rem 1rem !important;
+	font-size: 14px !important;
+	border-radius: var(--border-radius-md) !important;
+	transition: all 0.2s ease !important;
+}
+
+.form-control:focus, .form-select:focus {
+	border-color: var(--color-accent) !important;
+	box-shadow: 0 0 0 4px var(--color-accent-soft) !important;
+	background-color: #FFFFFF !important;
+}
+
+/* [MIG] 다크모드 강제 텍스트 색상 제거 */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+	color: var(--text-body) !important;
+}
+
+.form-control::placeholder {
+	color: rgba(25, 6, 90, 0.4) !important;
+}
+
+.form-select option {
+	background-color: #FFFFFF;
+	color: var(--text-body);
+}
+
+.form-select option:disabled {
+	color: rgba(25, 6, 90, 0.4) !important;
+}
+
+/* 테이블 텍스트: 네이비 */
+.table,
+.table td,
+.table th,
+.table tbody tr,
+[data-bs-theme="dark"] .table,
+[data-bs-theme="dark"] .table td,
+[data-bs-theme="dark"] .table th {
+	color: #19065a !important;
+}
+
+/* text-muted는 보라 계열로 (너무 어둡지 않게) */
+.text-muted,
+[data-bs-theme="dark"] .text-muted {
+	color: #6b5c8c !important;
+}
+
+/* 대시보드 통계 숫자 (h3) - 더 진하게 */
+.card-body h3.fw-bold {
+	color: #19065a !important;
+	font-weight: 800 !important;
+}
+
+/* 최근 정산 내역 테이블 금액 텍스트 */
+.table .fw-bold,
+.table .fw-medium {
+	color: #19065a !important;
+}
+
+/* ========================================= */
+/* [FINAL FIX] 정산 요청 폼 입력 필드 시인성 보정  */
+/* ========================================= */
+body [data-bs-theme="dark"] .form-control,
+body [data-bs-theme="dark"] .form-select,
+body [data-bs-theme="dark"] select.form-control,
+body [data-bs-theme="dark"] select.form-select,
+#orderId, #amount, #rootNodeId {
+	color: #ffffff !important;
+	background-color: #2b3035 !important; /* 배경도 확실히 다크하게 고정 */
+}
+
+/* 플레이스홀더: 흰색 붔투명도 60% */
+body [data-bs-theme="dark"] .form-control::placeholder,
+body [data-bs-theme="dark"] .form-select::placeholder {
+	color: rgba(255, 255, 255, 0.6) !important;
+	opacity: 1 !important;
+}
+
+/* Select Option 내부 텍스트 */
+body [data-bs-theme="dark"] select option {
+	color: #ffffff !important;
+	background-color: #212529 !important;
+}
+
+/* 선택되지 않은 placeholder option 전용 */
+select.form-select option:disabled,
+#rootNodeId option:disabled {
+	color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* ========================================= */
+/* [MIG] 추가 시인성 및 포인트 컬러 보정        */
+/* ========================================= */
+
+/* 정산 요청: 결제 금액 앞 ₩ 기호가 든 영역 */
+.input-group-text {
+	background-color: rgba(25, 6, 90, 0.04) !important;
+	color: #19065a !important;
+	border-color: rgba(25, 6, 90, 0.15) !important;
+}
+
+/* 페이지네이션: 포인트 컬러(핑크/오렌지) 그라데이션 적용 */
+.pagination .page-item.active .page-link {
+	background: linear-gradient(135deg, #f05cfa, #d76750) !important;
+	border-color: transparent !important;
+	color: #ffffff !important;
+	box-shadow: 0 4px 10px rgba(240, 92, 250, 0.3);
+}
+
+.pagination .page-link {
+	color: #19065a !important;
+	background-color: rgba(255, 255, 255, 0.5) !important;
+	border: 1px solid rgba(25, 6, 90, 0.12) !important;
+	font-family: "Suit", sans-serif;
+}
+
+.pagination .page-link:hover {
+	background-color: rgba(25, 6, 90, 0.08) !important;
+}
+
+/* DataTables "Show X entries" 라벨 색상 보정 */
+.dataTables_length label,
+.dataTables_info {
+	color: #19065a !important;
+	font-weight: 500;
+}
+
+/* ===================================================== */
+/* [Phase 4] sendr.ai 미니멀 테이블                       */
+/* ===================================================== */
+.table-minimal {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+.table-minimal thead th {
+	background: transparent;
+	border-bottom: 1px solid var(--border-color);
+	padding: var(--space-md) var(--space-sm);
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--text-muted);
+	text-align: left;
+}
+
+.table-minimal tbody td {
+	padding: var(--space-md) var(--space-sm);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	color: var(--text-body);
+	font-size: 14px;
+	vertical-align: middle;
+	min-height: 56px;
+}
+
+.table-minimal tbody tr {
+	transition: background-color 0.2s ease;
+}
+
+.table-minimal tbody tr:hover {
+	background: var(--bg-section);
+}
+
+/* ===================================================== */
+/* [Phase 4] 상태 뱃지 (알약형, sendr.ai 스타일)           */
+/* ===================================================== */
+.status-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 12px;
+	border-radius: var(--border-radius-pill);
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.status-badge.completed {
+	background: rgba(16, 185, 129, 0.1);
+	color: var(--color-success);
+}
+
+.status-badge.pending {
+	background: rgba(245, 158, 11, 0.1);
+	color: var(--color-warning);
+}
+
+.status-badge.rejected {
+	background: rgba(239, 68, 68, 0.1);
+	color: var(--color-danger);
+}
+
+.status-badge.agency-approved {
+	background: rgba(167, 139, 250, 0.1);
+	color: var(--color-info);
+}
+
+.status-badge.branch-approved {
+	background: rgba(25, 6, 90, 0.08);
+	color: var(--color-primary);
+}
+
+/* ===================================================== */
+/* [Phase 4] 필터 칩 (sendr.ai 스타일)                    */
+/* ===================================================== */
+.filter-chips {
+	display: flex;
+	gap: var(--space-sm);
+	flex-wrap: wrap;
+	margin-bottom: var(--space-lg);
+}
+
+.chip {
+	padding: 6px 16px;
+	border-radius: var(--border-radius-pill);
+	border: 1px solid var(--border-color);
+	background: transparent;
+	color: var(--text-body);
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	text-decoration: none;
+}
+
+.chip:hover {
+	background: var(--bg-section);
+	border-color: var(--color-primary);
+	color: var(--color-primary);
+}
+
+.chip.active {
+	background: var(--color-primary);
+	border-color: var(--color-primary);
+	color: #FFFFFF;
+}
+
+/* ===================================================== */
+/* [Fix] DataTables 건씩 보기 select 드롭다운 겹침 수정   */
+/* ===================================================== */
+.dataTables_length select {
+	appearance: auto;
+	-webkit-appearance: auto;
+	padding: 2px 24px 2px 8px;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-sm);
+	background-color: var(--bg-card);
+	color: var(--text-body);
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	min-width: 60px;
+}
+
+.dataTables_length label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 13px;
+	color: var(--text-muted);
+}
+
+/* ===================================================== */
+/* [Fix] 조직 트리 레벨 뱃지 및 가독성 개선              */
+/* ===================================================== */
+
+/* 조직 트리 기본 초기화 */
+.org-tree {
+	list-style: none;
+	padding-left: 0;
+	margin: 0;
+}
+
+.org-tree li {
+	margin-bottom: var(--space-xs);
+}
+
+/* 레벨별 좌측 구분 바 */
+.org-node.org-level-1 {
+	border-left: 3px solid var(--color-primary);
+	padding-left: var(--space-md);
+	background: rgba(25, 6, 90, 0.03);
+	border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+}
+
+.org-node.org-level-2 {
+	border-left: 3px solid var(--color-accent);
+	padding-left: var(--space-md);
+	background: rgba(240, 92, 250, 0.02);
+	border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+}
+
+.org-node.org-level-3 {
+	border-left: 3px solid var(--color-info);
+	padding-left: var(--space-md);
+	background: rgba(167, 139, 250, 0.02);
+	border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+}
+
+/* 조직 레벨 뱃지 */
+.org-level-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	border-radius: var(--border-radius-pill);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.3px;
+	flex-shrink: 0;
+}
+
+.org-level-badge.hq {
+	background: rgba(25, 6, 90, 0.1);
+	color: var(--color-primary);
+}
+
+.org-level-badge.branch {
+	background: rgba(240, 92, 250, 0.1);
+	color: var(--color-accent);
+}
+
+.org-level-badge.agency {
+	background: rgba(167, 139, 250, 0.1);
+	color: var(--color-info);
+}
+
+/* org-name 폰트 개선 */
+.org-name {
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--text-heading);
+}
+
+/* org-count 뱃지 */
+.org-count {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--text-muted);
+	background: var(--bg-section);
+	padding: 2px 10px;
+	border-radius: var(--border-radius-pill);
+	border: 1px solid var(--border-color);
+}
+
+/* org-node:hover 시 미세한 부풀림 효과 제거 및 선명도 유지 */
+.org-node:hover {
+	background: rgba(var(--color-primary-rgb), 0.05);
+}
+
+/* ===================================================== */
+/* [New] Dashboard 전용 섹션 카드 스타일                 */
+/* ===================================================== */
+.dashboard-section-card {
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-lg);
+	padding: var(--space-lg);
+	box-shadow: var(--card-shadow);
+	margin-bottom: var(--space-lg);
+}
+
+.section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: var(--space-lg);
+}
+
+.section-title {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--text-heading);
+	margin: 0;
+}
+
+/* ===================================================== */
+/* [Enhanced] 조직 트리 가이드라인 (Tree Structure)      */
+/* ===================================================== */
+
+.org-tree .children {
+	list-style: none;
+	padding-left: 32px; /* 들여쓰기 확대 */
+	margin-top: 4px;
+	margin-left: 14px;
+	border-left: 2px solid rgba(25, 6, 90, 0.08); /* 더 굵고 반투명한 선 */
+	position: relative;
+}
+
+/* 수평 연결선 (L자형 효과) */
+.org-tree li {
+	position: relative;
+}
+
+.org-tree .children > li::before {
+	content: "";
+	position: absolute;
+	left: -32px;
+	top: 24px;
+	width: 24px;
+	height: 2px;
+	background: rgba(25, 6, 90, 0.08); /* 부모 수직선과 색상 통일 */
+}
+
+/* 마지막 자식 노드에서 수직선이 길게 남지 않도록 보정 */
+.org-tree .children > li:last-child::after {
+	content: "";
+	position: absolute;
+	left: -33px;
+	top: 24px;
+	bottom: 0;
+	width: 4px;
+	background: var(--bg-card); /* 배경색으로 덮어서 선을 자름 */
+}
+

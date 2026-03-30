@@ -1,0 +1,97 @@
+<!--
+  [MIG] Task 2.1: 사이드바 미니멀 디자인 적용 - sendr.ai 스타일
+
+  sendr.ai 섹션 카테고리 라벨(OVERVIEW, SETTLEMENT, SYSTEM) 추가
+  Bootstrap Offcanvas-lg 반응형 구조 유지
+  Thymeleaf Security 태그(sec:authorize) 유지
+
+  @author gayul.kim
+  @since 2026-03-29
+-->
+<nav class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel" th:fragment="sidebar">
+	<div class="offcanvas-header border-bottom">
+		<h5 class="offcanvas-title" id="sidebarMenuLabel">
+			<i class="bi bi-tree text-primary me-1"></i> SattleTree
+		</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
+	</div>
+
+	<div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+		<ul class="nav flex-column mb-auto px-3 w-100">
+
+			<!-- ===== OVERVIEW 섹션 ===== -->
+			<span class="nav-section-label">Overview</span>
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2"
+				   th:classappend="${currentPage == 'dashboard' ? 'active' : ''}"
+				   aria-current="page"
+				   th:href="@{/dashboard}">
+					<i class="bi bi-grid"></i>
+					<span>Dashboard</span>
+				</a>
+			</li>
+
+			<!-- ===== SETTLEMENT 섹션 ===== -->
+			<span class="nav-section-label">Settlement</span>
+			<th:block sec:authorize="hasAnyRole('SUPER_ADMIN', 'ADMIN')">
+				<li class="nav-item">
+					<a class="nav-link d-flex align-items-center gap-2"
+					   th:classappend="${currentPage == 'nodes' ? 'active' : ''}"
+					   th:href="@{/nodes}">
+						<i class="bi bi-diagram-3"></i>
+						<span>노드 현황</span>
+					</a>
+				</li>
+			</th:block>
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2"
+				   th:classappend="${currentPage == 'settlement-request' ? 'active' : ''}"
+				   th:href="@{/settlement/request}">
+					<i class="bi bi-calculator"></i>
+					<span>정산 요청</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2"
+				   th:classappend="${currentPage == 'settlement-history' ? 'active' : ''}"
+				   th:href="@{/settlement/history}">
+					<i class="bi bi-receipt"></i>
+					<span>정산 내역</span>
+				</a>
+			</li>
+
+			<!-- ===== SYSTEM 섹션 ===== -->
+			<th:block sec:authorize="hasRole('SUPER_ADMIN')">
+				<span class="nav-section-label">System</span>
+				<li class="nav-item">
+					<a class="nav-link d-flex align-items-center gap-2"
+					   th:classappend="${currentPage == 'admin-users' ? 'active' : ''}"
+					   th:href="@{/admin/users}">
+						<i class="bi bi-people"></i>
+						<span>사용자 관리</span>
+					</a>
+				</li>
+			</th:block>
+
+		</ul>
+
+		<hr class="my-3 mx-3" style="border-color: var(--border-color);">
+
+		<ul class="nav flex-column mb-4 px-3 w-100">
+			<li class="nav-item">
+				<a class="nav-link d-flex align-items-center gap-2" href="#">
+					<i class="bi bi-gear"></i>
+					<span>설정</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<form th:action="@{/auth/logout}" method="post" class="d-inline w-100">
+					<button type="submit" class="nav-link d-flex align-items-center gap-2 border-0 bg-transparent w-100 text-start">
+						<i class="bi bi-box-arrow-right"></i>
+						<span>로그아웃</span>
+					</button>
+				</form>
+			</li>
+		</ul>
+	</div>
+</nav>

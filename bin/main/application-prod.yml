@@ -1,0 +1,46 @@
+# 운영 환경 프로파일 설정
+spring:
+  # H2 콘솔 비활성화
+  h2:
+    console:
+      enabled: false
+
+  # 데이터베이스 설정 (PostgreSQL)
+  datasource:
+    url: jdbc:postgresql://postgres:5432/${POSTGRES_DB:settlementdb}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+  # RabbitMQ 설정
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: ${RABBITMQ_DEFAULT_USER}
+    password: ${RABBITMQ_DEFAULT_PASS}
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000ms
+          max-attempts: 3
+          max-interval: 5000ms
+          multiplier: 2.0
+
+  # Thymeleaf 캐시 활성화
+  thymeleaf:
+    cache: true
+
+# Logging
+logging:
+  level:
+    com.example.settlement: INFO
+    org.springframework.security: DEBUG
