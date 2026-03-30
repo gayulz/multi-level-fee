@@ -117,7 +117,7 @@
             <i class="bi bi-people me-2"></i>전체 회원
             <span
               class="badge bg-primary ms-2"
-              th:text="${#lists.size(allUsers)}"
+              th:text="${allUsers.totalElements}"
               >0</span
             >
           </h5>
@@ -136,7 +136,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr th:each="user : ${allUsers}">
+                <tr th:each="user : ${allUsers.content}">
                   <td class="ps-4 fw-medium" th:text="${user.email}">
                     user@example.com
                   </td>
@@ -223,7 +223,7 @@
                     </form>
                   </td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(allUsers)}">
+                <tr th:if="${allUsers.isEmpty()}">
                   <td colspan="6" class="text-center py-4 text-muted">
                     등록된 사용자가 없습니다.
                   </td>
@@ -232,6 +232,45 @@
             </table>
           </div>
         </div>
+
+        <!-- [NEW] 페이징 처리 (10페이지 단위 블록 처리) -->
+        <div class="card-footer bg-white border-0 py-3" th:if="${allUsers.totalPages > 1}"
+             th:with="groupSize=10,
+                      startPage=${(allUsers.number / groupSize) * groupSize},
+                      endPage=${(startPage + groupSize - 1 < allUsers.totalPages - 1) ? startPage + groupSize - 1 : allUsers.totalPages - 1}">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+              
+              <!-- 처음 페이지로 이동 -->
+              <li class="page-item" th:classappend="${allUsers.number < groupSize} ? 'd-none'">
+                <a class="page-link" th:href="@{/admin/users(page=${startPage - 1})}" tabindex="-1" aria-disabled="true">&laquo; 이전블록</a>
+              </li>
+
+              <!-- 1페이지씩 이전 이동 -->
+              <li class="page-item" th:classappend="${allUsers.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/users(page=${allUsers.number - 1})}" tabindex="-1" aria-disabled="true">이전</a>
+              </li>
+
+              <!-- 페이지 번호 10개씩 노출 -->
+              <li class="page-item" th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}"
+                  th:classappend="${pageNumber == allUsers.number} ? 'active'">
+                <a class="page-link" th:href="@{/admin/users(page=${pageNumber})}" th:text="${pageNumber + 1}">1</a>
+              </li>
+
+              <!-- 1페이지씩 다음 이동 -->
+              <li class="page-item" th:classappend="${allUsers.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/users(page=${allUsers.number + 1})}">다음</a>
+              </li>
+
+              <!-- 다음 블록으로 이동 -->
+              <li class="page-item" th:classappend="${endPage == allUsers.totalPages - 1} ? 'd-none'">
+                <a class="page-link" th:href="@{/admin/users(page=${endPage + 1})}">다음블록 &raquo;</a>
+              </li>
+
+            </ul>
+          </nav>
+        </div>
+
       </div>
     </div>
   </body>

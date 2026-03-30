@@ -4,6 +4,9 @@ import com.example.settlement.domain.entity.User;
 import com.example.settlement.domain.entity.enums.UserRole;
 import com.example.settlement.dto.request.SignupRequest;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 /**
@@ -30,12 +33,13 @@ public interface UserService {
     void changeUserRole(Long userId, UserRole role);
 
     /**
-     * [NEW] 전체 회원 목록 조회 (SUPER_ADMIN 전용).
+     * [NEW] 전체 회원 목록 조회 (페이징, SUPER_ADMIN 전용).
      *
      * @author gayul.kim
-     * @return 전체 사용자 목록
+     * @param pageable 페이징 정보
+     * @return 전체 사용자 목록 (페이징)
      */
-    List<User> getAllUsers();
+    Page<User> getAllUsers(Pageable pageable);
 
     /**
      * [NEW] 전체 모든 조직의 승인 대기 회원 목록 조회 (SUPER_ADMIN 전용).

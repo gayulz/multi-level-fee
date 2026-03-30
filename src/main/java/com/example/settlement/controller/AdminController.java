@@ -9,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,11 +41,13 @@ public class AdminController {
      * @return 사용자 관리 뷰 경로
      */
     @GetMapping("/users")
-    public String userManagement(Model model) {
+    public String userManagement(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable, 
+            Model model) {
         model.addAttribute("currentPage", "admin-users");
         model.addAttribute("pageTitle", "사용자 관리");
         model.addAttribute("pendingUsers", userService.getAllPendingUsers());
-        model.addAttribute("allUsers", userService.getAllUsers());
+        model.addAttribute("allUsers", userService.getAllUsers(pageable));
         return "pages/admin/user-management";
     }
 

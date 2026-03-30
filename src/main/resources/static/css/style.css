@@ -1059,9 +1059,7 @@ select.form-select option:disabled,
 /* [Fix] DataTables 건씩 보기 select 드롭다운 겹침 수정   */
 /* ===================================================== */
 .dataTables_length select {
-	appearance: auto;
-	-webkit-appearance: auto;
-	padding: 2px 24px 2px 8px;
+	padding: 4px 32px 4px 12px;
 	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius-sm);
 	background-color: var(--bg-card);
@@ -1069,7 +1067,7 @@ select.form-select option:disabled,
 	font-size: 13px;
 	font-weight: 500;
 	cursor: pointer;
-	min-width: 60px;
+	min-width: 72px;
 }
 
 .dataTables_length label {
@@ -1095,26 +1093,39 @@ select.form-select option:disabled,
 	margin-bottom: var(--space-xs);
 }
 
-/* 레벨별 좌측 구분 바 */
+/* Top-down Org Node styling */
+.org-node {
+	display: inline-block;
+	background: var(--bg-card);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius-md);
+	padding: 16px 24px;
+	box-shadow: 0 2px 5px rgba(25, 6, 90, 0.04);
+	transition: all 0.2s ease;
+	min-width: 130px;
+	text-align: center;
+}
+
+.org-node:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-sm);
+	border-color: var(--color-primary);
+}
+
+/* 레벨별 상단 구분 바 (탑다운 뷰에 맞게) */
 .org-node.org-level-1 {
-	border-left: 3px solid var(--color-primary);
-	padding-left: var(--space-md);
-	background: rgba(25, 6, 90, 0.03);
-	border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+	border-top: 4px solid var(--color-primary);
+	background: var(--bg-card);
 }
 
 .org-node.org-level-2 {
-	border-left: 3px solid var(--color-accent);
-	padding-left: var(--space-md);
-	background: rgba(240, 92, 250, 0.02);
-	border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+	border-top: 4px solid var(--color-accent);
+	background: var(--bg-card);
 }
 
 .org-node.org-level-3 {
-	border-left: 3px solid var(--color-info);
-	padding-left: var(--space-md);
-	background: rgba(167, 139, 250, 0.02);
-	border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+	border-top: 4px solid var(--color-info);
+	background: var(--bg-card);
 }
 
 /* 조직 레벨 뱃지 */
@@ -1153,18 +1164,15 @@ select.form-select option:disabled,
 
 /* org-count 뱃지 */
 .org-count {
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 600;
 	color: var(--text-muted);
 	background: var(--bg-section);
 	padding: 2px 10px;
 	border-radius: var(--border-radius-pill);
 	border: 1px solid var(--border-color);
-}
-
-/* org-node:hover 시 미세한 부풀림 효과 제거 및 선명도 유지 */
-.org-node:hover {
-	background: rgba(var(--color-primary-rgb), 0.05);
+	margin-top: 12px;
+	display: inline-block;
 }
 
 /* ===================================================== */
@@ -1172,11 +1180,17 @@ select.form-select option:disabled,
 /* ===================================================== */
 .dashboard-section-card {
 	background: var(--bg-card);
-	border: 1px solid var(--border-color);
+	border: none;
 	border-radius: var(--border-radius-lg);
-	padding: var(--space-lg);
-	box-shadow: var(--card-shadow);
+	padding: var(--space-xl);
+	box-shadow: var(--shadow-sm);
 	margin-bottom: var(--space-lg);
+	transition: all 0.2s ease;
+}
+
+.dashboard-section-card:hover {
+	box-shadow: var(--shadow-md);
+	transform: translateY(-2px);
 }
 
 .section-header {
@@ -1199,36 +1213,89 @@ select.form-select option:disabled,
 
 .org-tree .children {
 	list-style: none;
-	padding-left: 32px; /* 들여쓰기 확대 */
-	margin-top: 4px;
-	margin-left: 14px;
-	border-left: 2px solid rgba(25, 6, 90, 0.08); /* 더 굵고 반투명한 선 */
+	padding-left: 0;
+	margin: 0;
 	position: relative;
 }
 
-/* 수평 연결선 (L자형 효과) */
+/* [Enhanced] 조직 트리 가이드라인 (탑다운 뷰 Tree Structure) */
+.org-tree-container {
+	overflow-x: auto;
+	padding: 20px 0 40px;
+	display: flex;
+	justify-content: center;
+}
+
+.org-tree, .org-tree .children {
+	display: flex;
+	justify-content: center;
+	padding-top: 24px;
+	position: relative;
+	padding-left: 0;
+	margin: 0;
+}
+
+.org-tree {
+	padding-top: 0;
+}
+
 .org-tree li {
+	text-align: center;
+	list-style-type: none;
 	position: relative;
+	padding: 24px 10px 0 10px;
+	transition: all 0.5s;
 }
 
-.org-tree .children > li::before {
-	content: "";
+/* 상단 연결선 (좌/우 수평선) */
+.org-tree li::before, .org-tree li::after {
+	content: '';
 	position: absolute;
-	left: -32px;
-	top: 24px;
-	width: 24px;
-	height: 2px;
-	background: rgba(25, 6, 90, 0.08); /* 부모 수직선과 색상 통일 */
+	top: 0;
+	right: 50%;
+	border-top: 2px solid rgba(25, 6, 90, 0.12);
+	width: 50%;
+	height: 24px;
 }
 
-/* 마지막 자식 노드에서 수직선이 길게 남지 않도록 보정 */
-.org-tree .children > li:last-child::after {
-	content: "";
+.org-tree li::after {
+	right: auto;
+	left: 50%;
+	border-left: 2px solid rgba(25, 6, 90, 0.12);
+}
+
+/* 첫/마지막 노드 연결선 자르기 */
+.org-tree li:first-child::before, .org-tree li:last-child::after {
+	border: 0 none;
+}
+
+.org-tree li:last-child::before {
+	border-right: 2px solid rgba(25, 6, 90, 0.12);
+	border-radius: 0 6px 0 0;
+}
+
+.org-tree li:first-child::after {
+	border-radius: 6px 0 0 0;
+}
+
+/* 자식 노드가 1개일 때 선 안보이게 */
+.org-tree li:only-child::after, .org-tree li:only-child::before {
+	display: none;
+}
+
+.org-tree li:only-child {
+	padding-top: 0;
+}
+
+/* 자식 노드로 뻗는 부모선 */
+.org-tree .children::before {
+	content: '';
 	position: absolute;
-	left: -33px;
-	top: 24px;
-	bottom: 0;
-	width: 4px;
-	background: var(--bg-card); /* 배경색으로 덮어서 선을 자름 */
+	top: 0;
+	left: 50%;
+	border-left: 2px solid rgba(25, 6, 90, 0.12);
+	width: 0;
+	height: 24px;
+	margin-left: -1px; /* 2px 보정 */
 }
 
