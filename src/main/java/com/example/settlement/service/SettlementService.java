@@ -80,6 +80,23 @@ public interface SettlementService {
     List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganization(Long orgId);
 
     /**
+     * [NEW] 전체 정산 요청 목록 조회 (SUPER_ADMIN용).
+     *
+     * @return 전체 정산 요청 목록 (최신순)
+     * @author gayul.kim
+     */
+    List<com.example.settlement.domain.entity.SettlementRequest> getAllRequests();
+
+    /**
+     * [NEW] 소속 조직 + 하위 조직의 정산 요청 목록 조회 (ADMIN용).
+     *
+     * @param orgId 소속 조직 ID
+     * @return 해당 조직 및 하위 조직의 정산 요청 목록 (최신순)
+     * @author gayul.kim
+     */
+    List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganizationAndDescendants(Long orgId);
+
+    /**
      * [NEW] 전체 정산 요청 총 건수 조회 (SUPER_ADMIN 대시보드용).
      *
      * @author gayul.kim

@@ -261,6 +261,50 @@ public class SettlementServiceImpl implements SettlementService {
     }
 
     /**
+     * [NEW] 전체 정산 요청 목록 조회 (SUPER_ADMIN용).
+     *
+     * @return 전체 정산 요청 목록 (최신순)
+     * @author gayul.kim
+     */
+    @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public List<com.example.settlement.domain.entity.SettlementRequest> getAllRequests() {
+        return settlementRequestRepository.findAllWithDetailsOrderByCreatedAtDesc(
+                org.springframework.data.domain.Pageable.unpaged()
+        );
+    }
+
+    /**
+     * [NEW] 소속 조직 + 하위 조직의 정산 요청 목록 조회 (ADMIN용).
+     *
+     * <p>
+     * Organization의 Self-Reference Tree를 순회하여 하위 조직 ID 목록을 수집하고,
+     * 해당 조직 ID 목록으로 정산 요청을 조회합니다.
+     * </p>
+     *
+     * @param orgId 소속 조직 ID
+     * @return 해당 조직 및 하위 조직의 정산 요청 목록 (최신순)
+     * @author gayul.kim
+     */
+    @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN') and #orgId == principal.organization.orgId")
+    public List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganizationAndDescendants(Long orgId) {
+        Organization org = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new IllegalArgumentException("조직을 찾을 수 없습니다"));
+
+        // 자신 + 모든 하위 조직 ID 수집
+        List<Long> orgIds = new ArrayList<>();
+        orgIds.add(org.getOrgId());
+        for (Organization descendant : org.getAllDescendants()) {
+            orgIds.add(descendant.getOrgId());
+        }
+
+        return settlementRequestRepository.findByOrganizationOrgIdInWithDetails(orgIds);
+    }
+
+    /**
      * DFS 재귀적으로 수수료를 계산하고 자식들에게 1/N 금액을 분할하여 호출합니다.
      */
     private SettlementResult calculateRecursive(SettlementNode node, BigDecimal remainingAmount) {

@@ -130,6 +130,20 @@ public interface SettlementRequestRepository
     List<SettlementRequest> findByRequesterUserId(Long requesterId);
 
     /**
+     * [NEW] 조직 ID 목록으로 정산 요청 목록 조회 (Fetch Join으로 organization, requester 함께 로딩).
+     *
+     * @param orgIds 조직 ID 목록
+     * @return 해당 조직들의 정산 요청 목록 (최신순)
+     * @author gayul.kim
+     */
+    @Query("SELECT s FROM SettlementRequest s " +
+           "JOIN FETCH s.organization org " +
+           "JOIN FETCH s.requester " +
+           "WHERE org.orgId IN :orgIds " +
+           "ORDER BY s.createdAt DESC")
+    List<SettlementRequest> findByOrganizationOrgIdInWithDetails(@Param("orgIds") List<Long> orgIds);
+
+    /**
      * [NEW] 조직 ID 목록으로 정산 요청 목록 조회.
      *
      * @param orgIds 조직 ID 목록
