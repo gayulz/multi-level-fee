@@ -12,6 +12,7 @@ import java.util.List;
  * @param nodeId       노드 ID
  * @param nodeName     노드 이름
  * @param feeAmount    계산된 수수료 금액
+ * @param feeRate      수수료 비율 (계산 시 적용된 비율)
  * @param childResults 하위 노드 정산 결과 목록
  *
  * @author gayul.kim
@@ -21,5 +22,6 @@ public record SettlementResult(
         Long nodeId,
         String nodeName,
         BigDecimal feeAmount,
+        BigDecimal feeRate,
         List<SettlementResult> childResults) {
 }

@@ -37,6 +37,7 @@ public record SettlementDetailDto(
 		String status,
 		LocalDateTime settledAt,
 		String remark,
+		BigDecimal dustAmount,
 		List<FeeDetailDto> feeDetails) {
 
 	/**
@@ -74,13 +75,39 @@ public record SettlementDetailDto(
 	 * @author gayul.kim
 	 */
 	public static SettlementDetailDto from(SettlementRequest entity) {
+		return from(entity, Collections.emptyList(), BigDecimal.ZERO);
+	}
+
+	/**
+	 * [NEW] Entity 및 수수료 배분 내역 → DTO 변환 정적 팩토리 메서드.
+	 *
+	 * @param entity     정산 요청 Entity
+	 * @param feeDetails 동적 계산된 수수료 배분 내역 리스트
+	 * @return 변환된 SettlementDetailDto
+	 * @author gayul.kim
+	 */
+	public static SettlementDetailDto from(SettlementRequest entity, List<FeeDetailDto> feeDetails) {
+		return from(entity, feeDetails, BigDecimal.ZERO);
+	}
+
+	/**
+	 * [NEW] Entity, 수수료 배분 내역, 낙전 금액 → DTO 변환 팩토리 메서드.
+	 *
+	 * @param entity      정산 요청 Entity
+	 * @param feeDetails  동적 계산된 수수료 배분 내역 리스트
+	 * @param dustAmount  낙전(자투리) 금액
+	 * @return 변환된 SettlementDetailDto
+	 * @author gayul.kim
+	 */
+	public static SettlementDetailDto from(SettlementRequest entity, List<FeeDetailDto> feeDetails, BigDecimal dustAmount) {
 		BigDecimal totalFee = entity.getFeeAmount() != null
 				? entity.getFeeAmount()
 				: BigDecimal.ZERO;
 
-		String rootNodeName = entity.getOrganization() != null
-				? entity.getOrganization().getOrgName()
-				: "알 수 없음";
+		// 루트 노드가 명시된 경우 우선 사용, 없으면 요청자 소속 조직명 폴백
+		String rootNodeName = entity.getRootNode() != null
+				? entity.getRootNode().getName()
+				: (entity.getOrganization() != null ? entity.getOrganization().getOrgName() : "알 수 없음");
 
 		return new SettlementDetailDto(
 				entity.getId(),
@@ -91,6 +118,7 @@ public record SettlementDetailDto(
 				entity.getStatus().name(),
 				entity.getCompletedAt(),
 				entity.getDescription(),
-				Collections.emptyList());
+				dustAmount,
+				feeDetails);
 	}
 }

@@ -66,6 +66,7 @@ public class SettlementServiceImpl implements SettlementService {
                     resultTree.nodeId(),
                     resultTree.nodeName(),
                     resultTree.feeAmount().add(dust), // 루트 수수료 + 낙전
+                    resultTree.feeRate(),
                     resultTree.childResults());
         }
 
@@ -132,15 +133,14 @@ public class SettlementServiceImpl implements SettlementService {
         SettlementNode rootNode = settlementNodeRepository.findById(dto.rootNodeId())
                 .orElseThrow(() -> new IllegalArgumentException("정산 노드를 찾을 수 없습니다"));
 
-        // rootNode 연관 추후 구현일 수 있어서마 실제 요청에 rootNode는 저장하지 않습니다 (DTO에 rootNodeId를 통해 확인)
-        // 평정서를 저장합니다
         com.example.settlement.domain.entity.SettlementRequest request = com.example.settlement.domain.entity.SettlementRequest
                 .create(
                         dto.orderId(),
                         dto.amount(),
                         dto.description(),
                         requester,
-                        requester.getOrganization());
+                        requester.getOrganization(),
+                        rootNode);
 
         return settlementRequestRepository.save(request);
     }
@@ -189,7 +189,57 @@ public class SettlementServiceImpl implements SettlementService {
         com.example.settlement.domain.entity.SettlementRequest entity =
                 settlementRequestRepository.findByIdWithDetails(id)
                         .orElseThrow(() -> new IllegalArgumentException("정산 요청을 찾을 수 없습니다"));
-        return com.example.settlement.dto.response.SettlementDetailDto.from(entity);
+
+        List<com.example.settlement.dto.response.SettlementDetailDto.FeeDetailDto> feeDetails = new ArrayList<>();
+        BigDecimal rootDust = BigDecimal.ZERO;
+        
+        // 정산 요청에 연결된 rootNode가 있다면, 이를 바탕으로 상세 내역 트리를 계산하여 평탄화
+        if (entity.getRootNode() != null) {
+            SettlementResult result = calculateRecursive(entity.getRootNode(), entity.getAmount());
+            
+            // [NEW] 트리의 배분 과정에서 발생한 모든 낙전 합산
+            rootDust = calculateTotalDust(entity.getRootNode(), entity.getAmount());
+
+            // 낙전이 발생했다면 루트 노드(본사)의 수수료 수익에 강제 병합하여 보정
+            if (rootDust.compareTo(BigDecimal.ZERO) > 0) {
+                result = new SettlementResult(
+                        result.nodeId(),
+                        result.nodeName(),
+                        result.feeAmount().add(rootDust),
+                        result.feeRate(),
+                        result.childResults()
+                );
+            }
+
+            // DTO 평탄화 처리 (0: 루트 뎁스)
+            flattenSettlementResult(result, 0, feeDetails);
+        }
+
+        // DTO 반환 (rootDust 포함)
+        return com.example.settlement.dto.response.SettlementDetailDto.from(entity, feeDetails, rootDust);
+    }
+
+    /**
+     * [NEW] DFS 계산 결과를 1차원 리스트로 평탄화 (depth 포함).
+     *
+     * @param result 현재 노드의 정산 결과
+     * @param depth 뎁스 (0: 본사, 1: 지사, 2: 대리점)
+     * @param output 결과물 리스트
+     */
+    private void flattenSettlementResult(SettlementResult result, int depth, List<com.example.settlement.dto.response.SettlementDetailDto.FeeDetailDto> output) {
+        BigDecimal percentage = result.feeRate().multiply(new BigDecimal("100")).setScale(2, java.math.RoundingMode.HALF_UP);
+        String rateStr = percentage.toPlainString() + "%";
+
+        output.add(new com.example.settlement.dto.response.SettlementDetailDto.FeeDetailDto(
+                result.nodeName(),
+                depth,
+                rateStr,
+                result.feeAmount()
+        ));
+
+        for (SettlementResult child : result.childResults()) {
+            flattenSettlementResult(child, depth + 1, output);
+        }
     }
 
     @Override
@@ -237,17 +287,39 @@ public class SettlementServiceImpl implements SettlementService {
                 node.getId(),
                 node.getName(),
                 fee,
+                node.getFeeRate(),
                 childResults);
     }
 
-    /**
-     * 결과 트리를 순회하며 모든 노드에 지급될 총 수수료 합계를 구합니다.
-     */
     private BigDecimal calculateTotalFee(SettlementResult result) {
         BigDecimal total = result.feeAmount();
         for (SettlementResult child : result.childResults()) {
             total = total.add(calculateTotalFee(child));
         }
         return total;
+    }
+
+    /**
+     * [NEW] 서브트리 순회를 통해 각 배분 과정에서 발생한 소수점 절삭(낙전) 비용의 총합을 구합니다.
+     * @author gayul.kim
+     */
+    private BigDecimal calculateTotalDust(SettlementNode node, BigDecimal remainingAmount) {
+        BigDecimal fee = node.calculateFee(remainingAmount);
+        BigDecimal childRemainder = remainingAmount.subtract(fee);
+        BigDecimal totalDust = BigDecimal.ZERO;
+
+        if (!node.getChildren().isEmpty()) {
+            BigDecimal childCount = BigDecimal.valueOf(node.getChildren().size());
+            BigDecimal childShare = childRemainder.divide(childCount, 0, java.math.RoundingMode.FLOOR);
+            
+            // 현재 노드에서 자식들에게 나눠주고 남은 자투리 기록
+            BigDecimal currentDust = childRemainder.subtract(childShare.multiply(childCount));
+            totalDust = totalDust.add(currentDust);
+            
+            for (SettlementNode child : node.getChildren()) {
+                totalDust = totalDust.add(calculateTotalDust(child, childShare));
+            }
+        }
+        return totalDust;
     }
 }

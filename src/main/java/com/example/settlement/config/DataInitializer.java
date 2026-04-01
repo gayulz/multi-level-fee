@@ -45,7 +45,7 @@ import java.math.BigDecimal;
  */
 @Slf4j
 @Component
-@Profile("none") // [MIG] 프로덕션 유사 환경을 위해 기동 시 자동 데이터 생성 비활성화
+@Profile("local") // [MIG] local 환경에서 기동 시 자동 데이터 생성 허용
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationRunner {
 
@@ -226,6 +226,12 @@ public class DataInitializer implements ApplicationRunner {
                 java.util.Random random = new java.util.Random();
                 LocalDateTime now = LocalDateTime.now();
 
+                // 트리의 최상단 루트 노드 스캔
+                com.example.settlement.domain.entity.SettlementNode rootNode = settlementNodeRepository.findAll().stream()
+                        .filter(node -> node.getParent() == null)
+                        .findFirst()
+                        .orElse(null);
+
                 for (int i = 1; i <= count; i++) {
                         User requester = allUsers.get(random.nextInt(allUsers.size()));
                         BigDecimal amount = BigDecimal.valueOf(10000 + random.nextInt(990000));
@@ -238,7 +244,8 @@ public class DataInitializer implements ApplicationRunner {
                                         amount,
                                         "가상 정산 데이터 주입 #" + i,
                                         requester,
-                                        requester.getOrganization());
+                                        requester.getOrganization(),
+                                        rootNode);
 
                         // 상태 랜덤 설정 (PENDING, AGENCY_APPROVED, BRANCH_APPROVED, COMPLETED, REJECTED)
                         int statusSeed = random.nextInt(100);

@@ -148,7 +148,20 @@ public class SettlementRequest {
     // =========================================================
 
     /**
-     * [NEW] 정산 요청 생성.
+     * [MIG] 이전 버전 호환용 정산 요청 생성 팩토리 (rootNode 누락)
+     * 테스트 및 초기화 코드 호환성을 위해 유지합니다.
+     */
+    public static SettlementRequest create(
+            String orderId,
+            BigDecimal amount,
+            String description,
+            User requester,
+            Organization organization) {
+        return create(orderId, amount, description, requester, organization, null);
+    }
+
+    /**
+     * [NEW] 정산 요청 생성 팩토리 메서드 (rootNode 추가)
      *
      * <p>
      * 초기 상태: status=PENDING, currentApprovalLevel=1
