@@ -103,29 +103,62 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 Form Validation Script -->
+    <!-- Bootstrap 5 Form Validation Script 및 API 연동 -->
     <script>
-        // Example starter JavaScript for disabling form submissions if there are invalid fields
         (() => {
             'use strict'
 
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
             const forms = document.querySelectorAll('.needs-validation')
 
-            // Loop over them and prevent submission
             Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
+                form.addEventListener('submit', async event => {
+                    event.preventDefault()
+                    
                     if (!form.checkValidity()) {
-                        event.preventDefault()
                         event.stopPropagation()
-                    } else {
-                        // Demo 용 목업 액션 (실제론 서버 연동)
-                        event.preventDefault();
-                        alert("노드 정보가 성공적으로 저장되었습니다. (Mock)");
-                        window.location.href = "/nodes";
+                        form.classList.add('was-validated')
+                        return;
+                    } 
+                    
+                    form.classList.add('was-validated')
+
+                    // 1. 폼 데이터 수집
+                    const formData = new FormData(form);
+                    const data = {
+                        parentId: formData.get('parentId') || null,
+                        name: formData.get('name'),
+                        feeRate: formData.get('feeRate')
+                    };
+
+                    // CSRF 토큰 설정 (Spring Security Thymeleaf 자동 생성 폼 필드 확인)
+                    const csrfToken = document.querySelector("input[name='_csrf']")?.value;
+                    const headers = {
+                        'Content-Type': 'application/json'
+                    };
+                    if (csrfToken) {
+                        headers['X-CSRF-TOKEN'] = csrfToken;
                     }
 
-                    form.classList.add('was-validated')
+                    try {
+                        const response = await fetch('/api/nodes', {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(data)
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            alert(result.message || "노드가 성공적으로 생성되었습니다.");
+                            window.location.href = "/nodes";
+                        } else {
+                            // 에러 발생 (예: 수수료 검증 실패 등)
+                            alert("오류: " + (result.message || "요청 처리에 실패했습니다."));
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert("서버 연결에 실패했습니다.");
+                    }
                 }, false)
             })
         })()

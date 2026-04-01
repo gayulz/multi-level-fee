@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * [NEW] 정산 서비스 구현체.
@@ -77,15 +76,42 @@ public class SettlementServiceImpl implements SettlementService {
     @Transactional
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public SettlementNode createNode(NodeCreateRequest request) {
-        SettlementNode parent = null;
+        SettlementNode parentNode = null;
+        Organization parentOrg = null;
+
         if (request.parentId() != null) {
-            parent = settlementNodeRepository.findById(Objects.requireNonNull(request.parentId()))
-                    .orElseThrow(() -> new IllegalArgumentException("부모 노드가 존재하지 않습니다. ID: " + request.parentId()));
+            parentNode = settlementNodeRepository.findById(request.parentId())
+                    .orElseThrow(() -> new IllegalArgumentException("상위 노드를 찾을 수 없습니다. ID: " + request.parentId()));
+            
+            // 수수료율 역전 확인 (하위가 상위보다 높을 수 없음)
+            if (request.feeRate().compareTo(parentNode.getFeeRate()) > 0) {
+                throw new IllegalArgumentException("하위 노드의 수수료율은 상위 노드의 수수료율(" + parentNode.getFeeRate() + "%)보다 클 수 없습니다.");
+            }
+            parentOrg = parentNode.getOrganization();
         }
 
-        SettlementNode newNode = new SettlementNode(request.name(), request.feeRate());
-        if (parent != null) {
-            parent.addChild(newNode); // 연관관계 편의 메서드 호출
+        // 1. Organization 생성
+        Organization newOrg;
+        if (parentOrg == null) {
+            newOrg = Organization.createHeadquarters(request.name(), "HQ-" + System.currentTimeMillis());
+        } else {
+            if (parentOrg.getLevel() == 1) {
+                newOrg = Organization.createBranch(request.name(), "BR-" + System.currentTimeMillis(), parentOrg);
+            } else if (parentOrg.getLevel() == 2) {
+                newOrg = Organization.createAgency(request.name(), "AG-" + System.currentTimeMillis(), parentOrg);
+            } else {
+                throw new IllegalArgumentException("대리점 하위에는 더 이상 노드(조직)를 생성할 수 없습니다.");
+            }
+        }
+        
+        newOrg = organizationRepository.save(newOrg);
+
+        // 2. SettlementNode 생성 및 매핑
+        SettlementNode newNode;
+        if (parentNode == null) {
+            newNode = SettlementNode.createRoot(request.name(), newOrg, request.feeRate());
+        } else {
+            newNode = SettlementNode.createChild(request.name(), newOrg, request.feeRate(), parentNode);
         }
 
         return settlementNodeRepository.save(newNode);

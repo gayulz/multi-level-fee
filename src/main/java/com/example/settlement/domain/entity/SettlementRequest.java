@@ -52,6 +52,10 @@ public class SettlementRequest {
     @JoinColumn(name = "org_id", nullable = false)
     private Organization organization;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "root_node_id")
+    private SettlementNode rootNode;
+
     @Column(name = "order_id", nullable = false, length = 100)
     private String orderId;
 
@@ -155,6 +159,7 @@ public class SettlementRequest {
      * @param description  정산 설명
      * @param requester    요청자
      * @param organization 요청자 소속 조직
+     * @param rootNode     수수료 계산의 기준이 될 루트 노드
      * @return 초기 상태의 SettlementRequest
      * @author gayul.kim
      */
@@ -163,13 +168,15 @@ public class SettlementRequest {
             BigDecimal amount,
             String description,
             User requester,
-            Organization organization) {
+            Organization organization,
+            SettlementNode rootNode) {
         SettlementRequest request = new SettlementRequest();
         request.orderId = orderId;
         request.amount = amount;
         request.description = description;
         request.requester = requester;
         request.organization = organization;
+        request.rootNode = rootNode;
         request.status = SettlementStatus.PENDING;
         request.currentApprovalLevel = 1;
         return request;
