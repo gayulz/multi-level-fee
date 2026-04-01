@@ -1,8 +1,11 @@
 .git
 .gradle
 build/
+!build/libs/
 .idea/
 *.md
 .env
 docker-compose.yml
 docker-compose.override.yml
+
+build/libs/*-plain.jar
