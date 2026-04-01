@@ -62,4 +62,6 @@ shrimp-rules.md
 .claude/
 .agents/
 docs/
-mdFolder/
+mdFolder/bin/
+
+bin/
