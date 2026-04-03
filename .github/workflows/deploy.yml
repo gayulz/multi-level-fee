@@ -64,14 +64,19 @@ jobs:
           envs: SLACK_WEBHOOK_URL
           script: |
             cd ~/multi-level-fee
-            echo "POSTGRES_USER=settlement" > .env
-            echo "POSTGRES_PASSWORD=settlement_pass" >> .env
-            echo "POSTGRES_DB=settlementdb" >> .env
-            echo "RABBITMQ_DEFAULT_USER=admin" >> .env
-            echo "RABBITMQ_DEFAULT_PASS=admin_pass" >> .env
-            echo "SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL" >> .env
-            sudo docker-compose up -d --build --force-recreate
-            sudo docker-compose ps
+            touch .env
+            echo "POSTGRES_USER=settlement" > .env.default
+            echo "POSTGRES_PASSWORD=settlement_pass" >> .env.default
+            echo "POSTGRES_DB=settlementdb" >> .env.default
+            echo "RABBITMQ_DEFAULT_USER=admin" >> .env.default
+            echo "RABBITMQ_DEFAULT_PASS=admin_pass" >> .env.default
+            echo "SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL" >> .env.default
+            # 기존 .env에서 위 6개 키를 제외한 커스텀 키 보존 (INIT_SUPER_ADMIN_PASSWORD 등)
+            grep -v -E "^(POSTGRES_|RABBITMQ_|SLACK_WEBHOOK_URL)" .env >> .env.default || true
+            mv .env.default .env
+            # ContainerConfig 파싱 에러(docker-compose 버그) 방지를 위해 기존 컨테이너 완전 삭제 후 시작
+            sudo docker-compose rm -fsv
+            sudo docker-compose up -d --build
             
       # 8. 배포 결과 Slack 알림 전송
       - name: Slack 배포 알림 (Success/Failure)
