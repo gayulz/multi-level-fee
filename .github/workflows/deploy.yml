@@ -1,4 +1,4 @@
-name: Deploy to GCP VM
+name: Deploy to OCI VM
 
 # main 브랜치에 push 될 때마다 자동으로 이 파이프라인이 실행됩니다.
 on:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build (GitHub Actions) & Deploy (GCP)
+    name: Build (GitHub Actions) & Deploy (OCI)
     runs-on: ubuntu-latest # GitHub에서 무료로 제공하는 서버에서 실행
 
     steps:
@@ -41,24 +41,24 @@ jobs:
       - name: Gradle Build (테스트 제외)
         run: ./gradlew clean build -x test
 
-      # 6. 빌드된 JAR 파일을 GCP VM 서버로 전송 (SCP)
-      - name: GCP 서버로 JAR 파일 전송 (SCP)
+      # 6. 빌드된 JAR 파일을 OCI VM 서버로 전송 (SCP)
+      - name: OCI 서버로 JAR 파일 전송 (SCP)
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.GCP_HOST }} # GCP VM 외부 IP (예: 34.64.108.71)
-          username: ${{ secrets.GCP_USERNAME }} # GCP SSH 유저명 (예: sk01087901519)
-          key: ${{ secrets.GCP_SSH_KEY }}
+          host: ${{ secrets.OCI_HOST }} # OCI VM 외부 IP (168.107.55.226)
+          username: ${{ secrets.OCI_USERNAME }} # OCI SSH 유저명 (ubuntu)
+          key: ${{ secrets.OCI_SSH_KEY }}
           source: "build/libs/*.jar,docker-compose.yml,Dockerfile"
-          target: "/home/${{ secrets.GCP_USERNAME }}/multi-level-fee/"
+          target: "/home/${{ secrets.OCI_USERNAME }}/multi-level-fee/"
           strip_components: 0 # 경로 구조 그대로 유지
 
-      # 7. GCP 서버에 SSH 접속 → docker compose 재빌드 및 재시작 (--build는 JAR만 COPY하므로 빠름!)
-      - name: GCP 서버 배포 (SSH)
+      # 7. OCI 서버에 SSH 접속 → docker compose 재빌드 및 재시작
+      - name: OCI 서버 배포 (SSH)
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.GCP_HOST }}
-          username: ${{ secrets.GCP_USERNAME }}
-          key: ${{ secrets.GCP_SSH_KEY }}
+          host: ${{ secrets.OCI_HOST }}
+          username: ${{ secrets.OCI_USERNAME }}
+          key: ${{ secrets.OCI_SSH_KEY }}
           script: |
             cd ~/multi-level-fee
             echo "POSTGRES_USER=settlement" > .env
@@ -68,3 +68,14 @@ jobs:
             echo "RABBITMQ_DEFAULT_PASS=admin_pass" >> .env
             sudo docker compose up -d --build --force-recreate
             sudo docker compose ps
+            
+      # 8. 배포 결과 Slack 알림 전송
+      - name: Slack 배포 알림 (Success/Failure)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          author_name: GitHub Actions Deploy
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # 슬랙 웹훅 URL
+        if: always() # 빌드 실패 / 성공 여부와 상관없이 항상 실행
