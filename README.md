@@ -1,4 +1,4 @@
-# SattleTree - 계층형 조직 다단계 정산 승인 시스템 🌳
+# SettleTree - 계층형 조직 다단계 정산 승인 시스템 🌳
 
 > Tree-Based Multi-Tier Settlement & Approval System
 

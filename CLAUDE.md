@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 개요
 
-**SattleTree** - 계층형 조직 기반 다단계 정산 승인 시스템
+**SettleTree** - 계층형 조직 기반 다단계 정산 승인 시스템
 
 레거시 시스템(Java 1.7 모놀리식)에서 정산 로직을 분리하여 현대적 기술 스택으로 재구축하는 MSA Pilot 프로젝트입니다.
 

@@ -109,6 +109,12 @@ public class DataInitializer implements ApplicationRunner {
 	// =========================================================
 	private static final String[] PHONE_MIDDLE = {"1234", "5678", "9012", "3456", "7890", "2345", "6789", "0123", "4567", "8901"};
 
+	@org.springframework.beans.factory.annotation.Value("${app.init.super-admin.password}")
+	private String rawSuperAdminPw;
+
+	@org.springframework.beans.factory.annotation.Value("${app.init.common.password}")
+	private String rawCommonPw;
+
 	@Override
 	@Transactional
 	public void run(ApplicationArguments args) {
@@ -129,8 +135,8 @@ public class DataInitializer implements ApplicationRunner {
 		long startTime = System.currentTimeMillis();
 
 		// 비밀번호 인코딩 (2종류)
-		String superAdminPw = passwordEncoder.encode("Qhdqhddlsp**");
-		String commonPw = passwordEncoder.encode("Qhdqhddlsp1234**");
+		String superAdminPw = passwordEncoder.encode(rawSuperAdminPw);
+		String commonPw = passwordEncoder.encode(rawCommonPw);
 		log.info("[DataInitializer] 비밀번호 인코딩 완료");
 
 		// ====================================================
@@ -154,15 +160,16 @@ public class DataInitializer implements ApplicationRunner {
 	// =========================================================
 	private void createOrganizationsAndUsers(String superAdminPw, String commonPw) {
 		// ─── (1) 본사 ───
-		Organization hq = Organization.createHeadquarters("SattleTree 본사", "HQ-001");
+		Organization hq = Organization.createHeadquarters("SettleTree 본사", "HQ-001");
 		organizationRepository.save(hq);
 
 		SettlementNode hqNode = SettlementNode.createRoot("본사 노드", hq, new BigDecimal("0.1000"));
 		settlementNodeRepository.save(hqNode);
 		orgNodeMap.put(hq, hqNode);
 
-		// 슈퍼관리자 1명 (ID: admin)
-		User superAdmin = User.createSuperAdmin("admin", superAdminPw, "운영자", "010-0000-0000", hq);
+		// 슈퍼관리자 1명 (ID: admin@settletree.io)
+		// [MIGRATION_OLD] User superAdmin = User.createSuperAdmin("admin", superAdminPw, "운영자", "010-0000-0000", hq);
+		User superAdmin = User.createSuperAdmin("admin@settletree.io", superAdminPw, "운영자", "010-0000-0000", hq);
 		userRepository.save(superAdmin);
 		hqAdmins.add(superAdmin);
 
@@ -518,7 +525,7 @@ public class DataInitializer implements ApplicationRunner {
 
 	/**
 	 * [NEW] 관리자 사용자 생성.
-	 * ID 패턴: admin{인덱스}@sattletree.io
+	 * ID 패턴: admin{인덱스}@settletree.io
 	 *
 	 * @param count 생성 수
 	 * @param org   소속 조직
@@ -529,7 +536,7 @@ public class DataInitializer implements ApplicationRunner {
 	private List<User> createAdminUsers(int count, Organization org, String password) {
 		List<User> admins = new ArrayList<>();
 		for (int i = 0; i < count; i++) {
-			String email = "admin" + adminIndex + "@sattletree.io";
+			String email = "admin" + adminIndex + "@settletree.io";
 			String koreanName = generateKoreanName();
 			String phone = generatePhone();
 
@@ -544,7 +551,7 @@ public class DataInitializer implements ApplicationRunner {
 
 	/**
 	 * [NEW] 일반 사용자 생성.
-	 * ID 패턴: user{인덱스}@sattletree.io
+	 * ID 패턴: user{인덱스}@settletree.io
 	 *
 	 * @param count 생성 수
 	 * @param org   소속 조직
@@ -555,7 +562,7 @@ public class DataInitializer implements ApplicationRunner {
 	private List<User> createNormalUsers(int count, Organization org, String password) {
 		List<User> users = new ArrayList<>();
 		for (int i = 0; i < count; i++) {
-			String email = "user" + userIndex + "@sattletree.io";
+			String email = "user" + userIndex + "@settletree.io";
 			String koreanName = generateKoreanName();
 			String phone = generatePhone();
 
