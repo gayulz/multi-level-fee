@@ -17,3 +17,5 @@ server:
 logging:
   level:
     org.springframework.security: DEBUG
+  slack:
+    webhook-url: ${SLACK_WEBHOOK_URL:}

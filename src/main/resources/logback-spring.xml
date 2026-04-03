@@ -45,12 +45,31 @@
         </encoder>
     </appender>
 
+    <!-- 스프링 부트 환경변수 주입 -->
+    <springProperty scope="context" name="SLACK_WEBHOOK_URL" source="logging.slack.webhook-url" defaultValue="" />
+
+    <!-- 4. 에러(ERROR) 전용 Slack 앱펜더 -->
+    <appender name="SLACK" class="com.github.maricn.logback.SlackAppender">
+        <webhookUri>${SLACK_WEBHOOK_URL}</webhookUri>
+        <!-- 에러 이상 수준만 필터링 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </layout>
+        <username>GM_System_Bot</username>
+        <iconEmoji>:rotating_light:</iconEmoji>
+        <colorCoding>true</colorCoding>
+    </appender>
+
     <!-- Spring Boot 프로파일 별 로깅 설정 다르게 적용 가능 (여기선 일괄 적용) -->
     <!-- 모든 환경 (기본) -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
         <appender-ref ref="ERROR_FILE" />
+        <appender-ref ref="SLACK" />
     </root>
 
 </configuration>

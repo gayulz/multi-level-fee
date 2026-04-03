@@ -55,10 +55,13 @@ jobs:
       # 7. OCI 서버에 SSH 접속 → docker compose 재빌드 및 재시작
       - name: OCI 서버 배포 (SSH)
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           host: ${{ secrets.OCI_HOST }}
           username: ${{ secrets.OCI_USERNAME }}
           key: ${{ secrets.OCI_SSH_KEY }}
+          envs: SLACK_WEBHOOK_URL
           script: |
             cd ~/multi-level-fee
             echo "POSTGRES_USER=settlement" > .env
@@ -66,8 +69,9 @@ jobs:
             echo "POSTGRES_DB=settlementdb" >> .env
             echo "RABBITMQ_DEFAULT_USER=admin" >> .env
             echo "RABBITMQ_DEFAULT_PASS=admin_pass" >> .env
-            sudo docker compose up -d --build --force-recreate
-            sudo docker compose ps
+            echo "SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL" >> .env
+            sudo docker-compose up -d --build --force-recreate
+            sudo docker-compose ps
             
       # 8. 배포 결과 Slack 알림 전송
       - name: Slack 배포 알림 (Success/Failure)
