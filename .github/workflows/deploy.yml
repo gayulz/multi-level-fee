@@ -48,7 +48,7 @@ jobs:
           host: ${{ secrets.OCI_HOST }} # OCI VM 외부 IP (168.107.55.226)
           username: ${{ secrets.OCI_USERNAME }} # OCI SSH 유저명 (ubuntu)
           key: ${{ secrets.OCI_SSH_KEY }}
-          source: "build/libs/*.jar,docker-compose.yml,Dockerfile"
+          source: "build/libs/*.jar,docker-compose.yml,Dockerfile,nginx/"
           target: "/home/${{ secrets.OCI_USERNAME }}/multi-level-fee/"
           strip_components: 0 # 경로 구조 그대로 유지
 
