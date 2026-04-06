@@ -13,7 +13,9 @@ EXPOSE 8080
 
 # 환경 변수 설정
 ENV SPRING_PROFILES_ACTIVE=prod
-ENV JAVA_OPTS="-Xmx256m -Xms128m"
+# JAVA_OPTS는 docker-compose.yml의 JAVA_TOOL_OPTIONS에서 관리
+# 여기서 하드코딩하면 docker-compose 설정이 무시되므로 빈 값으로 유지
+ENV JAVA_OPTS=""
 
 # 실행 명령어
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

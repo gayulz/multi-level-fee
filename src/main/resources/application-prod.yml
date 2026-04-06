@@ -11,6 +11,18 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    hikari:
+      # 커넥션 풀 최대 크기: 기본값(10)에서 증가
+      # OCI 서버 PostgreSQL max_connections=100 기준으로 여유 확보
+      maximum-pool-size: 20
+      # 최소 유지 연결 수: 유휴 상태에서도 5개는 항상 준비
+      minimum-idle: 5
+      # 연결 대기 타임아웃: 30초 → 10초 (빠른 실패로 UX 개선)
+      connection-timeout: 10000
+      # 유휴 연결 해제 시간: 10분
+      idle-timeout: 600000
+      # 연결 최대 수명: 30분 (DB 강제 종료로 인한 stale 커넥션 방지)
+      max-lifetime: 1800000
 
   jpa:
     hibernate:
@@ -43,4 +55,5 @@ spring:
 logging:
   level:
     com.example.settlement: INFO
-    org.springframework.security: DEBUG
+    # prod 환경에서 Security DEBUG 로그는 불필요한 I/O 발생 → WARN으로 변경
+    org.springframework.security: WARN
