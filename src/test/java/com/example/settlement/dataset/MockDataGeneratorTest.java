@@ -93,7 +93,7 @@ public class MockDataGeneratorTest {
 
         // 3. 사용자 생성
         String pass = passwordEncoder.encode("admin1234");
-        User superAdmin = User.createSuperAdmin("admin@sattletree.io", pass, "운영관리자", "010-0000-0000", hq);
+        User superAdmin = User.createSuperAdmin("admin@settletree.io", pass, "운영관리자", "010-0000-0000", hq);
         superAdmin.changeRole(UserRole.ROLE_ADMIN);
         superAdmin = userRepository.save(superAdmin);
         
@@ -110,7 +110,7 @@ public class MockDataGeneratorTest {
 
             for(int i=1; i<=adminCount; i++) {
                 User admin = User.createSuperAdmin(
-                        String.format("admin%d@%s.sattletree.io", i, orgPrefix),
+                        String.format("admin%d@%s.settletree.io", i, orgPrefix),
                         pass, org.getOrgName() + "관리자" + i, "010-9999-000" + i, org);
                 admin.changeRole(UserRole.ROLE_ADMIN);
                 allUsers.add(userRepository.save(admin));
@@ -118,7 +118,7 @@ public class MockDataGeneratorTest {
 
             for(int i=1; i<=userCount; i++) {
                 User normalUser = User.createSuperAdmin(
-                        String.format("user%d@%s.sattletree.io", i, orgPrefix),
+                        String.format("user%d@%s.settletree.io", i, orgPrefix),
                         pass, org.getOrgName() + "사용자" + i, "010-8888-00" + i, org);
                 normalUser.changeRole(UserRole.ROLE_USER);
                 allUsers.add(userRepository.save(normalUser));

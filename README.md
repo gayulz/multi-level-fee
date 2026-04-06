@@ -1,6 +1,4 @@
-# SattleTree - 계층형 조직 다단계 정산 승인 시스템 🌳
-
-> Tree-Based Multi-Tier Settlement & Approval System
+# SettleTree - 계층형 다단계 정산 및 승인 시스템
 
 ![Java](https://img.shields.io/badge/Java-17-007396?style=for-the-badge&logo=java&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3.2-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
@@ -10,359 +8,141 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![H2](https://img.shields.io/badge/H2-Test_DB-blue?style=for-the-badge)
 
-<br/>
-
-본사 → 지사 → 대리점의 **3단계 조직 계층 구조**에서 발생하는 정산 요청을 **다단계 승인 워크플로우**로 처리하는 웹 기반 정산 시스템입니다.
-
-**핵심 기능**:
-
-- 🔐 **권한 기반 접근 제어**: Spring Security 기반 SUPER_ADMIN/ADMIN/USER 3단계 권한 체계
-- 🌲 **조직 트리 관리**: Self-Reference 구조로 N-Depth 조직 계층 지원
-- ✅ **단계별 승인 프로세스**: 조직 레벨에 따른 자동 승인 단계 설정
-- 💰 **정산 분배 알고리즘**: DFS 기반 하향식 분배 + 낙전(Dust) 보정
-- 🎨 **글래스모피즘 UI**: Liquid Glass 효과와 그라데이션 디자인
-- 📨 **비동기 메시징**: RabbitMQ를 통한 대용량 트래픽 처리
-
----
-
-## 📋 목차
-
-1. [프로젝트 개요](#-프로젝트-개요)
-2. [시스템 아키텍처](#-시스템-아키텍처)
-3. [핵심 기능](#-핵심-기능)
-4. [기술 스택](#-기술-스택)
-5. [트러블슈팅](#-핵심-트러블슈팅)
-6. [알고리즘: 정산 분배 로직](#-알고리즘-정산-분배-로직)
-7. [프로젝트 실행](#-프로젝트-실행)
-8. [UI 스크린샷](#-ui-스크린샷)
-
----
-
 ## 💡 프로젝트 개요
 
-### 비즈니스 문제
+SettleTree는 본사, 지사, 대리점으로 이어지는 **계층형 조직 구조(Hierarchical Organization)**를 기반으로 정산 요청을 처리하고 승인 워크플로우를 전산화한 웹 애플리케이션입니다. 
 
-판매망, 프랜차이즈, 에이전시 등 **계층형 조직 구조**를 가진 비즈니스에서:
+다중 레벨로 구성된 조직에서는 하위 조직의 정산 요청이 상위 조직의 순차적인 검토를 거쳐야 하는 경우가 많습니다. 본 프로젝트는 이러한 비즈니스 요구사항을 분석하여, 각 계층의 역할을 분리하고 수수료가 상위로 분배되는 로직을 전산화하는 데 초점을 맞추었습니다.
 
-- 정산 요청이 조직 계층에 따라 여러 단계의 승인이 필요
-- 각 조직 레벨별로 차등화된 권한 관리 필요
-- 수수료 분배 시 1원 미만의 오차(낙전) 없이 100% 정합성 보장 필요
-
-### 기술적 해결책
-
-- **Spring Security**: URL + Method 레벨 2단계 보안 방어
-- **Self-Reference Tree**: JPA를 활용한 재귀적 조직 구조
-- **QueryDSL Fetch Join**: N+1 문제 해결로 쿼리 1회로 트리 전체 로드
-- **BigDecimal + RoundingMode.FLOOR**: 소수점 낙전 보정 알고리즘
-- **RabbitMQ**: 비동기 메시징으로 동기 방식의 DB Lock/Timeout 방지
+### 주요 목적
+* **승인 워크플로우의 시스템화**: 조직 레벨(Depth)에 따른 순차적 결재 프로세스 강제
+* **정산 분배의 자동화**: 정해진 요율에 따라 발생한 수익을 각 조직 계층에 자동 분할 계산
+* **수치 정합성 유지**: 시스템적 오차(소수점 등)로 인한 정산 유실을 방지하는 계산 체계 구현
 
 ---
 
-## 🏗 시스템 아키텍처
+## 🏗 아키텍처 및 구현 특징
 
-### 전체 구조 (Strangler Fig Pattern)
-
+### 시스템 흐름도 (System Architecture)
 ```mermaid
-flowchart TD
-    Client((Client)) -->|정산 요청| Controller[Web Controller]
-    Controller -->|JSON| RabbitMQ{RabbitMQ Exchange}
+graph TD
+    Client(["👤 Client (Web Browser)"])
+    Nginx["🌐 Nginx (Reverse Proxy & SSL)"]
+    App["🍃 Spring Boot App (SettleTree)"]
+    DB[("🐘 PostgreSQL (Production)")]
+    MQ{{"🐇 RabbitMQ (Message Broker)"}}
 
-    subgraph Async Worker
-        RabbitMQ -->|Queue Polling| Consumer[Message Consumer]
-        Consumer --> Service[Settlement Service]
-
-        subgraph Core Engine
-            Service -->|1. DFS Tree Traversal| DFS[1/N 하향식 분배]
-            DFS -->|2. Floor Rounding| Dust[소수점 낙전 보정]
-        end
-    end
-
-    Service <-->|Fetch Join| DB[(PostgreSQL / H2)]
+    Client -- "HTTPS" --> Nginx
+    Nginx -- "Proxy (8080)" --> App
+    App -- "JPA / QueryDSL" --> DB
+    App -- "AMQP" --> MQ
+    MQ -. "Asynchronous Task" .-> App
 ```
 
-### 도메인 구조
+### 1. 계층형 조직의 조회 및 성능 최적화
+* **Self-Referencing 구조**: 하나의 `Organization` 및 `SettlementNode` 테이블이 부모-자식 관계를 맺는 트리 형태로 설계되었습니다.
+* **N+1 문제 방지 (QueryDSL Fetch Join)**: 깊이가 있는 트리를 순회할 때 JPA의 지연 로딩(Lazy Loading)으로 인해 쿼리가 기하급수적으로 발생하는 문제를 방지하고자, QueryDSL을 통한 `fetchJoin`을 적용해 계층 정보를 효율적으로 로드합니다.
 
-```
-Organization (조직 트리)
-├── Headquarters (본사, level=1)
-│   ├── Branch (지사, level=2)
-│   │   └── Agency (대리점, level=3)
-│   └── Branch (지사, level=2)
-│       └── Agency (대리점, level=3)
+### 2. 수수료 분배 체계 및 정합성 (낙전 보정 알고리즘)
 
-User (사용자)
-├── ROLE_SUPER_ADMIN (시스템 최고 관리자)
-├── ROLE_ADMIN (조직별 관리자)
-└── ROLE_USER (일반 사용자)
+**조직 계층 구조도 (Organization Hierarchy)**
+```mermaid
+graph TD
+    HQ["🏢 본사 (Level 1)"]
+    BranchA["🏙 지사 A (Level 2)"]
+    BranchB["🏙 지사 B (Level 2)"]
+    AgencyA1["🏪 대리점 A-1 (Level 3)"]
+    AgencyA2["🏪 대리점 A-2 (Level 3)"]
 
-SettlementRequest (정산 요청)
-└── 승인 단계: Agency Admin → Branch Admin → HQ Admin → COMPLETED
-```
+    HQ -->|5%| BranchA
+    HQ -->|5%| BranchB
+    BranchA -->|2%| AgencyA1
+    BranchA -->|2%| AgencyA2
 
----
-
-## ✨ 핵심 기능
-
-### 1. 다단계 승인 워크플로우
-
-**Case 1: 대리점(level=3) 사용자**
-
-```
-정산 요청 → 대리점 관리자 승인 → 지사 관리자 승인 → 본사 관리자 승인 → 완료
+    style HQ fill:#ffcccc,stroke:#ff6666,stroke-width:2px
+    style BranchA fill:#ccddff,stroke:#6699ff,stroke-width:2px
+    style BranchB fill:#ccddff,stroke:#6699ff,stroke-width:2px
 ```
 
-**Case 2: 지사(level=2) 사용자**
+정산에서 가장 중요한 부분은 "원금과 분배금의 합이 정확히 일치해야 한다"는 점입니다. 수수료를 % 단위로 하위 조직으로 분배하다 보면, 소수점 이하의 금액에서 오차(Dust, 낙전)가 발생합니다.
 
-```
-정산 요청 → 지사 관리자 승인 → 본사 관리자 승인 → 완료
-```
+* **DFS (깊이 우선 탐색)**: 본사에서 대리점 끝단의 노드까지 트리를 탐색하며 수수료율에 따른 금액을 분할합니다.
+* **절삭 로직 (`RoundingMode.DOWN`)**: 모든 노드에서는 분배금을 무조건 소수점 아래에서 내림(절삭) 처리합니다.
+* **본사 보정**: 탐색 후 남은 1원 단위의 잔액은 트리의 가장 최상단(본사)에 강제 귀속하여 전체 수치 정합성(100%)을 맞춥니다.
 
-**Case 3: 본사(level=1) 사용자**
+### 3. Role/조직 레벨별 접근 제어 (Security)
+Spring Security의 URL 차단과 `@PreAuthorize` 어노테이션을 결합하여 권한 검증을 처리합니다.
+* **USER, ADMIN, SUPER_ADMIN**: 세 단계의 권한 모델을 사용합니다.
+* 일반 사용자는 본인의 건만 볼 수 있고, 중간 관리자(지사/대리점 ADMIN)는 자신보다 하위 조직의 데이터만 승인하고 열람할 수 있도록 격리하였습니다.
 
-```
-정산 요청 → 본사 관리자 승인 → 완료
-```
+### 4. 클라우드 인프라 운용 문제 해결 (OCI Free Tier)
+비용 효율적인 배포를 위해 Oracle Cloud Infrastructure (OCI)의 무료 티어(1/8 OCPU, 1GB RAM)에 시스템을 구축하는 과정에서 발생한 메모리 한계(OOM)를 다음과 같이 해결했습니다. 
 
-### 2. 권한별 페이지 접근 제어
-
-| 기능      | ROLE_USER            | ROLE_ADMIN            | ROLE_SUPER_ADMIN    |
-| --------- | -------------------- | --------------------- | ------------------- |
-| 대시보드  | 본인 정산 내역만     | 소속 조직 + 하위 조직 | 전체 조직           |
-| 정산 요청 | 신규 등록, 본인 조회 | 하위 사용자 조회/승인 | 전체 조회/최종 승인 |
-| 노드 현황 | ❌ 접근 불가         | 소속 조직 조회 (읽기) | 전체 조회/수정/삭제 |
-| 권한 설정 | ❌ 접근 불가         | 소속 조직 조회 (읽기) | 전체 회원 관리      |
-
-### 3. 회원가입 프로세스
-
-1. **회원가입 폼 작성**: 이메일, 비밀번호, 연락처, 소속 조직 선택
-2. **이메일 인증**: 5분 제한시간 내 인증 링크 클릭
-3. **관리자 승인**: 해당 조직 관리자가 승인/반려 처리
-4. **로그인**: 승인 완료 후 로그인 가능
-
-### 4. 정산 분배 알고리즘
-
-- **DFS(깊이 우선 탐색)** 기반 트리 순회
-- 각 노드는 수수료율(%)만큼 우선 취득
-- 잔여 금액을 하위 노드 개수(N)로 균등 분할 (1/N)
-- **BigDecimal + RoundingMode.FLOOR**로 소수점 내림
-- 순회 완료 후 남은 낙전(Dust)을 루트 노드에 귀속
-- **100% 정합성 보장** (전체 합계 = 원금)
+1. **Swap Memory 할당**: 1GB의 제한된 물리 메모리를 우회하기 위해 2GB의 Swap 파일을 `/etc/fstab`에 마운트하여 Spring Boot, DB, Nginx, RabbitMQ의 동시 구동을 보장했습니다.
+2. **도커 빌드 최적화**: OCI 상의 CI/CD 과정에서 Gradle 빌드 시 불필요한 `-plain.jar`가 남는 현상을 방지하기 위해 `jar { enabled = false }` 처리를 진행했습니다.
+3. **Nginx 기반 HTTPS 프록시**: Certbot을 연동하여 HTTPS 암호화를 구현하고 80포트를 443으로 리다이렉트하는 표준적인 웹 인프라 환경을 구축했습니다.
 
 ---
 
 ## 🛠 기술 스택
 
 ### Backend
-
-- **Java 17** (LTS)
+- **Java 17** 
 - **Spring Boot 3.3.2**
-- **Spring Security 6.x** (다계층 권한 제어)
-- **Spring Data JPA** (ORM)
-- **QueryDSL 5.0** (동적 쿼리 + Fetch Join)
-- **MapStruct 1.5.5** (DTO 변환)
-- **RabbitMQ** (비동기 메시징)
+- **Spring Security 6.x** 
+- **Spring Data JPA** 
+- **QueryDSL 5.0** 
+- **RabbitMQ** (비동기 메시징 지원)
+- **MapStruct 1.5.5**
 
 ### Database
-
-- **PostgreSQL** (Production)
-- **H2** (Test, In-Memory)
+- **PostgreSQL** (Production 환경)
+- **H2** (테스트 및 로컬 메모리 DB)
 
 ### Frontend
+- **Thymeleaf + Bootstrap 5** (HTML 서버 사이드 렌더링)
+- **SUIT 폰트 / 다크모드 대응** 등 일반적인 CSS, JS 기반 UI 구현
 
-- **Thymeleaf + Thymeleaf Layout Dialect** (서버 사이드 렌더링)
-- **Bootstrap 5** (반응형 그리드)
-- **SUIT 폰트** (한글 웹폰트)
-- **글래스모피즘 디자인** (Liquid Glass 효과)
-
-### Build & Test
-
-- **Gradle 8.8** (Groovy)
-- **JUnit 5 + @SpringBootTest** (통합 테스트)
-- **@MockBean** (RabbitMQ 격리, 빌드 시간 단축)
+### Infrastructure & CI/CD
+- **Oracle Cloud Infrastructure (OCI)** 
+- **Docker / Docker Compose**
+- **Nginx (SSL/HTTPS)**
+- **GitHub Actions** 
 
 ---
 
-## 🔥 핵심 트러블슈팅
-
-<details>
-<summary><b>1. N+1 문제 해결 (QueryDSL Fetch Join)</b></summary>
-<div markdown="1">
-  <br/>
-
-**Problem:**
-정산을 위해 하위 대리점을 조회할 때마다 SELECT 쿼리가 발생하는 N+1 문제. 계층이 깊어질수록 쿼리 수가 기하급수적으로 증가하여 DB 커넥션 풀 고갈 위험.
-
-**Solution:**
-QueryDSL의 `.leftJoin(node.children).fetchJoin()`을 사용하여 자식 노드들을 한 번에 메모리에 로드. **쿼리 단 1회로 트리 전체를 가져오도록 최적화**.
-
-</div>
-</details>
-
-<details>
-<summary><b>2. 소수점 낙전(Dust) 누수 방지</b></summary>
-<div markdown="1">
-  <br/>
-
-**Problem:**
-10,000원을 1/N 분배 시 `3333.3333...`원과 같은 소수점 오차 발생. DB 저장 시 소수점 유실로 전체 합계가 원금과 불일치하는 금융 버그.
-
-**Solution:**
-
-- `BigDecimal` + `RoundingMode.FLOOR`로 모든 하위 노드는 소수점 내림 처리
-- 순회 완료 후 **`원금 - 하위 노드 지급 총계 = 낙전`** 공식으로 남은 1~2원을 루트 노드에 강제 편입
-- **정합성 100% 보장**
-
-</div>
-</details>
-
-<details>
-<summary><b>3. RabbitMQ 테스트 격리 (CI/CD 최적화)</b></summary>
-<div markdown="1">
-  <br/>
-
-**Problem:**
-CI(GitHub Actions) 환경이나 폐쇄망에서 통합 테스트 실행 시, RabbitMQ 서버가 없어 커넥션 타임아웃 발생 → 테스트 무한 대기.
-
-**Solution:**
-
-- RabbitMQ `AutoConfiguration`을 `exclude`
-- `@MockBean`으로 `RabbitTemplate`과 `Listener` 격리
-- 로직 흐름과 메시지 발송 여부만 `Mockito.verify()`로 검증
-- **빌드 시간 30초 → 5초 이내로 단축**
-
-</div>
-</details>
-
-<details>
-<summary><b>4. 다계층 권한 제어 (Spring Security + @PreAuthorize)</b></summary>
-<div markdown="1">
-  <br/>
-
-**Problem:**
-본사/지사/대리점이라는 다단계 조직 구조에서 일반 사용자, 소속 관리자, 최고 관리자의 권한 구분 필요. 허가되지 않은 정산 승인을 원천 차단해야 함.
-
-**Solution:**
-
-- **1차 방어**: Spring Security URL 기반 권한 체크
-- **2차 방어**: Service 레이어의 모든 핵심 메서드에 `@PreAuthorize` 적용
-- **SpEL 활용**: 호출자의 조직 레벨과 객체 소유자 권한까지 검증
-- **Defense in Depth 구축**
-
-</div>
-</details>
-
----
-
-## 🧮 알고리즘: 정산 분배 로직
-
-### 시나리오
-
-**결제 금액**: 10,000원
-**분배 트리**: 본사(10%) → 지사 2곳(각 5%) → 대리점 4곳(각 3%)
-
-|   단계   | 처리 대상      | 로직 설명                                                                                               |         수익 발생         |           잔여 배분금            |
-| :------: | :------------- | :------------------------------------------------------------------------------------------------------ | :-----------------------: | :------------------------------: |
-|  **1**   | **본사**       | 원금 10,000원 × 10% 우선 취득                                                                           |         `1,000원`         |            `9,000원`             |
-|  **2**   | **지사 2곳**   | 잔여금 9,000원을 1/2로 나눔 (4,500원씩)<br/>4,500원 × 5% 취득 (각 지사당 225원)                         | 각 `225원`<br/>(총 450원) | 하위로 넘길 돈:<br/>각 `4,275원` |
-|  **3**   | **대리점 4곳** | 지사가 넘긴 4,275원을 1/2로 나눔<br/>(2,137원 - 0.5원 소수점 **버림**)<br/>2,137원 × 3% 취득            | 각 `64원`<br/>(총 256원)  |                -                 |
-|  **4**   | **낙전 보정**  | 배분된 총 수수료: 1,000 + 450 + 256 = 1,706원<br/>원금 10,000원에서 제외하면 `8,294원` 초과 잔여금 발생 |         `8,294원`         |              `0원`               |
-| **결과** | **최종**       | **본사는 초기 할당 1,000원 + 낙전 보정 8,294원 = `최종 9,294원` 획득**                                  |       **10,000원**        |          **100% 매칭**           |
-
----
-
-## 🚀 프로젝트 실행
-
-### 환경 프로파일
-
-| 프로파일 | 설명           | DB             | RabbitMQ         |
-| -------- | -------------- | -------------- | ---------------- |
-| `local`  | 로컬 개발 환경 | H2             | localhost:5672   |
-| `test`   | 테스트 환경    | H2 (in-memory) | Mock (@MockBean) |
-| `prod`   | 운영 환경      | PostgreSQL     | 외부 서버        |
-
-### 방법 1: Docker Compose (추천)
+## 🚀 로컬 환경 실행 가이드
 
 ```bash
-# 전체 환경 실행 (PostgreSQL + RabbitMQ)
-docker-compose up -d
-
-# 프로젝트 빌드 및 실행
-./gradlew clean build -x test
-./gradlew bootRun --args='--spring.profiles.active=local'
-```
-
-### 방법 2: 로컬 개발 (H2 + RabbitMQ)
-
-```bash
-# 1. RabbitMQ만 Docker로 실행
+# 1. RabbitMQ 백그라운드 실행 (도커 필요)
 docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:management
 
-# 2. 프로젝트 빌드 및 실행 (local 프로파일)
+# 2. 로컬 프로파일(H2, Local RabbitMQ 의존) 지정하여 앱 실행
 ./gradlew clean build -x test
 ./gradlew bootRun --args='--spring.profiles.active=local'
 ```
 
-### 방법 3: 테스트만 실행 (외부 인프라 불필요)
-
-```bash
-# RabbitMQ Mock으로 격리되어 외부 인프라 없이 실행 가능
-./gradlew test
-```
-
-### 접속 URL
-
-- **웹 인터페이스**: http://localhost:8080/
-- **H2 Console** (local 프로파일): http://localhost:8080/h2-console
+- **웹 애플리케이션 접속**: http://localhost:8080/
+- **H2 DB 접속 경로**: http://localhost:8080/h2-console
   - JDBC URL: `jdbc:h2:mem:testdb`
-  - Username: `sa`
-  - Password: (비워두기)
-- **RabbitMQ Management**: http://localhost:15672
-  - Username: `guest`
-  - Password: `guest`
+  - Username: `sa` (비밀번호 없음)
+- **RabbitMQ 관리 도구**: http://localhost:15672 (아이디/비번: guest/guest)
 
 ---
 
-## 🎨 UI 스크린샷
+## 📝 관리자 참고용 기초 세팅 (application.yml)
+로컬 프로파일 모드로 부팅 시, 더미 데이터 구성을 위해 아래 계정이 자동 생성됩니다. (비밀번호는 `application.yml` 혹은 `.env`를 통해 주입 가능)
 
-### 웰컴 페이지 (글래스모피즘 디자인)
-
-![웰컴 페이지](src/main/resources/static/images/settlement-dashboard-lightmode.png)
-
-### 대시보드
-
-![대시보드](src/main/resources/static/images/settlement-dashboard-darkmode.png)
-
-**디자인 특징**:
-
-- 🎨 **글래스모피즘 (Glassmorphism)**: Liquid Glass 효과와 Backdrop Blur
-- 🌈 **그라데이션**: 포인트 컬러 (#f05cfa, #d76750) 활용
-- 🔠 **SUIT 폰트**: 한글 최적화 웹폰트
-- 📱 **반응형**: Bootstrap 5 기반 모바일/태블릿/데스크톱 지원
+- **최고 관리자**: `admin@sattletree.com`
+- **본사 관리자**: `hq_admin@sattletree.com`
+- **서울지사 관리자**: `seoul_admin@sattletree.com`
+- **강남대리점 관리자**: `gangnam_admin@sattletree.com`
+- **강남대리점 일반사용자**: `gangnam_user@example.com`
 
 ---
 
-## 📚 참고 문서
-
-- **CLAUDE.md**: Claude Code 작업 가이드
-- **docs/DATABASE_DESIGN.md**: DB 스키마 및 ERD
-- **docs/AUTH_DESIGN.md**: 권한 체계 및 Spring Security 설정
-- **docs/ARCHITECTURE.md**: 시스템 아키텍처 및 비즈니스 로직
-- **docs/PRD.md**: Product Requirement Document (상세 요구사항)
-- **docs/ROADMAP.md**: 단계별 Task 정의 및 체크리스트
-- **.claude/rules/**: 코딩 스타일, 아키텍처, 보안 등 상세 규칙
-
----
-
-## 📝 라이선스
-
-이 프로젝트는 개인 포트폴리오 및 학습 목적으로 제작되었습니다.
-
----
-
-## 👤 작성자
-
-**gayul.kim** - Backend Developer
-
-- 이메일: gayulz@kakao.com
-- GitHub: https://github.com/gayulz/multi-level-fee
-- 포트폴리오: https://settletree.p-e.kr/
+## 👤 연락처 및 포트폴리오
+* **개발자**: 김가율 (gayul.kim)
+* **이메일**: gayulz@kakao.com
+* **GitHub**: https://github.com/gayulz/multi-level-fee
+* **운영 서버 환경**: https://settletree.p-e.kr/

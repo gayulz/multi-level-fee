@@ -52,6 +52,10 @@ public class SettlementRequest {
     @JoinColumn(name = "org_id", nullable = false)
     private Organization organization;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "root_node_id")
+    private SettlementNode rootNode;
+
     @Column(name = "order_id", nullable = false, length = 100)
     private String orderId;
 
@@ -144,7 +148,20 @@ public class SettlementRequest {
     // =========================================================
 
     /**
-     * [NEW] 정산 요청 생성.
+     * [MIG] 이전 버전 호환용 정산 요청 생성 팩토리 (rootNode 누락)
+     * 테스트 및 초기화 코드 호환성을 위해 유지합니다.
+     */
+    public static SettlementRequest create(
+            String orderId,
+            BigDecimal amount,
+            String description,
+            User requester,
+            Organization organization) {
+        return create(orderId, amount, description, requester, organization, null);
+    }
+
+    /**
+     * [NEW] 정산 요청 생성 팩토리 메서드 (rootNode 추가)
      *
      * <p>
      * 초기 상태: status=PENDING, currentApprovalLevel=1
@@ -155,6 +172,7 @@ public class SettlementRequest {
      * @param description  정산 설명
      * @param requester    요청자
      * @param organization 요청자 소속 조직
+     * @param rootNode     수수료 계산의 기준이 될 루트 노드
      * @return 초기 상태의 SettlementRequest
      * @author gayul.kim
      */
@@ -163,13 +181,15 @@ public class SettlementRequest {
             BigDecimal amount,
             String description,
             User requester,
-            Organization organization) {
+            Organization organization,
+            SettlementNode rootNode) {
         SettlementRequest request = new SettlementRequest();
         request.orderId = orderId;
         request.amount = amount;
         request.description = description;
         request.requester = requester;
         request.organization = organization;
+        request.rootNode = rootNode;
         request.status = SettlementStatus.PENDING;
         request.currentApprovalLevel = 1;
         return request;

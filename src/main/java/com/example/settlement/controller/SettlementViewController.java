@@ -89,10 +89,15 @@ public class SettlementViewController {
         model.addAttribute("pageTitle", "정산 내역");
 
         User user = userDetails.getUser();
-        if (user.hasRole(UserRole.ROLE_ADMIN) || user.hasRole(UserRole.ROLE_SUPER_ADMIN)) {
+        if (user.hasRole(UserRole.ROLE_SUPER_ADMIN)) {
+            // 슈퍼관리자: 전체 정산 내역 조회
+            model.addAttribute("settlements", settlementService.getAllRequests());
+        } else if (user.hasRole(UserRole.ROLE_ADMIN)) {
+            // 관리자: 소속 조직 + 하위 조직 정산 내역 조회
             model.addAttribute("settlements",
-                    settlementService.getRequestsByOrganization(user.getOrganization().getOrgId()));
+                    settlementService.getRequestsByOrganizationAndDescendants(user.getOrganization().getOrgId()));
         } else {
+            // 일반 사용자: 본인 내역만
             model.addAttribute("settlements", settlementService.getRequestsByUser(user));
         }
 

@@ -5,293 +5,628 @@ import com.example.settlement.domain.entity.SettlementNode;
 import com.example.settlement.domain.entity.SettlementRequest;
 import com.example.settlement.domain.entity.User;
 import com.example.settlement.domain.entity.enums.UserRole;
-import com.example.settlement.domain.entity.enums.UserStatus;
 import com.example.settlement.domain.repository.OrganizationRepository;
 import com.example.settlement.domain.repository.SettlementNodeRepository;
 import com.example.settlement.domain.repository.SettlementRequestRepository;
 import com.example.settlement.domain.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
+
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
- * [NEW] 애플리케이션 기동 시 초기 데이터를 DB에 삽입하는 컴포넌트.
+ * [MIG] 초기 데이터 생성기.
  *
  * <p>
- * H2 in-memory DB(create-drop) 환경에서 기동할 때마다 아래 데이터를 자동 생성합니다:
- * <ul>
- * <li>조직 계층: 본사 1개 → 지사 2개 → 대리점 2개</li>
- * <li>정산 노드: 각 조직별 1개씩</li>
- * <li>계정:
- * <ul>
- * <li>SUPER_ADMIN: admin@sattletree.io / admin1234</li>
- * <li>ADMIN (지사): branch@sattletree.io / admin1234</li>
- * <li>ADMIN (대리점): agency@sattletree.io / admin1234</li>
- * <li>USER (일반): user@sattletree.io / user1234</li>
- * </ul>
- * </li>
- * </ul>
+ * 배포/테스트 환경 모두 동일한 DB를 사용하므로,
+ * DB에 데이터가 없을 때 최초 1회만 실행되어 대규모 초기 데이터를 생성합니다.
+ * </p>
+ *
+ * <p>
+ * 생성 데이터:
+ * - 조직: 본사 1 + 지점 3 + 대리점 (각 지점별 4~7개 랜덤)
+ * - 사용자: 슈퍼관리자 1 + 본사관리자 5 + 지점관리자 9 + 대리점관리자 + 일반사용자
+ * - 정산내역: 대리점발 500~700건 + 지사발 300~500건
  * </p>
  *
  * @author gayul.kim
- * @since 2026-03-09
+ * @since 2026-04-02
  */
 @Slf4j
 @Component
-@Profile("none") // [MIG] 프로덕션 유사 환경을 위해 기동 시 자동 데이터 생성 비활성화
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationRunner {
 
-        private final OrganizationRepository organizationRepository;
-        private final SettlementNodeRepository settlementNodeRepository;
-        private final SettlementRequestRepository settlementRequestRepository;
-        private final UserRepository userRepository;
-        private final PasswordEncoder passwordEncoder;
+	private final OrganizationRepository organizationRepository;
+	private final SettlementNodeRepository settlementNodeRepository;
+	private final SettlementRequestRepository settlementRequestRepository;
+	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final EntityManager entityManager;
 
-        @Override
-        @Transactional
-        public void run(ApplicationArguments args) {
-                // 이미 데이터가 존재하면 중복 삽입 방지 로직 개선
-                if (organizationRepository.count() > 0) {
-                        log.info("[DataInitializer] 조직 데이터가 이미 존재합니다.");
-                        long reqCount = settlementRequestRepository.count();
-                        if (reqCount < 250) {
-                                int needCount = (int) (250 - reqCount);
-                                log.info("[DataInitializer] 정산 내역이 부족하여 추가 {}건을 생성합니다.", needCount);
-                                generateFakeSettlementRequests(needCount);
-                        } else {
-                                log.info("[DataInitializer] 정산 내역도 충분하여 데이터 초기화를 건너뜁니다.");
-                        }
-                        return;
-                }
+	private final Random random = new Random();
 
-                log.info("========================================");
-                log.info("[DataInitializer] 초기 데이터 생성 시작");
-                log.info("========================================");
+	// =========================================================
+	// 관리자/사용자 ID 인덱싱 카운터
+	// =========================================================
+	private int adminIndex = 1;
+	private int userIndex = 1;
 
-                // ===========================
-                // 1. 조직 계층 생성
-                // ===========================
-                Organization hq = Organization.createHeadquarters("SattleTree 본사", "HQ-001");
-                organizationRepository.save(hq);
+	// =========================================================
+	// N+1 방지를 위한 메모리 리스트
+	// =========================================================
+	private final List<User> hqAdmins = new ArrayList<>();
+	private final List<User> allBranchAdmins = new ArrayList<>();
+	private final List<User> allAgencyAdmins = new ArrayList<>();
+	private final List<User> allBranchUsers = new ArrayList<>();
+	private final List<User> allAgencyUsers = new ArrayList<>();
 
-                Organization seoulBranch = Organization.createBranch("서울 지사", "BR-SEOUL", hq);
-                Organization busanBranch = Organization.createBranch("부산 지사", "BR-BUSAN", hq);
-                organizationRepository.save(seoulBranch);
-                organizationRepository.save(busanBranch);
+	// 지점-대리점 매핑 (정산내역 생성 시 사용)
+	private final Map<Organization, List<Organization>> branchAgencyMap = new LinkedHashMap<>();
+	private final Map<Organization, SettlementNode> orgNodeMap = new LinkedHashMap<>();
+	private final Map<Organization, List<User>> orgAdminMap = new LinkedHashMap<>();
+	private final Map<Organization, List<User>> orgUserMap = new LinkedHashMap<>();
 
-                Organization gangnamAgency = Organization.createAgency("강남 대리점", "AG-GANGNAM", seoulBranch);
-                Organization jongnoAgency = Organization.createAgency("종로 대리점", "AG-JONGNO", seoulBranch);
-                organizationRepository.save(gangnamAgency);
-                organizationRepository.save(jongnoAgency);
+	// =========================================================
+	// 한국 이름 데이터
+	// =========================================================
+	private static final String[] LAST_NAMES = {
+		"유", "고", "문", "양", "손", "김", "배", "조", "백", "허",
+		"남", "심", "곽", "노", "정", "하", "성", "차", "주", "우",
+		"최", "이", "윤", "장", "임", "한", "신", "오", "서"
+	};
 
-                log.info("[DataInitializer] 조직 생성 완료: {}개", organizationRepository.count());
+	private static final String[] FIRST_NAME_PARTS_1 = {
+		"서", "민", "지", "현", "수", "영", "준", "하", "은", "도",
+		"태", "유", "성", "재", "승", "정", "예", "시", "혜", "진",
+		"건", "우", "상", "채", "인", "소", "다", "나", "미", "원"
+	};
 
-                // ===========================
-                // 2. 정산 노드 생성 (각 조직별)
-                // ===========================
-                SettlementNode hqNode = createNode("본사 노드", hq, new BigDecimal("0.1000"), null);
-                settlementNodeRepository.save(hqNode);
+	private static final String[] FIRST_NAME_PARTS_2 = {
+		"연", "호", "진", "아", "빈", "원", "준", "우", "율", "서",
+		"영", "희", "은", "경", "환", "혁", "린", "솔", "담", "결",
+		"수", "민", "지", "현", "석", "택", "용", "기", "한", "윤"
+	};
 
-                SettlementNode seoulNode = createNode("서울지사 노드", seoulBranch, new BigDecimal("0.0500"), hqNode);
-                settlementNodeRepository.save(seoulNode);
+	// =========================================================
+	// 지점별 대리점 후보 지역명
+	// =========================================================
+	private static final String[] SEOUL_AGENCIES = {"서울", "인천", "수원", "용인", "분당", "광명", "파주"};
+	private static final String[] GYEONGSANG_AGENCIES = {"포항", "울산", "부산", "구미", "대구", "창원", "경주"};
+	private static final String[] JEOLLA_AGENCIES = {"광주", "목포", "전주", "순천", "익산", "군산", "김제"};
 
-                SettlementNode busanNode = createNode("부산지사 노드", busanBranch, new BigDecimal("0.0500"), hqNode);
-                settlementNodeRepository.save(busanNode);
+	// =========================================================
+	// 전화번호 생성용
+	// =========================================================
+	private static final String[] PHONE_MIDDLE = {"1234", "5678", "9012", "3456", "7890", "2345", "6789", "0123", "4567", "8901"};
 
-                SettlementNode gangnamNode = createNode("강남대리점 노드", gangnamAgency, new BigDecimal("0.0300"), seoulNode);
-                settlementNodeRepository.save(gangnamNode);
+	@org.springframework.beans.factory.annotation.Value("${app.init.super-admin.password}")
+	private String rawSuperAdminPw;
 
-                SettlementNode jongnoNode = createNode("종로대리점 노드", jongnoAgency, new BigDecimal("0.0200"), seoulNode);
-                settlementNodeRepository.save(jongnoNode);
+	@org.springframework.beans.factory.annotation.Value("${app.init.common.password}")
+	private String rawCommonPw;
 
-                log.info("[DataInitializer] 정산 노드 생성 완료: {}개", settlementNodeRepository.count());
+	@Override
+	@Transactional
+	public void run(ApplicationArguments args) {
+		// ====================================================
+		// 최초 실행 여부 판단: DB에 Organization이 1건이라도 있으면 SKIP
+		// ====================================================
+		if (organizationRepository.count() > 0) {
+			log.info("========================================");
+			log.info("[DataInitializer] 기존 데이터가 존재합니다. 초기화를 건너뜁니다.");
+			log.info("========================================");
+			return;
+		}
 
-                // ===========================
-                // 3. 계정 생성
-                // ===========================
-                String adminPassword = passwordEncoder.encode("admin1234");
-                String userPassword = passwordEncoder.encode("user1234");
+		log.info("========================================");
+		log.info("[DataInitializer] 최초 실행 - 초기 데이터 생성 시작");
+		log.info("========================================");
 
-                // SUPER_ADMIN - 본사 소속
-                User superAdmin = User.createSuperAdmin(
-                                "admin@sattletree.io", adminPassword, "최고관리자", "010-0000-0000", hq);
-                userRepository.save(superAdmin);
+		long startTime = System.currentTimeMillis();
 
-                // ADMIN (지사장) - 서울 지사 소속
-                User branchAdmin = User.createSuperAdmin(
-                                "branch@sattletree.io", adminPassword, "서울지사장", "010-1111-1111", seoulBranch);
-                branchAdmin.changeRole(UserRole.ROLE_ADMIN);
-                userRepository.save(branchAdmin);
+		// 비밀번호 인코딩 (2종류)
+		String superAdminPw = passwordEncoder.encode(rawSuperAdminPw);
+		String commonPw = passwordEncoder.encode(rawCommonPw);
+		log.info("[DataInitializer] 비밀번호 인코딩 완료");
 
-                // ADMIN (대리점장) - 강남 대리점 소속
-                User agencyAdmin = User.createSuperAdmin(
-                                "agency@sattletree.io", adminPassword, "강남대리점장", "010-2222-2222", gangnamAgency);
-                agencyAdmin.changeRole(UserRole.ROLE_ADMIN);
-                userRepository.save(agencyAdmin);
+		// ====================================================
+		// 1. 조직 + 노드 + 사용자 생성
+		// ====================================================
+		createOrganizationsAndUsers(superAdminPw, commonPw);
 
-                // USER (일반) - 종로 대리점 소속 → APPROVED + emailVerified=true
-                User normalUser = User.createSuperAdmin(
-                                "user@sattletree.io", userPassword, "일반사용자", "010-3333-3333", jongnoAgency);
-                normalUser.changeRole(UserRole.ROLE_USER);
-                userRepository.save(normalUser);
+		// ====================================================
+		// 2. 정산 내역 생성
+		// ====================================================
+		createSettlementRequests(commonPw);
 
-                // USER (대기 상태 샘플) - 강남 대리점 소속
-                User pendingUser = User.createUser(
-                                "pending@sattletree.io", userPassword, "가입대기사용자", "010-4444-4444", gangnamAgency, true);
-                userRepository.save(pendingUser);
+		long elapsed = System.currentTimeMillis() - startTime;
+		log.info("========================================");
+		log.info("[DataInitializer] 초기 데이터 생성 완료 (소요시간: {}ms)", elapsed);
+		log.info("========================================");
+	}
 
-                log.info("[DataInitializer] 계정 생성 완료: {}개", userRepository.count());
+	// =========================================================
+	// 1. 조직 + 노드 + 사용자 생성
+	// =========================================================
+	private void createOrganizationsAndUsers(String superAdminPw, String commonPw) {
+		// ─── (1) 본사 ───
+		Organization hq = Organization.createHeadquarters("SettleTree 본사", "HQ-001");
+		organizationRepository.save(hq);
 
-                // ===========================
-                // 4. 가상 데이터 확충 (직원 30명, 노드 5개)
-                // ===========================
-                log.info("[DataInitializer] 가상 데이터 추가 생성 시작...");
+		SettlementNode hqNode = SettlementNode.createRoot("본사 노드", hq, new BigDecimal("0.1000"));
+		settlementNodeRepository.save(hqNode);
+		orgNodeMap.put(hq, hqNode);
 
-                // (1) 가상 하위 노드 5개 추가
-                // 강남 하위 2개, 종로 하위 3개
-                Organization seochoAgency = Organization.createAgency("서초 대리점", "AG-SEOCHO", gangnamAgency);
-                Organization yeoksamAgency = Organization.createAgency("역삼 대리점", "AG-YEOKSAM", gangnamAgency);
-                organizationRepository.save(seochoAgency);
-                organizationRepository.save(yeoksamAgency);
+		// 슈퍼관리자 1명 (ID: admin@settletree.io)
+		// [MIGRATION_OLD] User superAdmin = User.createSuperAdmin("admin", superAdminPw, "운영자", "010-0000-0000", hq);
+		User superAdmin = User.createSuperAdmin("admin@settletree.io", superAdminPw, "운영자", "010-0000-0000", hq);
+		userRepository.save(superAdmin);
+		hqAdmins.add(superAdmin);
 
-                Organization gwanghwamunAgency = Organization.createAgency("광화문 대리점", "AG-GWANGHWAMUN", jongnoAgency);
-                Organization euljiroAgency = Organization.createAgency("을지로 대리점", "AG-EULJIRO", jongnoAgency);
-                Organization myeongdongAgency = Organization.createAgency("명동 대리점", "AG-MYEONGDONG", jongnoAgency);
-                organizationRepository.save(gwanghwamunAgency);
-                organizationRepository.save(euljiroAgency);
-                organizationRepository.save(myeongdongAgency);
+		// 본사 관리자 5명
+		List<User> hqAdminList = createAdminUsers(5, hq, commonPw);
+		hqAdmins.addAll(hqAdminList);
+		orgAdminMap.put(hq, new ArrayList<>(hqAdmins));
 
-                settlementNodeRepository
-                                .save(createNode("서초대리점 노드", seochoAgency, new BigDecimal("0.0200"), gangnamNode));
-                settlementNodeRepository
-                                .save(createNode("역삼대리점 노드", yeoksamAgency, new BigDecimal("0.0150"), gangnamNode));
-                settlementNodeRepository
-                                .save(createNode("광화문대리점 노드", gwanghwamunAgency, new BigDecimal("0.0100"), jongnoNode));
-                settlementNodeRepository
-                                .save(createNode("을지로대리점 노드", euljiroAgency, new BigDecimal("0.0120"), jongnoNode));
-                settlementNodeRepository
-                                .save(createNode("명동대리점 노드", myeongdongAgency, new BigDecimal("0.0110"), jongnoNode));
+		// 본사 사용자 20명
+		List<User> hqUserList = createNormalUsers(20, hq, commonPw);
+		orgUserMap.put(hq, hqUserList);
 
-                // (2) 가상 직원 30명 추가 (강남/종로 대리점에 분산)
-                Organization[] targetOrgs = { gangnamAgency, jongnoAgency, seochoAgency, yeoksamAgency,
-                                gwanghwamunAgency };
-                for (int i = 1; i <= 30; i++) {
-                        String email = String.format("user%d@sattletree.io", i);
-                        String name = String.format("테스트사용자%d", i);
-                        Organization org = targetOrgs[i % targetOrgs.length];
+		log.info("[DataInitializer] 본사 생성 완료 - 관리자: {}명, 사용자: {}명",
+			hqAdmins.size(), hqUserList.size());
 
-                        User user = User.createSuperAdmin(email, userPassword, name,
-                                        "010-9999-" + String.format("%04d", i), org);
-                        user.changeRole(UserRole.ROLE_USER);
-                        userRepository.save(user);
-                }
+		// ─── (2) 지점 3개 ───
+		String[][] branchConfig = {
+			{"서울경기 지점", "BR-001"},
+			{"경상도 지점", "BR-002"},
+			{"전라도 지점", "BR-003"}
+		};
+		String[][] agencySets = {SEOUL_AGENCIES, GYEONGSANG_AGENCIES, JEOLLA_AGENCIES};
 
-                log.info("[DataInitializer] 가상 데이터 생성 완료: 노드 5개 추가, 직원 30명 추가");
+		for (int b = 0; b < 3; b++) {
+			Organization branch = Organization.createBranch(branchConfig[b][0], branchConfig[b][1], hq);
+			organizationRepository.save(branch);
 
-                // ===========================
-                // 5. 가상 정산 내역 50건 초기 생성 (없는 경우)
-                // ===========================
-                log.info("[DataInitializer] 초기 세팅 - 정산 내역 50건 생성 시작...");
-                generateFakeSettlementRequests(50);
-                log.info("========================================");
-                log.info("[DataInitializer] 초기 데이터 생성 완료");
-                log.info("===== 로그인 계정 정보 =====");
-                log.info("  SUPER_ADMIN : admin@sattletree.io / admin1234");
-                log.info("  가상 사용자 : user1@sattletree.io ~ user30@sattletree.io / user1234");
-                log.info("========================================");
-        }
+			SettlementNode branchNode = SettlementNode.createChild(
+				branchConfig[b][0] + " 노드", branch, new BigDecimal("0.0500"), hqNode
+			);
+			settlementNodeRepository.save(branchNode);
+			orgNodeMap.put(branch, branchNode);
 
-        /**
-         * [MIG] 지정된 건수만큼 가상 정산 내역을 생성합니다. (중복 없는 orderId 활용)
-         *
-         * @author gayul.kim
-         * @param count 생성할 정산 내역 개수
-         */
-        private void generateFakeSettlementRequests(int count) {
-                java.util.List<User> allUsers = userRepository.findAll();
-                if (allUsers.isEmpty()) return;
+			// 지점 관리자 3명
+			List<User> branchAdmins = createAdminUsers(3, branch, commonPw);
+			allBranchAdmins.addAll(branchAdmins);
+			orgAdminMap.put(branch, branchAdmins);
 
-                // 권한 기반 승인자 검색
-                User superAdmin = allUsers.stream().filter(u -> u.getRole() == UserRole.ROLE_SUPER_ADMIN).findFirst().orElse(allUsers.get(0));
-                User branchAdmin = allUsers.stream().filter(u -> u.getRole() == UserRole.ROLE_ADMIN).findFirst().orElse(allUsers.get(0));
+			// 지점 사용자 20~30명 랜덤
+			int branchUserCount = random.nextInt(11) + 20;
+			List<User> branchUserList = createNormalUsers(branchUserCount, branch, commonPw);
+			allBranchUsers.addAll(branchUserList);
+			orgUserMap.put(branch, branchUserList);
 
-                java.util.Random random = new java.util.Random();
-                LocalDateTime now = LocalDateTime.now();
+			log.info("[DataInitializer] {} 생성 완료 - 관리자: {}명, 사용자: {}명",
+				branchConfig[b][0], branchAdmins.size(), branchUserList.size());
 
-                for (int i = 1; i <= count; i++) {
-                        User requester = allUsers.get(random.nextInt(allUsers.size()));
-                        BigDecimal amount = BigDecimal.valueOf(10000 + random.nextInt(990000));
-                        // 나노초와 랜덤 인덱스로 무조건 고유한 orderId 발급 (중복방지)
-                        String orderId = "ORD-" + now.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"))
-                                        + "-" + ((System.nanoTime() / 1000) % 100000) + String.format("%03d", i);
+			// ─── (3) 대리점 (지점별 4~7개 랜덤) ───
+			int agencyCount = random.nextInt(4) + 4; // 4~7
+			List<String> agencyCandidates = new ArrayList<>(Arrays.asList(agencySets[b]));
+			Collections.shuffle(agencyCandidates, random);
 
-                        SettlementRequest request = SettlementRequest.create(
-                                        orderId,
-                                        amount,
-                                        "가상 정산 데이터 주입 #" + i,
-                                        requester,
-                                        requester.getOrganization());
+			List<Organization> agencies = new ArrayList<>();
+			for (int a = 0; a < agencyCount; a++) {
+				String agencyName = agencyCandidates.get(a) + " 대리점";
+				String agencyCode = "AG-" + (b + 1) + String.format("%02d", a + 1);
 
-                        // 상태 랜덤 설정 (PENDING, AGENCY_APPROVED, BRANCH_APPROVED, COMPLETED, REJECTED)
-                        int statusSeed = random.nextInt(100);
-                        if (statusSeed < 30) {
-                                // PENDING (기본값)
-                        } else if (statusSeed < 50) {
-                                // AGENCY_APPROVED
-                                request.approve(branchAdmin, "대리점 1차 자동 승인");
-                        } else if (statusSeed < 60) {
-                                // BRANCH_APPROVED
-                                request.approve(branchAdmin, "대리점 승인");
-                                request.approve(branchAdmin, "지사 2차 자동 승인");
-                        } else if (statusSeed < 90) {
-                                // COMPLETED
-                                request.approve(branchAdmin, "대리점 승인");
-                                request.approve(branchAdmin, "지사 승인");
-                                request.approve(superAdmin, "최종 본사 자동 승인");
-                                request.setSettlementAmounts(request.getAmount().multiply(new BigDecimal("0.05")),
-                                                request.getAmount().multiply(new BigDecimal("0.95")));
-                        } else {
-                                // REJECTED
-                                request.reject(branchAdmin, "자동 요건 미달로 반려");
-                        }
+				Organization agency = Organization.createAgency(agencyName, agencyCode, branch);
+				organizationRepository.save(agency);
 
-                        // 작성일 랜덤 분산 (최근 14일)
-                        try {
-                                java.lang.reflect.Field createdAtField = SettlementRequest.class.getDeclaredField("createdAt");
-                                createdAtField.setAccessible(true);
-                                createdAtField.set(request, now.minusDays(random.nextInt(14)).minusHours(random.nextInt(24)));
-                        } catch (Exception e) {
-                                // 필드 설정 실패 시 기본 생성일 유지
-                        }
+				// 대리점 수수료: 1~3% 랜덤 (0.0100 ~ 0.0300)
+				int feePercent = random.nextInt(3) + 1;
+				BigDecimal agencyFeeRate = new BigDecimal("0.0" + feePercent + "00");
+				SettlementNode agencyNode = SettlementNode.createChild(
+					agencyName + " 노드", agency, agencyFeeRate, branchNode
+				);
+				settlementNodeRepository.save(agencyNode);
+				orgNodeMap.put(agency, agencyNode);
 
-                        settlementRequestRepository.save(request);
-                }
-                log.info("[DataInitializer] 가상 정산 내역 {}건 상세주입 완료", count);
-        }
+				// 대리점 관리자 2명
+				List<User> agencyAdmins = createAdminUsers(2, agency, commonPw);
+				allAgencyAdmins.addAll(agencyAdmins);
+				orgAdminMap.put(agency, agencyAdmins);
 
-        /**
-         * 정산 노드 생성 헬퍼.
-         *
-         * @author gayul.kim
-         * @param name         노드명
-         * @param organization 소속 조직
-         * @param feeRate      수수료율
-         * @param parent       부모 노드 (null이면 루트)
-         * @return 생성된 SettlementNode
-         */
-        private SettlementNode createNode(String name, Organization organization,
-                        BigDecimal feeRate, SettlementNode parent) {
-                if (parent == null) {
-                        return SettlementNode.createRoot(name, organization, feeRate);
-                }
-                return SettlementNode.createChild(name, organization, feeRate, parent);
-        }
+				// 대리점 사용자 30~50명 랜덤
+				int agUserCount = random.nextInt(21) + 30;
+				List<User> agencyUserList = createNormalUsers(agUserCount, agency, commonPw);
+				allAgencyUsers.addAll(agencyUserList);
+				orgUserMap.put(agency, agencyUserList);
+
+				agencies.add(agency);
+
+				log.info("[DataInitializer]   └ {} 생성 (수수료: {}%) - 관리자: {}명, 사용자: {}명",
+					agencyName, feePercent, agencyAdmins.size(), agencyUserList.size());
+			}
+
+			branchAgencyMap.put(branch, agencies);
+		}
+
+		entityManager.flush();
+		entityManager.clear();
+
+		int totalUsers = hqAdmins.size() + orgUserMap.get(hq).size()
+			+ allBranchAdmins.size() + allBranchUsers.size()
+			+ allAgencyAdmins.size() + allAgencyUsers.size();
+
+		log.info("[DataInitializer] ──── 전체 사용자 생성 완료: {}명 ────", totalUsers);
+	}
+
+	// =========================================================
+	// 2. 정산 내역 생성
+	// =========================================================
+	private void createSettlementRequests(String commonPw) {
+		log.info("[DataInitializer] 정산 내역 생성 시작...");
+
+		// (1) 대리점발 (계층형: 본사-지사-대리점 모든 노드에 배분) 500~700건
+		int agencyRequestCount = random.nextInt(201) + 500;
+		generateAgencyBasedRequests(agencyRequestCount);
+
+		// (2) 지사발 (지사형: 본사-지사 노드에만 배분) 300~500건
+		int branchRequestCount = random.nextInt(201) + 300;
+		generateBranchBasedRequests(branchRequestCount);
+
+		entityManager.flush();
+		entityManager.clear();
+
+		log.info("[DataInitializer] 정산 내역 생성 완료 (대리점발: {}건, 지사발: {}건)",
+			agencyRequestCount, branchRequestCount);
+	}
+
+	/**
+	 * [NEW] 대리점발 정산 요청 생성 (계층형).
+	 * 대리점 사용자가 요청 → 대리점관리자 → 지사관리자 → 본사관리자 순으로 승인 진행.
+	 *
+	 * @param count 생성할 건수
+	 * @author gayul.kim
+	 */
+	private void generateAgencyBasedRequests(int count) {
+		if (allAgencyUsers.isEmpty()) return;
+
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+		log.info("[DataInitializer]   대리점발 정산 생성 시작 (목표: {}건)", count);
+
+		for (int i = 0; i < count; i++) {
+			// 랜덤 대리점 사용자 선택
+			User requester = allAgencyUsers.get(random.nextInt(allAgencyUsers.size()));
+			Organization agency = requester.getOrganization();
+			SettlementNode rootNode = orgNodeMap.get(agency);
+
+			// 루트 노드를 못 찾으면 상위의 본사 노드 사용
+			if (rootNode == null) {
+				rootNode = orgNodeMap.values().iterator().next();
+			}
+
+			BigDecimal amount = BigDecimal.valueOf(random.nextInt(900001) + 100000);
+			String orderId = "ORD-AG-" + now.format(formatter) + "-" + String.format("%06d", i + 1);
+			LocalDateTime createdDate = now.minusDays(random.nextInt(30)).minusHours(random.nextInt(24));
+
+			SettlementRequest request = SettlementRequest.create(
+				orderId, amount, "대리점발 정산 #" + (i + 1), requester, agency, rootNode
+			);
+
+			// 생성일자 분산 (리플렉션)
+			setCreatedAt(request, createdDate);
+
+			// 상태 배분: 80% 승인, 20% 나머지 (대기/반려 랜덤)
+			applyAgencyApprovalFlow(request, agency);
+
+			settlementRequestRepository.save(request);
+
+			if ((i + 1) % 100 == 0) {
+				log.info("[DataInitializer]   대리점발 생성 중... ({}/{})", i + 1, count);
+			}
+		}
+		log.info("[DataInitializer]   대리점발 정산 생성 완료");
+	}
+
+	/**
+	 * [NEW] 지사발 정산 요청 생성 (지사형).
+	 * 지사 사용자가 요청 → 지사관리자 → 본사관리자 순으로 승인 진행.
+	 *
+	 * @param count 생성할 건수
+	 * @author gayul.kim
+	 */
+	private void generateBranchBasedRequests(int count) {
+		if (allBranchUsers.isEmpty()) return;
+
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+		log.info("[DataInitializer]   지사발 정산 생성 시작 (목표: {}건)", count);
+
+		for (int i = 0; i < count; i++) {
+			// 랜덤 지사 사용자 선택
+			User requester = allBranchUsers.get(random.nextInt(allBranchUsers.size()));
+			Organization branch = requester.getOrganization();
+			SettlementNode rootNode = orgNodeMap.get(branch);
+
+			if (rootNode == null) {
+				rootNode = orgNodeMap.values().iterator().next();
+			}
+
+			BigDecimal amount = BigDecimal.valueOf(random.nextInt(900001) + 100000);
+			String orderId = "ORD-BR-" + now.format(formatter) + "-" + String.format("%06d", i + 1);
+			LocalDateTime createdDate = now.minusDays(random.nextInt(30)).minusHours(random.nextInt(24));
+
+			SettlementRequest request = SettlementRequest.create(
+				orderId, amount, "지사발 정산 #" + (i + 1), requester, branch, rootNode
+			);
+
+			// 생성일자 분산
+			setCreatedAt(request, createdDate);
+
+			// 상태 배분: 80% 승인, 20% 나머지
+			applyBranchApprovalFlow(request, branch);
+
+			settlementRequestRepository.save(request);
+
+			if ((i + 1) % 100 == 0) {
+				log.info("[DataInitializer]   지사발 생성 중... ({}/{})", i + 1, count);
+			}
+		}
+		log.info("[DataInitializer]   지사발 정산 생성 완료");
+	}
+
+	// =========================================================
+	// 승인 프로세스 흐름 적용
+	// =========================================================
+
+	/**
+	 * [NEW] 대리점발 정산의 3단계 승인 흐름을 적용합니다.
+	 * PENDING → AGENCY_APPROVED → BRANCH_APPROVED → COMPLETED
+	 * 80%는 COMPLETED까지, 나머지 20%는 PENDING/REJECTED 랜덤.
+	 *
+	 * @param request 정산 요청
+	 * @param agency  요청 대리점
+	 * @author gayul.kim
+	 */
+	private void applyAgencyApprovalFlow(SettlementRequest request, Organization agency) {
+		boolean isApproved = random.nextInt(100) < 80;
+
+		if (isApproved) {
+			// ── 3단계 승인 완료 ──
+			// Step 1: 대리점 관리자 승인
+			User agencyAdmin = findRandomAdmin(agency);
+			if (agencyAdmin != null) {
+				request.approve(agencyAdmin, "대리점 승인 완료");
+			}
+
+			// Step 2: 지사 관리자 승인
+			Organization branch = agency.getParent();
+			User branchAdmin = findRandomAdmin(branch);
+			if (branchAdmin != null) {
+				request.approve(branchAdmin, "지사 승인 완료");
+			}
+
+			// Step 3: 본사 관리자 승인
+			User hqAdmin = hqAdmins.get(random.nextInt(hqAdmins.size()));
+			request.approve(hqAdmin, "본사 최종 승인");
+
+			// 수수료 설정
+			BigDecimal feeRate = new BigDecimal("0.05");
+			request.setSettlementAmounts(
+				request.getAmount().multiply(feeRate),
+				request.getAmount().subtract(request.getAmount().multiply(feeRate))
+			);
+		} else {
+			// ── 미완료 건 ── 대기/반려 랜덤
+			int subCase = random.nextInt(3);
+			switch (subCase) {
+				case 0:
+					// PENDING 상태 유지 (대기)
+					break;
+				case 1:
+					// 대리점 승인 후 지사에서 반려
+					User agAdmin = findRandomAdmin(agency);
+					if (agAdmin != null) {
+						request.approve(agAdmin, "대리점 승인");
+					}
+					Organization br = agency.getParent();
+					User brAdmin = findRandomAdmin(br);
+					if (brAdmin != null) {
+						request.reject(brAdmin, "요건 미달로 반려");
+					}
+					break;
+				case 2:
+					// 대리점 승인 → 지사 승인까지만 (정체)
+					User ag2 = findRandomAdmin(agency);
+					if (ag2 != null) {
+						request.approve(ag2, "대리점 승인");
+					}
+					Organization br2 = agency.getParent();
+					User br2Admin = findRandomAdmin(br2);
+					if (br2Admin != null) {
+						request.approve(br2Admin, "지사 승인");
+					}
+					// 본사 승인 대기 상태로 정체
+					break;
+			}
+		}
+	}
+
+	/**
+	 * [NEW] 지사발 정산의 2단계 승인 흐름을 적용합니다.
+	 * PENDING → BRANCH_APPROVED → COMPLETED
+	 * 80%는 COMPLETED까지, 나머지 20%는 PENDING/REJECTED 랜덤.
+	 *
+	 * @param request 정산 요청
+	 * @param branch  요청 지사
+	 * @author gayul.kim
+	 */
+	private void applyBranchApprovalFlow(SettlementRequest request, Organization branch) {
+		boolean isApproved = random.nextInt(100) < 80;
+
+		if (isApproved) {
+			// ── 2단계 승인 완료 ──
+			// Step 1: 지사 관리자 승인
+			User branchAdmin = findRandomAdmin(branch);
+			if (branchAdmin != null) {
+				request.approve(branchAdmin, "지사 승인 완료");
+			}
+
+			// Step 2: 본사 관리자 승인
+			User hqAdmin = hqAdmins.get(random.nextInt(hqAdmins.size()));
+			request.approve(hqAdmin, "본사 최종 승인");
+
+			// 수수료 설정
+			BigDecimal feeRate = new BigDecimal("0.05");
+			request.setSettlementAmounts(
+				request.getAmount().multiply(feeRate),
+				request.getAmount().subtract(request.getAmount().multiply(feeRate))
+			);
+		} else {
+			int subCase = random.nextInt(3);
+			switch (subCase) {
+				case 0:
+					// PENDING 상태 유지 (대기)
+					break;
+				case 1:
+					// 지사에서 반려
+					User brAdmin = findRandomAdmin(branch);
+					if (brAdmin != null) {
+						request.reject(brAdmin, "증빙 서류 미비로 반려");
+					}
+					break;
+				case 2:
+					// 지사 승인 후 본사 대기 (정체)
+					User brAdmin2 = findRandomAdmin(branch);
+					if (brAdmin2 != null) {
+						request.approve(brAdmin2, "지사 승인");
+					}
+					// 본사 승인 대기 상태로 정체
+					break;
+			}
+		}
+	}
+
+	// =========================================================
+	// 유틸리티 메서드
+	// =========================================================
+
+	/**
+	 * [NEW] 관리자 사용자 생성.
+	 * ID 패턴: admin{인덱스}@settletree.io
+	 *
+	 * @param count 생성 수
+	 * @param org   소속 조직
+	 * @param password 인코딩된 비밀번호
+	 * @return 생성된 관리자 목록
+	 * @author gayul.kim
+	 */
+	private List<User> createAdminUsers(int count, Organization org, String password) {
+		List<User> admins = new ArrayList<>();
+		for (int i = 0; i < count; i++) {
+			String email = "admin" + adminIndex + "@settletree.io";
+			String koreanName = generateKoreanName();
+			String phone = generatePhone();
+
+			User admin = User.createSuperAdmin(email, password, koreanName, phone, org);
+			admin.changeRole(UserRole.ROLE_ADMIN);
+			userRepository.save(admin);
+			admins.add(admin);
+			adminIndex++;
+		}
+		return admins;
+	}
+
+	/**
+	 * [NEW] 일반 사용자 생성.
+	 * ID 패턴: user{인덱스}@settletree.io
+	 *
+	 * @param count 생성 수
+	 * @param org   소속 조직
+	 * @param password 인코딩된 비밀번호
+	 * @return 생성된 사용자 목록
+	 * @author gayul.kim
+	 */
+	private List<User> createNormalUsers(int count, Organization org, String password) {
+		List<User> users = new ArrayList<>();
+		for (int i = 0; i < count; i++) {
+			String email = "user" + userIndex + "@settletree.io";
+			String koreanName = generateKoreanName();
+			String phone = generatePhone();
+
+			User user = User.createSuperAdmin(email, password, koreanName, phone, org);
+			user.changeRole(UserRole.ROLE_USER);
+			userRepository.save(user);
+			users.add(user);
+			userIndex++;
+		}
+		return users;
+	}
+
+	/**
+	 * [NEW] 한국 이름 생성 (성씨 + 이름 2글자).
+	 *
+	 * @return 생성된 한국 이름 (예: "김서연")
+	 * @author gayul.kim
+	 */
+	private String generateKoreanName() {
+		String lastName = LAST_NAMES[random.nextInt(LAST_NAMES.length)];
+		String firstName1 = FIRST_NAME_PARTS_1[random.nextInt(FIRST_NAME_PARTS_1.length)];
+		String firstName2 = FIRST_NAME_PARTS_2[random.nextInt(FIRST_NAME_PARTS_2.length)];
+		return lastName + firstName1 + firstName2;
+	}
+
+	/**
+	 * [NEW] 전화번호 생성.
+	 *
+	 * @return 010-XXXX-XXXX 형식의 전화번호
+	 * @author gayul.kim
+	 */
+	private String generatePhone() {
+		return "010-" + PHONE_MIDDLE[random.nextInt(PHONE_MIDDLE.length)]
+			+ "-" + String.format("%04d", random.nextInt(10000));
+	}
+
+	/**
+	 * [NEW] 조직에서 랜덤 관리자 1명 반환.
+	 *
+	 * @param org 조직
+	 * @return 해당 조직의 관리자 (없으면 null)
+	 * @author gayul.kim
+	 */
+	private User findRandomAdmin(Organization org) {
+		if (org == null) return null;
+		List<User> admins = orgAdminMap.get(org);
+		if (admins == null || admins.isEmpty()) return null;
+		return admins.get(random.nextInt(admins.size()));
+	}
+
+	/**
+	 * [NEW] 리플렉션으로 createdAt 값을 설정 (날짜 분산용).
+	 *
+	 * @param request    정산 요청
+	 * @param createdAt  설정할 생성일시
+	 * @author gayul.kim
+	 */
+	private void setCreatedAt(SettlementRequest request, LocalDateTime createdAt) {
+		try {
+			java.lang.reflect.Field createdAtField = SettlementRequest.class.getDeclaredField("createdAt");
+			createdAtField.setAccessible(true);
+			createdAtField.set(request, createdAt);
+		} catch (Exception e) {
+			log.warn("[DataInitializer] createdAt 설정 실패: {}", e.getMessage());
+		}
+	}
 }

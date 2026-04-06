@@ -17,3 +17,13 @@ server:
 logging:
   level:
     org.springframework.security: DEBUG
+  slack:
+    webhook-url: ${SLACK_WEBHOOK_URL:}
+
+# 초기 더미 데이터 생성용 비밀번호 설정
+app:
+  init:
+    super-admin:
+      password: ${INIT_SUPER_ADMIN_PASSWORD:dev_super_admin**}
+    common:
+      password: ${INIT_COMMON_PASSWORD:dev_common_user**}

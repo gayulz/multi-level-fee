@@ -17,6 +17,10 @@ configurations {
 	}
 }
 
+jar {
+	enabled = false
+}
+
 repositories {
 	mavenCentral()
 }
@@ -48,6 +52,9 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// Slack Logback Appender
+	implementation 'com.github.maricn:logback-slack-appender:1.6.1'
 
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

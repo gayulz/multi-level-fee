@@ -43,11 +43,11 @@
                 <!-- 기간 필터 -->
                 <div class="col-12 col-md-3">
                     <label for="startDate" class="form-label small fw-bold">시작일</label>
-                    <input type="date" class="form-control" id="startDate" value="2026-03-01">
+                    <input type="date" class="form-control" id="startDate">
                 </div>
                 <div class="col-12 col-md-3">
                     <label for="endDate" class="form-label small fw-bold">종료일</label>
-                    <input type="date" class="form-control" id="endDate" value="2026-03-04">
+                    <input type="date" class="form-control" id="endDate">
                 </div>
                 <!-- 주문 ID 검색 -->
                 <div class="col-12 col-md-3">
@@ -134,6 +134,21 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script th:inline="none">
         $(document).ready(function () {
+            // 날짜 필터 기본값 동적 설정 (시작일: 30일 전, 종료일: 오늘)
+            var today = new Date();
+            var thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+
+            var formatDate = function(d) {
+                var year = d.getFullYear();
+                var month = ('0' + (d.getMonth() + 1)).slice(-2);
+                var day = ('0' + d.getDate()).slice(-2);
+                return year + '-' + month + '-' + day;
+            };
+
+            $('#startDate').val(formatDate(thirtyDaysAgo));
+            $('#endDate').val(formatDate(today));
+
             var table = $('#settlementTable').DataTable({
                 language: {
                     search: "검색:",
