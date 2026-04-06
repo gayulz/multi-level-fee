@@ -4,6 +4,8 @@ import com.example.settlement.domain.entity.Organization;
 import com.example.settlement.domain.entity.User;
 import com.example.settlement.domain.entity.enums.UserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +25,19 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
      * @return 사용자 (없으면 Optional.empty)
      */
     Optional<User> findByEmail(String email);
+
+    /**
+     * 이메일로 사용자 조회 시 소속 조직을 Fetch Join으로 함께 로드 (로그인 N+1 방지).
+     *
+     * CustomUserDetailsService에서 loadUserByUsername() 호출 시
+     * organization이 LAZY로 설정되어 있어 로그인마다 추가 쿼리가 발생하는 문제를 해결.
+     * 한 번의 쿼리로 User + Organization을 함께 조회한다.
+     *
+     * @param email 이메일
+     * @return User + Organization이 즉시 로드된 사용자 (없으면 Optional.empty)
+     */
+    @Query("SELECT u FROM User u JOIN FETCH u.organization WHERE u.email = :email")
+    Optional<User> findByEmailWithOrganization(@Param("email") String email);
 
     /**
      * 소속 조직으로 사용자 목록 조회.

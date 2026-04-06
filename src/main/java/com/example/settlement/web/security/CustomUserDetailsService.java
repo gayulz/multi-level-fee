@@ -24,7 +24,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        // Organization을 Fetch Join으로 함께 조회하여 로그인 시 N+1 쿼리 방지
+        User user = userRepository.findByEmailWithOrganization(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
 
         return new CustomUserDetails(user);
