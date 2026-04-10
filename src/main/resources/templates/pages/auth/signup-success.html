@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가입 완료 - SettleTree</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/welcome.css">
+    
+    <style>
+        .success-wrapper {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Neo-brutalism 느낌의 카드 */
+        .success-card {
+            background: #FFFFFF;
+            border: 2px solid var(--wc-text-primary, #2D2D2D);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 10px 10px 0 var(--wc-text-primary, #2D2D2D);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .success-card h2 {
+            font-family: var(--font-head, 'Oswald', sans-serif);
+            font-size: 36px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .success-desc {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: rgba(45, 45, 45, 0.8);
+        }
+
+        .success-card .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        /* Neon Hybrid 스타일 버튼 */
+        .start-btn {
+            display: inline-block;
+            font-family: var(--font-head, 'Oswald', sans-serif);
+            font-size: 18px;
+            color: #1A1A1A;
+            background: #00F0FF;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 2px solid #2D2D2D;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #00F0FF;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="welcome-body" style="background-color: #EAF0E8; color: #2D2D2D;">
+    <!-- Ambient Background Elements (Glassmorphism & Neon) -->
+    <div class="ambient-grid"></div>
+    <div class="ambient-orbs">
+        <div class="orb orb-neon" style="top: -10%; left: -10%; width: 600px; height: 600px; background: #00F0FF; position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15;"></div>
+        <div class="orb orb-pink" style="bottom: -10%; right: -10%; width: 700px; height: 700px; background: #FF00FF; position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="welcome-nav" style="position: fixed; width: 100%; height: 80px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; z-index: 1000; backdrop-filter: blur(10px); background: rgba(234, 240, 232, 0.7); border-bottom: 1px solid rgba(0, 0, 0, 0.05);">
+        <a href="/" class="brand" style="font-family: 'Oswald', sans-serif; font-size: 28px; font-weight: 700; color: #2D2D2D; text-decoration: none; text-transform: uppercase;">SETTLETREE</a>
+    </nav>
+
+    <!-- Success Message Box (Neo-brutalism) -->
+    <div class="success-wrapper">
+        <div class="success-card">
+            <div class="icon">✨</div>
+            <h2>REGISTRATION<br>COMPLETED</h2>
+            <p class="success-desc">
+                가입 신청서가 정상적으로 접수되었습니다.<br/>
+                소속 조직 관리자의 <strong>최종 승인(Approval)</strong>이 떨어지면<br/>정상적으로 로그인이 가능합니다.
+            </p>
+            <a href="/auth/login" class="start-btn">LOGIN 화면으로 돌아가기</a>
+        </div>
+    </div>
+</body>
+</html>

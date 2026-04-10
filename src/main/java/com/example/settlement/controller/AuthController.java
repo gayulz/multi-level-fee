@@ -54,6 +54,17 @@ public class AuthController {
     }
 
     /**
+     * [NEW] 회원가입 성공 뷰 페이지 이동
+     *
+     * @author gayul.kim
+     * @return 가입 완료 안내 페이지
+     */
+    @GetMapping("/signup/success")
+    public String signupSuccess() {
+        return "pages/auth/signup-success";
+    }
+
+    /**
      * [NEW] 회원가입 처리 로직
      *
      * @author gayul.kim
@@ -69,8 +80,7 @@ public class AuthController {
 
         try {
             userService.registerUser(request);
-            // TODO: 성공 여부에 따라 파라미터나 전용 페이지(auth/signup/success)로 리다이렉트 (임시로 로그인 페이지로 이동)
-            return "redirect:/auth/login?registered=true";
+            return "redirect:/auth/signup/success";
         } catch (IllegalArgumentException e) {
             bindingResult.rejectValue("email", "duplicate", e.getMessage());
             model.addAttribute("organizations", organizationService.getAllOrganizations());
