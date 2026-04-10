@@ -1,80 +1,68 @@
 <!--
-  [MIG] Task 2.1: 사이드바 미니멀 디자인 적용 - sendr.ai 스타일
-
-  sendr.ai 섹션 카테고리 라벨(OVERVIEW, SETTLEMENT, SYSTEM) 추가
-  Bootstrap Offcanvas-lg 반응형 구조 유지
-  Thymeleaf Security 태그(sec:authorize) 유지
-
+  [MIG] Task 3.2: 사이드바 Trendy Glassmorphism 및 다국어(i18n) 적용
+  
   @author gayul.kim
-  @since 2026-03-29
+  @since 2026-04-10
 -->
-<nav class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel" th:fragment="sidebar">
-	<div class="offcanvas-header border-bottom">
-		<h5 class="offcanvas-title" id="sidebarMenuLabel">
-			<i class="bi bi-tree text-primary me-1"></i> SettleTree
-		</h5>
-		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
-	</div>
+<nav class="trendy-sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel" th:fragment="sidebar"
+     style="width: 260px; height: 100vh; position: fixed; top: 0; left: 0; padding: 30px 20px; z-index: 100;
+            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid rgba(255,255,255,0.7); overflow-y: auto;">
+            
+    <div class="offcanvas-header d-lg-none border-bottom pb-3 mb-3">
+        <a class="brand" th:href="@{/dashboard}" style="font-size: 20px; font-weight: 800; color: #0F172A; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+            <i class="bi bi-tree" style="background: linear-gradient(135deg, #3B82F6, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 22px;"></i> SettleTree
+        </a>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
+    </div>
 
-	<div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
-		<ul class="nav flex-column mb-auto px-3 w-100">
+    <!-- 데스크톱 로고 -->
+    <a class="brand d-none d-lg-flex" th:href="@{/dashboard}" style="font-size: 24px; font-weight: 800; color: #0F172A; text-decoration: none; align-items: center; gap: 10px; margin-bottom: 40px; letter-spacing: -0.5px;">
+        <i class="bi bi-fan" style="background: linear-gradient(135deg, #3B82F6, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 26px;"></i> SettleTree
+    </a>
 
-			<!-- ===== OVERVIEW 섹션 ===== -->
-			<span class="nav-section-label">Overview</span>
-			<li class="nav-item">
-				<a class="nav-link d-flex align-items-center gap-2"
-				   th:classappend="${currentPage == 'dashboard' ? 'active' : ''}"
-				   aria-current="page"
-				   th:href="@{/dashboard}">
-					<i class="bi bi-grid"></i>
-					<span>Dashboard</span>
-				</a>
-			</li>
+    <ul class="nav-menu" style="list-style: none; padding: 0; margin: 0;">
+        
+        <li style="margin-bottom: 8px;">
+            <a th:href="@{/dashboard}" class="d-flex align-items-center" th:classappend="${currentPage == 'dashboard' ? 'active shadow-sm' : ''}" 
+               style="padding: 12px 16px; text-decoration: none; color: #64748B; font-weight: 600; font-size: 14px; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+               onmouseover="this.style.background='rgba(255,255,255,0.6)'; this.style.color='#0F172A';" onmouseout="if(!this.classList.contains('active')){this.style.background='transparent'; this.style.color='#64748B';}">
+                <i class="bi bi-grid-fill me-3" style="font-size: 18px;" th:style="${currentPage == 'dashboard' ? 'color: #3B82F6; font-size: 18px;' : 'font-size: 18px;'}"></i>
+                <span th:text="#{sidebar.dashboard}">대시보드</span>
+            </a>
+        </li>
+        
+        <li style="margin-bottom: 8px;" sec:authorize="hasAnyRole('SUPER_ADMIN', 'ADMIN')">
+            <a th:href="@{/nodes}" class="d-flex align-items-center" th:classappend="${currentPage == 'nodes' ? 'active shadow-sm' : ''}"
+               style="padding: 12px 16px; text-decoration: none; color: #64748B; font-weight: 600; font-size: 14px; border-radius: 12px; transition: all 0.3s;"
+               onmouseover="this.style.background='rgba(255,255,255,0.6)'; this.style.color='#0F172A';" onmouseout="if(!this.classList.contains('active')){this.style.background='transparent'; this.style.color='#64748B';}">
+                <i class="bi bi-diagram-3-fill me-3" style="font-size: 18px;" th:style="${currentPage == 'nodes' ? 'color: #3B82F6; font-size: 18px;' : 'font-size: 18px;'}"></i>
+                <span th:text="#{sidebar.nodes}">하위 조직 노드</span>
+            </a>
+        </li>
+        
+        <li style="margin-bottom: 8px;">
+            <a th:href="@{/settlement/history}" class="d-flex align-items-center" th:classappend="${currentPage == 'settlement-history' ? 'active shadow-sm' : ''}"
+               style="padding: 12px 16px; text-decoration: none; color: #64748B; font-weight: 600; font-size: 14px; border-radius: 12px; transition: all 0.3s;"
+               onmouseover="this.style.background='rgba(255,255,255,0.6)'; this.style.color='#0F172A';" onmouseout="if(!this.classList.contains('active')){this.style.background='transparent'; this.style.color='#64748B';}">
+                <i class="bi bi-receipt me-3" style="font-size: 18px;" th:style="${currentPage == 'settlement-history' ? 'color: #3B82F6; font-size: 18px;' : 'font-size: 18px;'}"></i>
+                <span th:text="#{sidebar.settlements}">정산 내역</span>
+            </a>
+        </li>
 
-			<!-- ===== SETTLEMENT 섹션 ===== -->
-			<span class="nav-section-label">Settlement</span>
-			<th:block sec:authorize="hasAnyRole('SUPER_ADMIN', 'ADMIN')">
-				<li class="nav-item">
-					<a class="nav-link d-flex align-items-center gap-2"
-					   th:classappend="${currentPage == 'nodes' ? 'active' : ''}"
-					   th:href="@{/nodes}">
-						<i class="bi bi-diagram-3"></i>
-						<span>노드 현황</span>
-					</a>
-				</li>
-			</th:block>
-			<li class="nav-item">
-				<a class="nav-link d-flex align-items-center gap-2"
-				   th:classappend="${currentPage == 'settlement-request' ? 'active' : ''}"
-				   th:href="@{/settlement/request}">
-					<i class="bi bi-calculator"></i>
-					<span>정산 요청</span>
-				</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link d-flex align-items-center gap-2"
-				   th:classappend="${currentPage == 'settlement-history' ? 'active' : ''}"
-				   th:href="@{/settlement/history}">
-					<i class="bi bi-receipt"></i>
-					<span>정산 내역</span>
-				</a>
-			</li>
+        <th:block sec:authorize="hasRole('SUPER_ADMIN')">
+            <li style="margin: 30px 0 10px 0;">
+                <span style="padding-left:16px; font-size:11px; font-weight:800; color:#94A3B8; text-transform:uppercase; letter-spacing:1px;" th:text="#{sidebar.adminSpace}">ADMIN SPACE</span>
+            </li>
+            <li style="margin-bottom: 8px;">
+                <a th:href="@{/admin/users}" class="d-flex align-items-center" th:classappend="${currentPage == 'admin-users' ? 'active shadow-sm' : ''}"
+                   style="padding: 12px 16px; text-decoration: none; color: #64748B; font-weight: 600; font-size: 14px; border-radius: 12px; transition: all 0.3s;"
+                   onmouseover="this.style.background='rgba(255,255,255,0.6)'; this.style.color='#0F172A';" onmouseout="if(!this.classList.contains('active')){this.style.background='transparent'; this.style.color='#64748B';}">
+                    <i class="bi bi-people-fill me-3" style="font-size: 18px;" th:style="${currentPage == 'admin-users' ? 'color: #3B82F6; font-size: 18px;' : 'font-size: 18px;'}"></i>
+                    <span th:text="#{sidebar.users}">사용자 관리</span>
+                </a>
+            </li>
+        </th:block>
 
-			<!-- ===== SYSTEM 섹션 ===== -->
-			<th:block sec:authorize="hasRole('SUPER_ADMIN')">
-				<span class="nav-section-label">System</span>
-				<li class="nav-item">
-					<a class="nav-link d-flex align-items-center gap-2"
-					   th:classappend="${currentPage == 'admin-users' ? 'active' : ''}"
-					   th:href="@{/admin/users}">
-						<i class="bi bi-people"></i>
-						<span>사용자 관리</span>
-					</a>
-				</li>
-			</th:block>
-
-		</ul>
-
-
-	</div>
+    </ul>
 </nav>

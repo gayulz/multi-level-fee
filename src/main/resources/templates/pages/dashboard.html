@@ -9,194 +9,222 @@
 	<title>대시보드 - SettleTree</title>
 </head>
 
-<!-- 페이지별 CSS -->
+<!-- 페이지별 CSS 주입 -->
 <th:block layout:fragment="css">
-	<link rel="stylesheet" href="/css/dashboard.css">
+	<style>
+        .page-title {
+            font-size: 36px; font-weight: 800; margin-bottom: 5px; letter-spacing: -1px;
+            color: var(--text-main); animation: slideUp 0.5s ease-out;
+        }
+        .page-subtitle { color: var(--text-muted); font-weight: 500; font-size: 15px; margin-bottom: 40px; animation: slideUp 0.6s ease-out; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Interactive Stat Cards */
+        .stat-card {
+            padding: 24px 30px; position: relative; overflow: hidden; height: 100%;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: default;
+        }
+        .stat-card:hover { 
+            transform: translateY(-8px) scale(1.02); 
+            box-shadow: var(--glass-shadow-hover);
+            border-color: #FFF; background: rgba(255, 255, 255, 0.9);
+        }
+        .icon-box {
+            width: 48px; height: 48px; border-radius: 14px; display:flex; align-items:center; justify-content:center;
+            font-size: 20px; margin-bottom: 20px; transition: transform 0.4s ease;
+        }
+        .stat-card:hover .icon-box { transform: rotate(10deg) scale(1.1); }
+        
+        .ic-primary { background: #EFF6FF; color: var(--accent-primary); }
+        .ic-pink { background: #FDF2F8; color: var(--accent-pink); }
+        .ic-green { background: #ECFDF5; color: var(--success); }
+        .ic-red { background: #FEF2F2; color: #DC2626; }
+        .ic-yellow { background: #FEFCE8; color: #D97706; }
+
+        .stat-label { font-size: 14px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .stat-value { font-size: 38px; font-weight: 800; margin: 0 0 10px 0; color: var(--text-main); letter-spacing: -1px;}
+
+        /* Data Grid with Hover Effects */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 50px; margin-bottom: 20px;}
+        .section-header h3 { font-size: 20px; font-weight: 700; margin: 0; letter-spacing: -0.5px;}
+        .btn-modern {
+            background: #FFF; color: var(--text-main); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            padding: 8px 20px; border-radius: 30px; font-size: 13px; font-weight: 700; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-decoration: none;
+        }
+        .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.08); color: var(--accent-primary); border-color: rgba(59,130,246,0.3); }
+
+        .trendy-table-wrapper { padding: 10px; overflow-x: auto; }
+        .trendy-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 600px; }
+        .trendy-table th {
+            color: var(--text-muted); font-size: 13px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; padding: 16px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); text-align: left;
+        }
+        .trendy-table td {
+            padding: 16px 20px; font-size: 14px; border-bottom: 1px solid rgba(0,0,0,0.03);
+            vertical-align: middle; font-weight: 600; transition: background 0.2s;
+        }
+        .trendy-table tr { transition: all 0.3s ease; }
+        .trendy-table tr:hover { transform: scale(1.005); }
+        .trendy-table tr:hover td { background: rgba(255,255,255,0.7); }
+        .trendy-table tr:hover td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+        .trendy-table tr:hover td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+        
+        .badge-status {
+            padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .badge-COMPLETED { background: #ECFDF5; color: #059669; }
+        .badge-COMPLETED::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #059669; display: inline-block; }
+        
+        .badge-PENDING { background: #FFFBEB; color: #D97706; }
+        .badge-PENDING::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #D97706; display: inline-block; animation: pulse 2s infinite; }
+        
+        .badge-REJECTED { background: #FEF2F2; color: #DC2626; }
+        .badge-REJECTED::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #DC2626; display: inline-block; }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(217, 119, 6, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+        }
+
+        .org-badge {
+            background: #F8FAFC; border: 1px solid #E2E8F0; padding: 4px 10px; border-radius: 8px;
+            font-size: 13px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px; font-weight: 600;
+        }
+
+        /* Tree Styles */
+        .org-tree-wrapper { padding: 20px; }
+        .org-box {
+            padding: 12px 20px; background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            font-weight: 700; color: var(--text-main); margin-bottom: 10px;
+        }
+        .org-branch { padding-left: 40px; border-left: 2px dashed rgba(59,130,246,0.3); margin-left: 20px; }
+	</style>
 </th:block>
 
-<!-- 컨텐츠 -->
+<!-- 메인 컨텐츠 -->
 <div layout:fragment="content">
-	<div class="container-fluid py-4">
-		<div class="d-flex justify-content-between align-items-center mb-4">
-			<h2 class="page-title mb-0">대시보드</h2>
-			<div class="text-muted">
-				<span th:text="${user.name}">사용자</span>님, 환영합니다!
-			</div>
-		</div>
+    
+    <!-- Welcome Header -->
+    <h1 class="page-title" th:text="#{dashboard.welcome(${user?.name ?: 'User'})}">Welcome back, User 👋</h1>
+    <div class="page-subtitle" th:text="#{dashboard.subtitle}">오늘의 정산 데이터 현황을 확인하세요.</div>
 
-		<!-- [Phase 4] 통계 카드 (sendr.ai stat-card 구조) -->
-		<div class="dashboard-stats">
-			<!-- 전체 요청 수 -->
-			<div class="stat-card">
-				<div class="stat-icon">
-					<i class="bi bi-file-text"></i>
-				</div>
-				<div class="stat-label">전체 정산 요청</div>
-				<div class="stat-value" th:text="${statistics.totalRequests}">0</div>
-			</div>
+    <!-- 통계 카드 (Glassmorphism & Micro-animations) -->
+    <div class="row g-4">
+        <!-- 총 정산 금액 -->
+        <div class="col-md-4 col-sm-6">
+            <div class="glass-panel stat-card" style="animation: slideUp 0.6s 0.1s both;">
+                <div class="icon-box ic-primary"><i class="bi bi-wallet2"></i></div>
+                <div class="stat-label" th:text="#{dashboard.stat.volume}">당월 정산액 (30일)</div>
+                <div class="stat-value" th:text="${'₩ ' + #numbers.formatInteger(statistics.totalAmount, 1, 'COMMA')}">₩ 0</div>
+            </div>
+        </div>
+        <!-- 승인 대기 -->
+        <div class="col-md-4 col-sm-6">
+            <div class="glass-panel stat-card" style="animation: slideUp 0.6s 0.2s both;">
+                <div class="icon-box ic-yellow"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-label" th:text="#{dashboard.stat.pending}">승인 대기 건</div>
+                <div class="stat-value" th:text="${statistics.pendingRequests}">0</div>
+            </div>
+        </div>
+        <!-- 전체 요청 수 -->
+        <div class="col-md-4 col-sm-6">
+            <div class="glass-panel stat-card" style="animation: slideUp 0.6s 0.3s both;">
+                <div class="icon-box ic-green"><i class="bi bi-file-text"></i></div>
+                <div class="stat-label">전체 정산 요청</div>
+                <div class="stat-value" th:text="${statistics.totalRequests}">0</div>
+            </div>
+        </div>
+        <!-- 반려 건수 -->
+        <div class="col-md-4 col-sm-6">
+            <div class="glass-panel stat-card" style="animation: slideUp 0.6s 0.4s both;">
+                <div class="icon-box ic-red"><i class="bi bi-x-circle-fill"></i></div>
+                <div class="stat-label">반려된 요청</div>
+                <div class="stat-value" th:text="${statistics.rejectedRequests}" style="color: #DC2626;">0</div>
+            </div>
+        </div>
+    </div>
 
-			<!-- 승인 대기 -->
-			<div class="stat-card">
-				<div class="stat-icon">
-					<i class="bi bi-clock-history"></i>
-				</div>
-				<div class="stat-label">승인 대기</div>
-				<div class="stat-value" th:text="${statistics.pendingRequests}">0</div>
-			</div>
+    <!-- 최근 정산 테이블 영역 -->
+    <div class="section-header" style="animation: slideUp 0.6s 0.5s both;">
+        <h3 th:text="#{dashboard.recentTx}">최근 트랜잭션 내역</h3>
+        <a th:href="@{/settlements}" class="btn-modern" th:text="#{dashboard.viewAll}">전체 보기</a>
+    </div>
 
-			<!-- 승인 완료 -->
-			<div class="stat-card">
-				<div class="stat-icon">
-					<i class="bi bi-check2-circle"></i>
-				</div>
-				<div class="stat-label">승인 완료</div>
-				<div class="stat-value" th:text="${statistics.approvedRequests}">0</div>
-			</div>
+    <div class="glass-panel trendy-table-wrapper" style="animation: slideUp 0.6s 0.6s both;">
+        <table class="trendy-table" th:if="${not #lists.isEmpty(recentSettlements)}">
+            <thead>
+                <tr>
+                    <th th:text="#{table.txId}">Tx ID</th>
+                    <th th:text="#{table.amount}">Amount</th>
+                    <th th:text="#{table.path}">Origin Path</th>
+                    <th th:text="#{table.status}">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="settlement : ${recentSettlements}" class="cursor-pointer" th:onclick="|location.href='@{/settlements}'|">
+                    <td style="color: var(--accent-primary);" th:text="${settlement.id}">ORD-1</td>
+                    <td style="font-weight: 800;" th:text="${'₩ ' + #numbers.formatInteger(settlement.amount, 1, 'COMMA')}">₩ 0</td>
+                    <td>
+                        <div class="org-badge">
+                            <i class="bi bi-building"></i> <span th:text="${settlement.organizationName}">본사</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge-status" th:classappend="'badge-' + ${settlement.status}" th:text="${settlement.statusText}">PENDING</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-			<!-- 총 정산 금액 -->
-			<div class="stat-card">
-				<div class="stat-icon">
-					<i class="bi bi-cash-coin"></i>
-				</div>
-				<div class="stat-label">총 정산 금액</div>
-				<div class="stat-value" th:text="${'₩' + #numbers.formatInteger(statistics.totalAmount, 0, 'COMMA')}">₩0</div>
-			</div>
-		</div>
+        <!-- 비어있을 경우 (Empty State) -->
+        <div th:if="${#lists.isEmpty(recentSettlements)}" class="text-center py-5">
+            <div class="mb-3 opacity-25">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: var(--accent-primary);"></i>
+            </div>
+            <p class="text-muted fw-bold mb-0">현재 분석할 정산 요청이 없습니다.</p>
+        </div>
+    </div>
 
-		<div class="row g-4">
-			<!-- [Phase 4] 최근 정산 요청 섹션 (카드화) -->
-			<div class="col-lg-8">
-				<div class="dashboard-section-card h-100 pb-2">
-					<div class="section-header">
-						<h3 class="section-title">최근 정산 요청</h3>
-						<a th:href="@{/settlements}" class="btn btn-outline-primary btn-sm rounded-pill px-3" style="font-size: 13px;">전체 보기</a>
-					</div>
+    <!-- 조딕 트리 영역 (ADMIN 전용) -->
+    <div sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')" th:if="${organizationTree != null}">
+        <div class="section-header" style="animation: slideUp 0.6s 0.7s both;">
+            <h3 th:text="#{sidebar.nodes}">하위 조직 트리 현황</h3>
+        </div>
+        
+        <div class="glass-panel org-tree-wrapper" style="animation: slideUp 0.6s 0.8s both;">
+            <div class="org-box" style="background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2);">
+                <i class="bi bi-star-fill text-primary"></i> <span th:text="${organizationTree.name}">본사</span>
+                <span class="badge bg-primary text-white ms-2" th:text="${organizationTree.requestCount + '건'}">0건</span>
+            </div>
+            
+            <div class="org-branch" th:if="${not #lists.isEmpty(organizationTree.children)}">
+                <div th:each="child : ${organizationTree.children}">
+                    <div class="org-box mt-3" style="background: rgba(236,72,153,0.05); border-color: rgba(236,72,153,0.2);">
+                        <i class="bi bi-diagram-3 text-pink"></i> <span th:text="${child.name}">지사</span>
+                        <span class="badge" style="background: var(--accent-pink); color: #FFF;" th:text="${child.requestCount + '건'}">0건</span>
+                    </div>
 
-					<div class="table-responsive" th:if="${not #lists.isEmpty(recentSettlements)}">
-						<table class="table table-hover align-middle mb-0" style="font-size: 14px;">
-							<thead>
-								<tr class="text-muted" style="border-bottom: 2px solid var(--border-color);">
-									<th class="ps-3 py-3" style="font-weight: 600;">ID</th>
-									<th class="py-3" style="font-weight: 600;">요청자</th>
-									<th class="py-3" style="font-weight: 600;">조직</th>
-									<th class="py-3 text-end" style="font-weight: 600;">금액</th>
-									<th class="py-3 text-center" style="font-weight: 600;">상태</th>
-									<th class="pe-3 py-3 text-end" style="font-weight: 600;">요청일</th>
-								</tr>
-							</thead>
-							<tbody style="border-top: none;">
-								<tr th:each="settlement : ${recentSettlements}" class="cursor-pointer" th:onclick="|location.href='@{/settlements}'|">
-									<td class="ps-3 text-muted" th:text="${settlement.id}">1</td>
-									<td class="fw-semibold text-heading" th:text="${settlement.requesterName}">홍길동</td>
-									<td class="text-muted" th:text="${settlement.organizationName}">본사</td>
-									<td class="text-end fw-bold text-heading">
-										₩<span th:text="${#numbers.formatInteger(settlement.amount, 1, 'COMMA')}">0</span>
-									</td>
-									<td class="text-center">
-										<span class="badge-status" 
-											  th:classappend="${settlement.status == 'COMPLETED' ? 'completed' : (settlement.status == 'REJECTED' ? 'rejected' : 'pending')}"
-											  th:text="${settlement.statusText}">
-											상태
-										</span>
-									</td>
-									<td class="text-end pe-3 text-muted" style="font-size: 13px;" th:text="${settlement.createdAt}">
-										2026-03-30 00:00
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
+                    <div class="org-branch" th:if="${not #lists.isEmpty(child.children)}">
+                        <div th:each="grandchild : ${child.children}">
+                            <div class="org-box mt-2">
+                                <i class="bi bi-shop text-muted"></i> <span th:text="${grandchild.name}">대리점</span>
+                                <span class="badge bg-secondary ms-2" th:text="${grandchild.requestCount + '건'}">0건</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-					<div th:if="${#lists.isEmpty(recentSettlements)}" class="text-center py-5">
-						<div class="mb-3 opacity-25">
-							<i class="bi bi-inbox" style="font-size: 3rem;"></i>
-						</div>
-						<p class="text-muted mb-0">현재 표시할 정산 요청이 없습니다.</p>
-					</div>
-				</div>
-			</div>
-
-			<!-- 활성 사용자 및 반려 요청 카드 -->
-			<div class="col-lg-4">
-				<div class="stat-card mb-4">
-					<div class="stat-icon">
-						<i class="bi bi-people-fill"></i>
-					</div>
-					<div class="stat-label">활성 사용자</div>
-					<div class="stat-value" th:text="${statistics.activeUsers}">0</div>
-					<div class="text-muted" style="font-size: 13px;">현재 활성 계정</div>
-				</div>
-
-				<div class="stat-card" style="--stat-icon-bg: rgba(239, 68, 68, 0.08);">
-					<div class="stat-icon" style="background: rgba(239, 68, 68, 0.08);">
-						<i class="bi bi-x-circle-fill" style="color: var(--color-danger);"></i>
-					</div>
-					<div class="stat-label">반려된 요청</div>
-					<div class="stat-value" style="color: var(--color-danger);" th:text="${statistics.rejectedRequests}">0</div>
-					<div class="text-muted" style="font-size: 13px;">검토 후 반려 처리된 건</div>
-				</div>
-			</div>
-
-		</div>
-
-		<!-- [Phase 4] 조직 구조 트리 섹션 (카드화) -->
-		<div class="row g-4 mt-2" sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')" th:if="${organizationTree != null}">
-			<div class="col-12">
-				<div class="dashboard-section-card">
-					<div class="section-header border-bottom pb-3 mb-4">
-						<div class="d-flex align-items-center gap-3">
-							<div class="stat-icon" style="margin-bottom: 0; background: rgba(25, 6, 90, 0.05); flex-shrink: 0;">
-								<i class="bi bi-diagram-3-fill" style="color: var(--color-primary);"></i>
-							</div>
-							<div>
-								<h3 class="section-title">조직 구조 트리</h3>
-								<div class="text-muted" style="font-size: 13px;">본사부터 대리점까지 계통 구조 및 정산 요청 현황</div>
-							</div>
-						</div>
-					</div>
-
-					<div class="org-tree-container px-2">
-						<ul class="org-tree">
-						<li>
-							<div class="org-node org-level-1">
-								<div class="d-flex align-items-center gap-2">
-									<span class="org-level-badge hq">본사</span>
-									<span class="org-name" th:text="${organizationTree.name}">본사</span>
-								</div>
-								<span class="org-count" th:text="${organizationTree.requestCount + '건'}">0건</span>
-							</div>
-
-							<!-- 하위 조직 재귀 렌더링 -->
-							<ul class="children" th:if="${not #lists.isEmpty(organizationTree.children)}">
-								<li th:each="child : ${organizationTree.children}">
-									<div class="org-node org-level-2">
-										<div class="d-flex align-items-center gap-2">
-											<span class="org-level-badge branch">지사</span>
-											<span class="org-name" th:text="${child.name}">지사</span>
-										</div>
-										<span class="org-count" th:text="${child.requestCount + '건'}">0건</span>
-									</div>
-
-									<!-- 3단계 하위 조직 -->
-									<ul class="children" th:if="${not #lists.isEmpty(child.children)}">
-										<li th:each="grandchild : ${child.children}">
-											<div class="org-node org-level-3">
-												<div class="d-flex align-items-center gap-2">
-													<span class="org-level-badge agency">대리점</span>
-													<span class="org-name" th:text="${grandchild.name}">대리점</span>
-												</div>
-												<span class="org-count" th:text="${grandchild.requestCount + '건'}">0건</span>
-											</div>
-										</li>
-									</ul>
-								</li>
-							</ul>
-						</li>
-					</ul>
-				</div>
-			</div>
-		</div>
-	</div>
 </div>
 
 <!-- 페이지별 JS -->

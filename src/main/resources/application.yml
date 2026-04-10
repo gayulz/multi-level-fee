@@ -24,6 +24,6 @@ logging:
 app:
   init:
     super-admin:
-      password: ${INIT_SUPER_ADMIN_PASSWORD:dev_super_admin**}
+      password: ${INIT_SUPER_ADMIN_PASSWORD:admin1234!}
     common:
-      password: ${INIT_COMMON_PASSWORD:dev_common_user**}
+      password: ${INIT_COMMON_PASSWORD:user1234!}
