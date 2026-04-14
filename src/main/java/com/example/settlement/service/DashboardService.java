@@ -195,6 +195,7 @@ public class DashboardService {
 	private DashboardResponse.RecentSettlement toRecentSettlement(SettlementRequest request) {
 		return DashboardResponse.RecentSettlement.builder()
 			.id(request.getId())
+			.orderId(request.getOrderId())
 			.requesterName(request.getRequester().getName())
 			.organizationName(request.getOrganization().getOrgName())
 			.amount(request.getAmount())

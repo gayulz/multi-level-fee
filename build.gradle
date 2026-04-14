@@ -81,3 +81,8 @@ tasks.withType(JavaCompile).configureEach {
 clean.doLast {
 	file(querydslDir).deleteDir()
 }
+
+// [MIG] 개발 편의성: bootRun 시 템플릿/정적 자원 실시간 변경 리로드용 소스 직접 감시
+bootRun {
+	sourceResources sourceSets.main
+}

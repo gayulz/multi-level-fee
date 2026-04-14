@@ -39,6 +39,7 @@ public class DashboardResponse {
 	@Builder
 	public static class RecentSettlement {
 		private Long id;
+		private String orderId; // [MIG] 화면 노출용 주문 ID 추가
 		private String requesterName;
 		private String organizationName;
 		private BigDecimal amount;

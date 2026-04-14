@@ -98,14 +98,138 @@
             font-size: 13px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px; font-weight: 600;
         }
 
-        /* Tree Styles */
-        .org-tree-wrapper { padding: 20px; }
-        .org-box {
-            padding: 12px 20px; background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.05);
-            border-radius: 12px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-            font-weight: 700; color: var(--text-main); margin-bottom: 10px;
+        /* [MIG] Top-Down Organizational Chart Styles */
+        .org-tree-wrapper { padding: 40px 20px; overflow-x: auto; text-align: center; }
+        
+        .org-tree { 
+            display: inline-flex; 
+            flex-direction: column;
+            align-items: center;
         }
-        .org-branch { padding-left: 40px; border-left: 2px dashed rgba(59,130,246,0.3); margin-left: 20px; }
+        
+        .org-children {
+            display: flex;
+            justify-content: center;
+            padding-top: 20px; 
+            position: relative;
+        }
+        
+        .org-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            padding: 20px 10px 0 10px;
+        }
+        
+        /* The downward line connecting parent to its children container */
+        .org-children::before {
+            content: '';
+            position: absolute; top: 0; left: 50%;
+            border-left: 2px solid rgba(59,130,246,0.25);
+            width: 0; height: 20px;
+            transform: translateX(-50%);
+        }
+
+        /* Pseudo elements to draw the horizontal lines */
+        .org-node::before, .org-node::after {
+            content: '';
+            position: absolute; 
+            top: 0; 
+            right: 50%;
+            border-top: 2px solid rgba(59,130,246,0.25);
+            width: 50%; 
+            height: 20px;
+        }
+        .org-node::after {
+            right: auto; 
+            left: 50%;
+            border-left: 2px solid rgba(59,130,246,0.25);
+        }
+
+        /* Remove left/right connectors from first and last siblings */
+        .org-node:first-child::before, .org-node:last-child::after {
+            border: 0 none;
+        }
+        
+        /* Add rounded corners and right border to the very edges */
+        .org-node:first-child::after { border-radius: 8px 0 0 0; }
+        .org-node:last-child::before { 
+            border-radius: 0 8px 0 0; 
+            border-right: 2px solid rgba(59,130,246,0.25); 
+        }
+        
+        /* Remove ALL connectors from children if there's only one child */
+        .org-node:only-child::after, .org-node:only-child::before {
+            display: none;
+        }
+        .org-node:only-child { padding-top: 0; }
+        
+        /* Root overrides */
+        .org-tree > .org-node::before, .org-tree > .org-node::after { display: none; }
+        .org-tree > .org-node { padding-top: 0; }
+
+        /* [MIG] 하위 노드 전용 수직 리스트 스타일 */
+        .org-children-vertical {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px; 
+            position: relative;
+        }
+        
+        .org-children-vertical .org-node {
+            padding: 15px 0 0 0; /* 좌우 패딩 제거, 위아래 간격 15px */
+        }
+        
+        /* 가로 분기선 및 곡선 무력화 */
+        .org-children-vertical .org-node::after { display: none !important; }
+        
+        /* 세로 일자선으로 교체 */
+        .org-children-vertical .org-node::before {
+            border-top: 0 none !important;
+            border-left: 2px solid rgba(59,130,246,0.25) !important;
+            border-radius: 0 !important;
+            width: 0 !important;
+            height: 15px !important; /* 패딩 크기에 맞춰 위로 선을 그어 부모/이전 형제와 연결 */
+            left: 50% !important;
+            right: auto !important;
+            transform: translateX(-50%) !important;
+            top: 0 !important;
+        }
+        
+        /* 가장 첫 번째 자식은 .org-children::before 가 이미 그려준 부모선에 닿으므로 추가 선과 패딩 불필요 */
+        .org-children-vertical > .org-node:first-child {
+            padding-top: 0;
+        }
+        .org-children-vertical > .org-node:first-child::before {
+            display: none !important;
+        }
+
+        .org-box {
+            padding: 12px 24px; 
+            background: rgba(255,255,255,0.95); 
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 12px; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 12px; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.04);
+            font-weight: 700; color: var(--text-main); 
+            margin: 0;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .org-box:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(59,130,246,0.2);
+            border-color: rgba(59,130,246,0.4);
+            z-index: 3;
+        }
 
         /* [MIG] PC 해상도 너비 잠금 제어 */
         @media (min-width: 1025px) {
@@ -171,7 +295,7 @@
     <!-- 최근 정산 테이블 영역 -->
     <div class="section-header" style="animation: slideUp 0.6s 0.5s both;">
         <h3 th:text="#{dashboard.recentTx}">최근 트랜잭션 내역</h3>
-        <a th:href="@{/settlements}" class="btn-modern" th:text="#{dashboard.viewAll}">전체 보기</a>
+        <a th:href="@{/settlement/history}" class="btn-modern" th:text="#{dashboard.viewAll}">전체 보기</a>
     </div>
 
     <div class="glass-panel trendy-table-wrapper" style="animation: slideUp 0.6s 0.6s both;">
@@ -185,8 +309,8 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="settlement : ${recentSettlements}" class="cursor-pointer" th:onclick="|location.href='@{/settlements}'|">
-                    <td style="color: var(--accent-primary);" th:text="${settlement.id}">ORD-1</td>
+                <tr th:each="settlement : ${recentSettlements}" class="cursor-pointer" th:onclick="|location.href='@{/settlement/history}'|">
+                    <td style="color: var(--accent-primary);" th:text="${settlement.orderId}">ORD-1</td>
                     <td style="font-weight: 800;" th:text="${'₩ ' + #numbers.formatInteger(settlement.amount, 1, 'COMMA')}">₩ 0</td>
                     <td>
                         <div class="org-badge">
@@ -216,23 +340,27 @@
         </div>
         
         <div class="glass-panel org-tree-wrapper" style="animation: slideUp 0.6s 0.8s both;">
-            <div class="org-box" style="background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2);">
-                <i class="bi bi-star-fill text-primary"></i> <span th:text="${organizationTree.name}">본사</span>
-                <span class="badge bg-primary text-white ms-2" th:text="${organizationTree.requestCount + '건'}">0건</span>
-            </div>
-            
-            <div class="org-branch" th:if="${not #lists.isEmpty(organizationTree.children)}">
-                <div th:each="child : ${organizationTree.children}">
-                    <div class="org-box mt-3" style="background: rgba(236,72,153,0.05); border-color: rgba(236,72,153,0.2);">
-                        <i class="bi bi-diagram-3 text-pink"></i> <span th:text="${child.name}">지사</span>
-                        <span class="badge" style="background: var(--accent-pink); color: #FFF;" th:text="${child.requestCount + '건'}">0건</span>
+            <div class="org-tree">
+                <div class="org-node">
+                    <div class="org-box" style="background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2);">
+                        <i class="bi bi-star-fill text-primary"></i> <span th:text="${organizationTree.name}">본사</span>
+                        <span class="badge bg-primary text-white ms-2" th:text="${organizationTree.requestCount + '건'}">0건</span>
                     </div>
+                    
+                    <div class="org-children" th:if="${not #lists.isEmpty(organizationTree.children)}">
+                        <div class="org-node" th:each="child : ${organizationTree.children}">
+                            <div class="org-box" style="background: rgba(236,72,153,0.06); border-color: rgba(236,72,153,0.15);">
+                                <i class="bi bi-diagram-3 text-pink"></i> <span th:text="${child.name}">지사</span>
+                                <span class="badge" style="background: var(--accent-pink); color: #FFF;" th:text="${child.requestCount + '건'}">0건</span>
+                            </div>
 
-                    <div class="org-branch" th:if="${not #lists.isEmpty(child.children)}">
-                        <div th:each="grandchild : ${child.children}">
-                            <div class="org-box mt-2">
-                                <i class="bi bi-shop text-muted"></i> <span th:text="${grandchild.name}">대리점</span>
-                                <span class="badge bg-secondary ms-2" th:text="${grandchild.requestCount + '건'}">0건</span>
+                            <div class="org-children org-children-vertical" th:if="${not #lists.isEmpty(child.children)}">
+                                <div class="org-node" th:each="grandchild : ${child.children}">
+                                    <div class="org-box">
+                                        <i class="bi bi-shop text-muted"></i> <span th:text="${grandchild.name}">대리점</span>
+                                        <span class="badge bg-secondary ms-2" th:text="${grandchild.requestCount + '건'}">0건</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -10,6 +10,7 @@ spring:
     suffix: .html
     mode: HTML
     encoding: UTF-8
+    cache: false # [MIG] 프론트엔드 실시간 수정을 위해 캐시 비활성화
 
 server:
   port: 8080
