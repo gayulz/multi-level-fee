@@ -16,12 +16,12 @@ import java.util.Optional;
 public interface OrganizationRepository extends JpaRepository<Organization, Long>, OrganizationRepositoryCustom {
 
     /**
-     * [NEW] 루트 조직(본사) 단건 조회.
+     * [NEW] 루트 조직(본사) 목록 조회.
      *
-     * @return parent가 null인 조직 (없으면 Optional.empty)
+     * @return parent가 null인 조직 목록
      * @author gayul.kim
      */
-    Optional<Organization> findByParentIsNull();
+    List<Organization> findByParentIsNull();
 
     /**
      * 조직 코드로 조회.

@@ -143,8 +143,7 @@ public class DashboardService {
 
 		if (user.getRole() == UserRole.ROLE_SUPER_ADMIN) {
 			// SUPER_ADMIN: 최상위 조직부터
-			rootOrg = organizationRepository.findByParentIsNull()
-				.orElse(null);
+			rootOrg = organizationRepository.findByParentIsNull().stream().findFirst().orElse(null);
 		} else {
 			// ADMIN: 소속 조직부터 (detached 프록시 대신 현재 세션에서 재조회)
 			rootOrg = organizationRepository.findById(user.getOrganization().getOrgId()).orElse(null);

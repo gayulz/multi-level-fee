@@ -171,7 +171,7 @@ public class DataInitializer implements ApplicationRunner {
 		Organization hq = Organization.createHeadquarters("SettleTree 본사", "HQ-001");
 		organizationRepository.save(hq);
 
-		SettlementNode hqNode = SettlementNode.createRoot("본사 노드", hq, new BigDecimal("0.1000"));
+		SettlementNode hqNode = SettlementNode.createRoot("본사", hq, new BigDecimal("0.1000"));
 		settlementNodeRepository.save(hqNode);
 		orgNodeMap.put(hq, hqNode);
 
@@ -206,7 +206,7 @@ public class DataInitializer implements ApplicationRunner {
 			organizationRepository.save(branch);
 
 			SettlementNode branchNode = SettlementNode.createChild(
-				branchConfig[b][0] + " 노드", branch, new BigDecimal("0.0500"), hqNode
+				branchConfig[b][0], branch, new BigDecimal("0.0500"), hqNode
 			);
 			settlementNodeRepository.save(branchNode);
 			orgNodeMap.put(branch, branchNode);
@@ -242,7 +242,7 @@ public class DataInitializer implements ApplicationRunner {
 				int feePercent = random.nextInt(3) + 1;
 				BigDecimal agencyFeeRate = new BigDecimal("0.0" + feePercent + "00");
 				SettlementNode agencyNode = SettlementNode.createChild(
-					agencyName + " 노드", agency, agencyFeeRate, branchNode
+					agencyName, agency, agencyFeeRate, branchNode
 				);
 				settlementNodeRepository.save(agencyNode);
 				orgNodeMap.put(agency, agencyNode);
