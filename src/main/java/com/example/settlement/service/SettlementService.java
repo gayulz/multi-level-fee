@@ -70,31 +70,33 @@ public interface SettlementService {
     com.example.settlement.dto.response.SettlementDetailDto getRequestDetail(Long id);
 
     /**
-     * [NEW] 사용자의 정산 요청 목록 조회.
-     */
-    List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByUser(User user);
-
-    /**
-     * [NEW] 조직별 정산 요청 목록 조회.
-     */
-    List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganization(Long orgId);
-
-    /**
-     * [NEW] 전체 정산 요청 목록 조회 (SUPER_ADMIN용).
+     * [MIG] 페이징된 전체 정산 요청 목록 조회 (SUPER_ADMIN용).
      *
-     * @return 전체 정산 요청 목록 (최신순)
+     * @param pageable 페이징 정보
+     * @return 페이징된 정산 요청 목록
      * @author gayul.kim
      */
-    List<com.example.settlement.domain.entity.SettlementRequest> getAllRequests();
+    org.springframework.data.domain.Page<com.example.settlement.domain.entity.SettlementRequest> getAllRequests(org.springframework.data.domain.Pageable pageable);
 
     /**
-     * [NEW] 소속 조직 + 하위 조직의 정산 요청 목록 조회 (ADMIN용).
+     * [MIG] 페이징된 소속 조직 + 하위 조직의 정산 요청 목록 조회 (ADMIN용).
      *
-     * @param orgId 소속 조직 ID
-     * @return 해당 조직 및 하위 조직의 정산 요청 목록 (최신순)
+     * @param orgId    소속 조직 ID
+     * @param pageable 페이징 정보
+     * @return 페이징된 정산 요청 목록
      * @author gayul.kim
      */
-    List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganizationAndDescendants(Long orgId);
+    org.springframework.data.domain.Page<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganizationAndDescendants(Long orgId, org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * [MIG] 페이징된 사용자의 정산 요청 목록 조회 (USER용).
+     *
+     * @param user     사용자
+     * @param pageable 페이징 정보
+     * @return 페이징된 정산 요청 목록
+     * @author gayul.kim
+     */
+    org.springframework.data.domain.Page<com.example.settlement.domain.entity.SettlementRequest> getRequestsByUser(com.example.settlement.domain.entity.User user, org.springframework.data.domain.Pageable pageable);
 
     /**
      * [NEW] 전체 정산 요청 총 건수 조회 (SUPER_ADMIN 대시보드용).

@@ -157,7 +157,7 @@ public class SettlementServiceImpl implements SettlementService {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public java.util.List<com.example.settlement.domain.entity.SettlementRequest> getRecentRequests(int limit) {
         // [MIG] Fetch Join과 결합된 Pageable을 사용하여 DB 레벨에서 최적화된 최신 내역 N개 조회
-        return settlementRequestRepository.findAllWithDetailsOrderByCreatedAtDesc(
+        return settlementRequestRepository.findTop5ByOrderByCreatedAtDesc(
                 org.springframework.data.domain.PageRequest.of(0, limit)
         );
     }
@@ -245,52 +245,42 @@ public class SettlementServiceImpl implements SettlementService {
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("#user.userId == principal.userId or hasRole('SUPER_ADMIN')")
-    public List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByUser(User user) {
-        // Fetch Join으로 organization, requester 함께 로딩 (LazyInitializationException 방지)
-        return settlementRequestRepository.findByRequesterWithDetails(user);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('SUPER_ADMIN') or (hasRole('ADMIN') and #orgId == principal.organization.orgId)")
-    public List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganization(Long orgId) {
-        Organization org = organizationRepository.findById(orgId)
-                .orElseThrow(() -> new IllegalArgumentException("조직을 찾을 수 없습니다"));
-        // Fetch Join으로 organization, requester 함께 로딩 (LazyInitializationException 방지)
-        return settlementRequestRepository.findByOrganizationWithDetails(org);
+    public org.springframework.data.domain.Page<com.example.settlement.domain.entity.SettlementRequest> getRequestsByUser(User user, org.springframework.data.domain.Pageable pageable) {
+        // [MIG] Fetch Join과 Pageable을 사용하여 DB 레벨 페이징 처리 (LazyInitializationException 방지)
+        return settlementRequestRepository.findByRequesterWithDetails(user, pageable);
     }
 
     /**
-     * [NEW] 전체 정산 요청 목록 조회 (SUPER_ADMIN용).
+     * [MIG] 전체 정산 요청 목록 조회 (SUPER_ADMIN용).
      *
+     * @param pageable 페이징 정보
      * @return 전체 정산 요청 목록 (최신순)
      * @author gayul.kim
      */
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public List<com.example.settlement.domain.entity.SettlementRequest> getAllRequests() {
-        return settlementRequestRepository.findAllWithDetailsOrderByCreatedAtDesc(
-                org.springframework.data.domain.Pageable.unpaged()
-        );
+    public org.springframework.data.domain.Page<com.example.settlement.domain.entity.SettlementRequest> getAllRequests(org.springframework.data.domain.Pageable pageable) {
+        return settlementRequestRepository.findAllWithDetails(pageable);
     }
 
     /**
-     * [NEW] 소속 조직 + 하위 조직의 정산 요청 목록 조회 (ADMIN용).
+     * [MIG] 소속 조직 + 하위 조직의 정산 요청 목록 조회 (ADMIN용).
      *
      * <p>
      * Organization의 Self-Reference Tree를 순회하여 하위 조직 ID 목록을 수집하고,
-     * 해당 조직 ID 목록으로 정산 요청을 조회합니다.
+     * 해당 조직 ID 목록으로 정산 요청을 페이징 조회합니다.
      * </p>
      *
-     * @param orgId 소속 조직 ID
+     * @param orgId    소속 조직 ID
+     * @param pageable 페이징 정보
      * @return 해당 조직 및 하위 조직의 정산 요청 목록 (최신순)
      * @author gayul.kim
      */
     @Override
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN') and #orgId == principal.organization.orgId")
-    public List<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganizationAndDescendants(Long orgId) {
+    public org.springframework.data.domain.Page<com.example.settlement.domain.entity.SettlementRequest> getRequestsByOrganizationAndDescendants(Long orgId, org.springframework.data.domain.Pageable pageable) {
         Organization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new IllegalArgumentException("조직을 찾을 수 없습니다"));
 
@@ -301,7 +291,7 @@ public class SettlementServiceImpl implements SettlementService {
             orgIds.add(descendant.getOrgId());
         }
 
-        return settlementRequestRepository.findByOrganizationOrgIdInWithDetails(orgIds);
+        return settlementRequestRepository.findByOrganizationOrgIdInWithDetails(orgIds, pageable);
     }
 
     /**

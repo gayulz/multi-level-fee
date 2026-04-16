@@ -73,33 +73,41 @@ public class SettlementViewController {
     }
 
     /**
-     * [NEW] 정산 내역 목록 페이지.
+     * [MIG] 정산 내역 목록 페이지 (서버 사이드 페이징 적용).
      *
      * ADMIN 이상: 소속 조직의 전체 정산 내역.
      * USER: 본인 정산 내역만.
      *
      * @author gayul.kim
      * @param userDetails 인증된 사용자
+     * @param pageable    페이징 정보 (@PageableDefault 적용)
      * @param model       Model 객체
      * @return templates/pages/settlement/history.html
      */
     @GetMapping("/history")
-    public String history(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+    public String history(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @org.springframework.data.web.PageableDefault(size = 10, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) org.springframework.data.domain.Pageable pageable,
+            Model model) {
         model.addAttribute("currentPage", "settlement-history");
         model.addAttribute("pageTitle", "정산 내역");
 
         User user = userDetails.getUser();
+        org.springframework.data.domain.Page<com.example.settlement.domain.entity.SettlementRequest> settlements;
+
         if (user.hasRole(UserRole.ROLE_SUPER_ADMIN)) {
             // 슈퍼관리자: 전체 정산 내역 조회
-            model.addAttribute("settlements", settlementService.getAllRequests());
+            settlements = settlementService.getAllRequests(pageable);
         } else if (user.hasRole(UserRole.ROLE_ADMIN)) {
             // 관리자: 소속 조직 + 하위 조직 정산 내역 조회
-            model.addAttribute("settlements",
-                    settlementService.getRequestsByOrganizationAndDescendants(user.getOrganization().getOrgId()));
+            settlements = settlementService.getRequestsByOrganizationAndDescendants(user.getOrganization().getOrgId(), pageable);
         } else {
             // 일반 사용자: 본인 내역만
-            model.addAttribute("settlements", settlementService.getRequestsByUser(user));
+            settlements = settlementService.getRequestsByUser(user, pageable);
         }
+
+        model.addAttribute("settlements", settlements);
+        model.addAttribute("baseUrl", "/settlement/history");
 
         return "pages/settlement/history";
     }
