@@ -98,6 +98,27 @@ public class SettlementNode {
     }
 
     /**
+     * [NEW] 노드 정보 수정.
+     */
+    public void update(String name, BigDecimal feeRate) {
+        this.name = name;
+        this.feeRate = feeRate;
+    }
+
+    /**
+     * [NEW] 상위 노드 변경.
+     */
+    public void changeParent(SettlementNode newParent) {
+        if (this.parent != null) {
+            this.parent.getChildren().remove(this);
+        }
+        this.parent = newParent;
+        if (newParent != null) {
+            newParent.getChildren().add(this);
+        }
+    }
+
+    /**
      * [NEW] 루트 노드 여부 확인.
      *
      * @return 부모가 없으면 true

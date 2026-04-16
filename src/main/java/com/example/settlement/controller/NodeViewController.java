@@ -1,20 +1,23 @@
 package com.example.settlement.controller;
 
+import com.example.settlement.domain.entity.SettlementNode;
 import com.example.settlement.domain.repository.SettlementNodeRepository;
+import com.example.settlement.exception.NodeNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * [NEW] 정산 노드 관리 컨트롤러
+ * [NEW] 정산 조직 관리 컨트롤러
  *
- * 노드 트리 뷰 렌더링 및 등록/수정 폼 페이지 렌더링을 담당하며,
+ * 조직 트리 뷰 렌더링 및 등록/수정 폼 페이지 렌더링을 담당하며,
  * UI 검증을 위해 jsTree용 데이터와 생성 폼 리스트를 제공합니다.
  *
  * @author gayul.kim
@@ -28,7 +31,7 @@ public class NodeViewController {
     private final SettlementNodeRepository settlementNodeRepository;
 
     /**
-     * 정산 노드 목록 (트리 뷰)
+     * 하위 조직 목록 (트리 뷰)
      *
      * @param model Model 객체
      * @return templates/pages/nodes/list.html
@@ -36,7 +39,7 @@ public class NodeViewController {
     @GetMapping
     public String list(Model model) {
         model.addAttribute("currentPage", "nodes");
-        model.addAttribute("pageTitle", "노드 관리");
+        model.addAttribute("pageTitle", "하위 조직 관리");
 
         // DB에서 최신 노드 데이터를 조회하여 jsTree 렌더링 포맷으로 변환 전달
         model.addAttribute("treeData", getTreeData());
@@ -45,7 +48,7 @@ public class NodeViewController {
     }
 
     /**
-     * 정산 노드 등록 폼
+     * 하위 조직 등록 폼
      *
      * @param model Model 객체
      * @return templates/pages/nodes/form.html
@@ -53,7 +56,7 @@ public class NodeViewController {
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("currentPage", "nodes");
-        model.addAttribute("pageTitle", "노드 등록");
+        model.addAttribute("pageTitle", "등록");
 
         // 실제 하위 노드를 생성할 수 있는 후보(본사, 지사) 노드만 리스트업
         model.addAttribute("parentNodes", getAvailableParentNodes());
@@ -62,15 +65,21 @@ public class NodeViewController {
     }
 
     /**
-     * 정산 노드 수정 폼
+     * 하위 조직 수정 폼
      *
+     * @param id    수정할 노드 ID
      * @param model Model 객체
      * @return templates/pages/nodes/form.html
      */
     @GetMapping("/edit")
-    public String editForm(Model model) {
+    public String editForm(@RequestParam Long id, Model model) {
         model.addAttribute("currentPage", "nodes");
-        model.addAttribute("pageTitle", "노드 수정");
+        model.addAttribute("pageTitle", "수정");
+        
+        SettlementNode node = settlementNodeRepository.findById(id)
+                .orElseThrow(() -> new NodeNotFoundException("존재하지 않는 조직입니다. ID: " + id));
+        
+        model.addAttribute("node", node);
         model.addAttribute("parentNodes", getAvailableParentNodes());
 
         return "pages/nodes/form";

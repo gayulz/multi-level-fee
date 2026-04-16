@@ -18,7 +18,7 @@
 <body>
 <div layout:fragment="content">
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
-        <h1 class="h2 fw-bold" th:text="${pageTitle}">노드 폼</h1>
+        <h1 class="h2 fw-bold" th:text="${pageTitle}">등록/수정</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
             <a th:href="@{/nodes}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
                 <i class="bi bi-arrow-left"></i>
@@ -33,34 +33,37 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-transparent py-3 border-bottom">
                     <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
-                        <i class="bi bi-info-circle text-point-navy"></i> 노드 기본 정보 입력
+                        <i class="bi bi-info-circle text-point-navy"></i> 기본 정보 입력
                     </h5>
                 </div>
                 <div class="card-body p-4 p-md-5">
                     
-                    <!-- 노드 정보 입력 폼 -->
-                    <!-- JS validation(needs-validation) 적용 -->
+                    <!-- 조직 정보 입력 폼 -->
                     <form class="needs-validation" novalidate id="nodeForm">
+                        <!-- 수정 시 사용되는 ID -->
+                        <input type="hidden" id="nodeId" th:value="${node?.id}">
                         
-                        <!-- 1. 부모 노드 선택 -->
+                        <!-- 1. 부모 조직 선택 -->
                         <div class="mb-4">
-                            <label for="parentId" class="form-label fw-bold">상위 노드 선택</label>
+                            <label for="parentId" class="form-label fw-bold">상위 조직 선택</label>
                             <select class="form-select form-select-lg fs-6" id="parentId" name="parentId">
-                                <option value="" selected>선택 안함 (최상위 루트 노드 생성 시)</option>
+                                <option value="" th:selected="${node == null || node.parent == null}">선택 안함 (최상위 루트 조직 생성 시)</option>
                                 <option th:each="p : ${parentNodes}" 
                                         th:value="${p.id}" 
-                                        th:text="${p.name}">본사</option>
+                                        th:text="${p.name}"
+                                        th:selected="${node != null && node.parent != null && node.parent.id == p.id}">본사</option>
                             </select>
-                            <div class="form-text text-muted">선택하지 않으면 새로운 최상위 노드로 생성됩니다.</div>
+                            <div class="form-text text-muted">선택하지 않으면 새로운 최상위 조직으로 생성됩니다.</div>
                         </div>
 
-                        <!-- 2. 노드 이름 -->
+                        <!-- 2. 이름 -->
                         <div class="mb-4">
-                            <label for="name" class="form-label fw-bold">노드명 <span class="text-danger">*</span></label>
+                            <label for="name" class="form-label fw-bold">이름 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control form-control-lg fs-6" id="name" name="name" 
-                                   placeholder="예: 서울 중구 대리점" required minlength="2" maxlength="50">
+                                   placeholder="예: 서울 중구 대리점" required minlength="2" maxlength="50"
+                                   th:value="${node?.name}">
                             <div class="invalid-feedback">
-                                노드명은 2자 이상 입력해야 합니다.
+                                이름은 2자 이상 입력해야 합니다.
                             </div>
                         </div>
 
@@ -69,7 +72,8 @@
                             <label for="feeRate" class="form-label fw-bold">수수료율(%) <span class="text-danger">*</span></label>
                             <div class="input-group input-group-lg">
                                 <input type="number" class="form-control fs-6" id="feeRate" name="feeRate" 
-                                       placeholder="예: 3.5" step="0.01" min="0" max="100" required>
+                                       placeholder="예: 3.5" step="0.01" min="0" max="100" required
+                                       th:value="${node != null ? node.feeRate * 100 : ''}">
                                 <span class="input-group-text bg-transparent">%</span>
                                 <div class="invalid-feedback">
                                     0부터 100 사이의 올바른 수수료율을 입력해야 합니다.
@@ -96,7 +100,7 @@
             <div class="tip-box mt-4">
                 <i class="bi bi-lightbulb fs-4"></i>
                 <div class="small">
-                    <strong>Tip:</strong> 적절하게 계층을 분리하여 각 대리점과 지사가 관리할 구역을 구분하세요. 하위 노드의 수수료가 상위보다 높을 수 없는 검증 로직이 작동될 예정입니다.
+                    <strong>Tip:</strong> 적절하게 계층을 분리하여 각 대리점과 지사가 관리할 구역을 구분하세요. 하위 조직의 수수료가 상위보다 높을 수 없는 검증 로직이 작동됩니다.
                 </div>
             </div>
             
@@ -124,13 +128,14 @@
 
                     // 1. 폼 데이터 수집
                     const formData = new FormData(form);
+                    const nodeId = document.getElementById('nodeId').value;
                     const data = {
                         parentId: formData.get('parentId') || null,
                         name: formData.get('name'),
-                        feeRate: formData.get('feeRate')
+                        feeRate: (parseFloat(formData.get('feeRate')) / 100).toFixed(4)
                     };
 
-                    // CSRF 토큰 설정 (Spring Security Thymeleaf 자동 생성 폼 필드 확인)
+                    // CSRF 토큰 설정
                     const csrfToken = document.querySelector("input[name='_csrf']")?.value;
                     const headers = {
                         'Content-Type': 'application/json'
@@ -140,8 +145,11 @@
                     }
 
                     try {
-                        const response = await fetch('/api/nodes', {
-                            method: 'POST',
+                        const url = nodeId ? `/api/nodes/${nodeId}` : '/api/nodes';
+                        const method = nodeId ? 'PUT' : 'POST';
+
+                        const response = await fetch(url, {
+                            method: method,
                             headers: headers,
                             body: JSON.stringify(data)
                         });
@@ -149,10 +157,9 @@
                         const result = await response.json();
 
                         if (response.ok) {
-                            alert(result.message || "노드가 성공적으로 생성되었습니다.");
+                            alert(result.message || "정보가 성공적으로 저장되었습니다.");
                             window.location.href = "/nodes";
                         } else {
-                            // 에러 발생 (예: 수수료 검증 실패 등)
                             alert("오류: " + (result.message || "요청 처리에 실패했습니다."));
                         }
                     } catch (error) {

@@ -39,6 +39,15 @@ public interface SettlementService {
     SettlementNode createNode(NodeCreateRequest request);
 
     /**
+     * [NEW] 기존 정산 노드 수정.
+     *
+     * @param id      수정할 노드 ID
+     * @param request 수정 요청 DTO
+     * @return 수정된 노드 Entity
+     */
+    SettlementNode updateNode(Long id, NodeCreateRequest request);
+
+    /**
      * [NEW] 최상위 노드 목록 반환.
      *
      * @return 부모가 없는 루트 노드 목록

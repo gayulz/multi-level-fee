@@ -119,6 +119,34 @@ public class SettlementServiceImpl implements SettlementService {
     }
 
     @Override
+    @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public SettlementNode updateNode(Long id, NodeCreateRequest request) {
+        SettlementNode node = settlementNodeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("조직을 찾을 수 없습니다. ID: " + id));
+
+        SettlementNode parentNode = null;
+        if (request.parentId() != null) {
+            parentNode = settlementNodeRepository.findById(request.parentId())
+                    .orElseThrow(() -> new IllegalArgumentException("상위 조직을 찾을 수 없습니다. ID: " + request.parentId()));
+            
+            if (request.feeRate().compareTo(parentNode.getFeeRate()) > 0) {
+                throw new IllegalArgumentException("하위 조직의 수수료율은 상위 조직의 수수료율(" + parentNode.getFeeRate() + "%)보다 클 수 없습니다.");
+            }
+        }
+
+        node.update(request.name(), request.feeRate());
+        node.changeParent(parentNode);
+        
+        // 연관된 Organization 이름도 함께 수정
+        if (node.getOrganization() != null) {
+            node.getOrganization().updateOrgName(request.name());
+        }
+
+        return settlementNodeRepository.save(node);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     @PreAuthorize("isAuthenticated()")
     public List<SettlementNode> getRootNodes() {

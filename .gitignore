@@ -67,3 +67,12 @@ bin/
 ARCHITECTURE.md
 .autopus/
 .plans/
+.gemini/
+.codex/
+.github/
+AGENTS.md
+autopus.yaml
+GEMINI.md
+.mcp.json
+CLAUDE.md
+config.toml

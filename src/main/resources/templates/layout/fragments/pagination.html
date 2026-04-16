@@ -9,8 +9,18 @@
   @since 2026-03-04
 -->
 
-<nav th:fragment="pagination(currentPage, totalPages, baseUrl)" aria-label="페이지 네비게이션" th:if="${totalPages > 1}">
+<nav th:fragment="pagination(currentPage, totalPages, baseUrl)" aria-label="페이지 네비게이션" th:if="${totalPages > 1}"
+     th:with="groupSize=5,
+              startPage=${currentPage - (currentPage % groupSize)},
+              endPage=${(startPage + groupSize - 1) < (totalPages - 1) ? (startPage + groupSize - 1) : (totalPages - 1)}">
     <ul class="pagination justify-content-center mb-0">
+        <!-- 이전 그룹 버튼 -->
+        <li class="page-item" th:classappend="${startPage == 0 ? 'disabled' : ''}">
+            <a class="page-link" th:href="@{${baseUrl}(page=${startPage - 1})}" aria-label="이전 그룹">
+                <i class="bi bi-chevron-double-left"></i>
+            </a>
+        </li>
+
         <!-- 이전 버튼 -->
         <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
             <a class="page-link" th:href="@{${baseUrl}(page=${currentPage - 1})}" aria-label="이전">
@@ -19,7 +29,7 @@
         </li>
         
         <!-- 페이지 번호 -->
-        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+        <li class="page-item" th:each="i : ${#numbers.sequence(startPage, endPage)}" 
             th:classappend="${i == currentPage ? 'active' : ''}">
             <a class="page-link" th:href="@{${baseUrl}(page=${i})}" th:text="${i + 1}">1</a>
         </li>
@@ -28,6 +38,13 @@
         <li class="page-item" th:classappend="${currentPage == totalPages - 1 ? 'disabled' : ''}">
             <a class="page-link" th:href="@{${baseUrl}(page=${currentPage + 1})}" aria-label="다음">
                 <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+
+        <!-- 다음 그룹 버튼 -->
+        <li class="page-item" th:classappend="${endPage == totalPages - 1 ? 'disabled' : ''}">
+            <a class="page-link" th:href="@{${baseUrl}(page=${endPage + 1})}" aria-label="다음 그룹">
+                <i class="bi bi-chevron-double-right"></i>
             </a>
         </li>
     </ul>

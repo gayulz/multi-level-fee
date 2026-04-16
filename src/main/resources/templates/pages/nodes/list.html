@@ -20,23 +20,23 @@
 <body>
 <div layout:fragment="content">
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
-        <h1 class="h2 fw-bold">정산 노드 관리</h1>
+        <h1 class="h2 fw-bold">하위 조직 관리</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
             <a th:href="@{/nodes/new}" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
                 <i class="bi bi-plus-lg"></i>
-                신규 노드 등록
+                신규 등록
             </a>
         </div>
     </div>
 
     <!-- Tree & Detail View Split Layout -->
     <div class="row g-4">
-        <!-- 좌측: 노드 트리 영역 -->
+        <!-- 좌측: 조직 트리 영역 -->
         <div class="col-12 col-md-5 col-lg-4">
             <div class="card h-100">
                 <div class="card-header py-3 bg-transparent border-bottom">
                     <h5 class="mb-0 fw-bold d-flex align-items-center gap-2">
-                        <i class="bi bi-diagram-3 text-point-navy"></i> 트리 구조
+                        <i class="bi bi-diagram-3 text-point-navy"></i> 조직 체계
                     </h5>
                 </div>
                 <div class="card-body">
@@ -45,7 +45,7 @@
                         <span class="input-group-text bg-transparent text-muted border-end-0">
                             <i class="bi bi-search"></i>
                         </span>
-                        <input type="text" class="form-control border-start-0 ps-0" id="nodeSearch" placeholder="노드명 검색...">
+                        <input type="text" class="form-control border-start-0 ps-0" id="nodeSearch" placeholder="이름 검색...">
                     </div>
                     
                     <!-- jsTree Container -->
@@ -56,11 +56,11 @@
             </div>
         </div>
 
-        <!-- 우측: 노드 상세 영역 -->
+        <!-- 우측: 조직 상세 영역 -->
         <div class="col-12 col-md-7 col-lg-8">
             <div class="card h-100">
                 <div class="card-header py-3 bg-transparent border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold" id="detailTitle">노드 상세 정보</h5>
+                    <h5 class="mb-0 fw-bold" id="detailTitle">상세 정보</h5>
                     <a th:href="@{/nodes/edit}" class="btn btn-sm btn-outline-secondary" id="editBtn" style="display: none;">
                         <i class="bi bi-pencil"></i> 수정
                     </a>
@@ -68,16 +68,16 @@
                 <div class="card-body position-relative">
                     <div id="emptyGuide" class="text-center text-muted py-5">
                         <i class="bi bi-diagram-3 display-4 mb-3 opacity-50"></i>
-                        <p>좌측 트리에서 노드를 선택하면 상세 정보가 나타납니다.</p>
+                        <p>좌측 트리에서 조직을 선택하면 상세 정보가 나타납니다.</p>
                     </div>
 
                     <div id="nodeDetail" style="display: none;">
                         <div class="row mb-4">
-                            <div class="col-sm-3 text-muted">노드명</div>
+                            <div class="col-sm-3 text-muted">이름</div>
                             <div class="col-sm-9 fw-bold fs-5" id="detailName"></div>
                         </div>
                         <div class="row mb-4">
-                            <div class="col-sm-3 text-muted">노드 ID</div>
+                            <div class="col-sm-3 text-muted">ID</div>
                             <div class="col-sm-9" id="detailId"></div>
                         </div>
                         <div class="row mb-4">
@@ -87,7 +87,7 @@
                             </div>
                         </div>
                         <div class="row mb-4">
-                            <div class="col-sm-3 text-muted">상위 노드</div>
+                            <div class="col-sm-3 text-muted">상위 조직</div>
                             <div class="col-sm-9">
                                 <span id="detailParent"></span>
                             </div>
@@ -150,7 +150,7 @@
                 
                 $('#emptyGuide').hide();
                 $('#nodeDetail').fadeIn();
-                $('#editBtn').show();
+                $('#editBtn').show().attr('href', '/nodes/edit?id=' + node.id);
                 
                 // 정규식으로 텍스트에서 비율(%) 추출 (Mock 데이터 포맷에 맞춰 임시 파싱)
                 var rawText = node.text;
@@ -158,14 +158,14 @@
                 var rate = rateMatch ? rateMatch[1] : '0%';
                 var name = rawText.replace(/\(.*?\)/, '').trim();
 
-                var parentText = "없음 (최상위 노드)";
+                var parentText = "없음 (최상위 조직)";
                 if(node.parent !== '#') {
                     var pNode = $tree.jstree(true).get_node(node.parent);
                     parentText = pNode.text.replace(/\(.*?\)/, '').trim();
                 }
 
                 $('#detailName').text(name);
-                $('#detailId').text("NODE-" + node.id.padStart(4, '0'));
+                $('#detailId').text("ORG-" + node.id.padStart(4, '0'));
                 $('#detailFee').text(rate);
                 $('#detailParent').text(parentText);
             });
