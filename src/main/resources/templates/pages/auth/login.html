@@ -1,33 +1,35 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="_csrf" content=""/>
-    <meta name="_csrf_header" content=""/>
+    <meta name="_csrf" content="" />
+    <meta name="_csrf_header" content="" />
     <title>SettleTree - Login</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- 공통 스타일 토큰 (style.css 필수) 로딩 -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/welcome.css}">
     <link rel="stylesheet" th:href="@{/css/auth.css}">
-    
+
     <style>
         /* Login 특화 좌우 분할 구조를 위해 추가 확장 */
         .glass-panel-auth.panel-login {
-            max-width: 780px; /* 기존 폭보다 넓게 */
+            max-width: 780px;
+            /* 기존 폭보다 넓게 */
             padding: 2.5rem 3rem;
         }
-        
+
         .divider {
             width: 1px;
             background: rgba(255, 255, 255, 0.15);
             margin: 0 2rem;
         }
-        
+
         .qr-placeholder-area {
             display: flex;
             flex-direction: column;
@@ -36,12 +38,13 @@
             text-align: center;
             padding: 1rem;
         }
-        
+
         /* 반응형: 모바일에서는 세로 배치 */
         @media (max-width: 768px) {
             .login-flex-container {
                 flex-direction: column;
             }
+
             .divider {
                 width: 100%;
                 height: 1px;
@@ -50,80 +53,102 @@
         }
     </style>
 </head>
-<body class="auth-body">
 
-    <!-- 감각적인 포인트 백그라운드 빛 -->
-    <div class="ambient-glow pink"></div>
-    <div class="ambient-glow orange"></div>
+<body class="welcome-body" style="background-color: #EAF0E8; color: #2D2D2D;">
+
+    <div class="ambient-grid"></div>
+    <div class="ambient-orbs">
+        <div class="orb orb-neon"
+            style="top: -10%; left: -10%; width: 600px; height: 600px; background: #00F0FF; position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15;">
+        </div>
+        <div class="orb orb-pink"
+            style="bottom: -10%; right: -10%; width: 700px; height: 700px; background: #FF00FF; position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15;">
+        </div>
+    </div>
+
+    <nav class="welcome-nav"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 80px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; z-index: 1000; backdrop-filter: blur(10px); background: rgba(234, 240, 232, 0.7); border-bottom: 2px solid #2D2D2D;">
+        <a href="/" class="brand"
+            style="font-family: 'Oswald', sans-serif; font-size: 28px; font-weight: 700; color: #2D2D2D; text-decoration: none; text-transform: uppercase;">SETTLETREE</a>
+    </nav>
 
     <div class="auth-wrapper">
         <div class="glass-panel-auth panel-login">
             <div class="d-flex login-flex-container w-100 h-100">
-                
+
                 <!-- Left Column (Login Form) -->
                 <div class="flex-grow-1" style="min-width: 300px;">
                     <div class="auth-header">
                         <h2 class="auth-title">Welcome back!</h2>
                         <div class="auth-subtitle">We're so excited to see you again!</div>
                     </div>
-                    
+
                     <form th:action="@{/auth/login}" method="post">
-                        <!-- [NEW] 로그인 실패 에러 메시지 -->
-                        <div th:if="${param.error}" class="alert alert-danger" style="background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 12px; color: #DC2626; padding: 12px 16px; margin-bottom: 20px; font-size: 0.9rem; font-weight: 600;">
+                        <div th:if="${param.error}" class="alert alert-danger"
+                            style="background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 12px; color: #DC2626; padding: 12px 16px; margin-bottom: 20px; font-size: 0.9rem; font-weight: 600;">
                             <i class="bi bi-exclamation-circle-fill me-2"></i> 이메일 또는 비밀번호가 일치하지 않습니다.
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="email">Email or ID <span class="required">*</span></label>
-                            <input type="email" id="email" name="email" class="form-control-liquid" placeholder="admin@settletree.io" required>
+                            <input type="email" id="email" name="email" class="form-control-liquid"
+                                placeholder="이메일을 입력하세요" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label" for="password">Password <span class="required">*</span></label>
-                            <input type="password" id="password" name="password" class="form-control-liquid" placeholder="••••••••" required>
-                            
+                            <input type="password" id="password" name="password" class="form-control-liquid"
+                                placeholder="••••••••" required>
+
                             <!-- [MOD] Forgot password 링크 수정 (순수 자바스크립트 모달 호출용) -->
-                            <a href="javascript:void(0);" onclick="openResetModal();" class="auth-link-alt mt-2">Forgot your password?</a>
+                            <a href="javascript:void(0);" onclick="openResetModal();" class="auth-link-alt mt-2">Forgot
+                                your password?</a>
                         </div>
-                        
+
                         <button type="submit" class="btn-liquid-auth btn-liquid-login mt-3">Log In</button>
                     </form>
-                    
+
                     <div class="auth-footer">
                         Need an account? <a href="/auth/signup" th:href="@{/auth/signup}" class="auth-link">Register</a>
                     </div>
                 </div><!-- End Left Column -->
-                
+
                 <!-- Divider -->
                 <div class="divider"></div>
-                
+
                 <!-- Right Column (reCAPTCHA area) -->
                 <div class="qr-placeholder-area" style="min-width: 200px;">
-                    
+
                     <!-- 구글 reCAPTCHA 스타일 목업 -->
                     <div class="recaptcha-mock w-100">
                         <div class="rc-left">
                             <input type="checkbox" id="robotCheck">
-                            <label for="robotCheck" style="margin-left: 5px; font-weight: bold; color: #444; font-size: 0.9rem; cursor: pointer;">
+                            <label for="robotCheck"
+                                style="margin-left: 5px; font-weight: bold; color: #444; font-size: 0.9rem; cursor: pointer;">
                                 로봇이 아닙니다
                             </label>
                         </div>
                         <div class="recaptcha-icon" style="text-align: right; width: 40px;">
-                            <img src="https://www.gstatic.com/recaptcha/api2/logo_48.png" alt="reCAPTCHA" style="width: 32px; height: 32px;">
-                            <div style="font-size: 8px; color: #666; font-family: sans-serif; margin-top: 2px;">reCAPTCHA</div>
+                            <img src="https://www.gstatic.com/recaptcha/api2/logo_48.png" alt="reCAPTCHA"
+                                style="width: 32px; height: 32px;">
+                            <div style="font-size: 8px; color: #666; font-family: sans-serif; margin-top: 2px;">
+                                reCAPTCHA</div>
                         </div>
                     </div>
-                    
-                    <h5 style="color: #fff; font-weight: 700; font-size: 1.1rem; margin-top: 1rem; margin-bottom: 0.5rem;">Security Check</h5>
-                    <p style="color: #b0a8c4; font-size: 0.85rem; line-height: 1.4;">
-                        안전한 로그인을 위해 <strong>reCAPTCHA</strong> 인증을 <br>진행해 주시기 바랍니다.
+
+                    <h5
+                        style="color: #2D2D2D; font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; margin-top: 1rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+                        Security Check</h5>
+                    <p style="color: #2D2D2D; font-size: 0.85rem; line-height: 1.4;">
+                        안전한 로그인을 위해 <br>
+                        <strong>reCAPTCHA</strong> 인증을 <br>진행해 주시기 바랍니다.
                     </p>
                 </div> <!-- End Right Column -->
-                
+
             </div>
         </div>
     </div>
-    
+
     <!-- [NEW] 비밀번호 재설정 전용 리퀴드 글래스 팝업 (모달 플로우 처리) -->
     <div id="passwordResetModal" class="auth-modal-overlay">
         <div class="glass-panel-auth auth-modal-content">
@@ -132,32 +157,37 @@
                 <h2 class="auth-title" style="font-size: 1.6rem;">Reset Password</h2>
                 <div class="auth-subtitle" style="font-size: 0.85rem;">비밀번호를 재설정할 이메일을 입력해주세요.</div>
             </div>
-            
+
             <div id="resetFlowCtn">
                 <!-- 단계 1: 이메일 확인 (이메일 등록 여부 체크) -->
                 <div id="stepCheckEmail">
                     <div class="form-group mb-4">
                         <label class="form-label" for="resetEmail">Registered Email</label>
                         <input type="email" id="resetEmail" class="form-control-liquid" placeholder="등록하신 이메일 주소">
-                        <div id="emailCheckMsg" class="form-text mt-2 text-danger" style="display:none; font-size: 0.8rem;"></div>
+                        <div id="emailCheckMsg" class="form-text mt-2 text-danger"
+                            style="display:none; font-size: 0.8rem;"></div>
                     </div>
-                    <button type="button" id="btnCheckEmail" class="btn-liquid-auth btn-liquid-login" onclick="checkRegisteredEmail(this)">이메일 확인</button>
+                    <button type="button" id="btnCheckEmail" class="btn-liquid-auth btn-liquid-login"
+                        onclick="checkRegisteredEmail(this)">이메일 확인</button>
                 </div>
-                
+
                 <!-- 단계 2: 이메일 인증 (인증번호 전송 및 확인) -->
                 <div id="stepEmailAuth" style="display: none;">
                     <div class="form-group mb-2">
                         <label class="form-label" for="authCode">Verification Code</label>
                         <div class="input-group-liquid">
                             <input type="text" id="authCode" class="form-control-liquid" placeholder="인증번호 6자리">
-                            <button type="button" id="btnSendAuthCode" class="btn-verify" onclick="sendAuthCode(this)">인증번호 전송</button>
+                            <button type="button" id="btnSendAuthCode" class="btn-verify"
+                                onclick="sendAuthCode(this)">인증번호 전송</button>
                         </div>
                     </div>
-                    <div class="mb-4 text-end" style="font-size: 0.8rem; color: #d76750;">남은 시간: <span id="authTimer">03:00</span></div>
-                    
-                    <button type="button" id="btnVerifyAuthCode" class="btn-liquid-auth btn-liquid-signup" onclick="verifyAuthCode(this)">인증 확인</button>
+                    <div class="mb-4 text-end" style="font-size: 0.8rem; color: #d76750;">남은 시간: <span
+                            id="authTimer">03:00</span></div>
+
+                    <button type="button" id="btnVerifyAuthCode" class="btn-liquid-auth btn-liquid-signup"
+                        onclick="verifyAuthCode(this)">인증 확인</button>
                 </div>
-                
+
                 <!-- 단계 3: 비밀번호 재설정 (새 비밀번호 설정) -->
                 <div id="stepResetConfig" style="display: none;">
                     <div class="form-group">
@@ -167,25 +197,30 @@
                     <div class="form-group mb-4">
                         <label class="form-label" for="confirmPassword">Confirm Password</label>
                         <input type="password" id="confirmPassword" class="form-control-liquid" placeholder="새 비밀번호 확인">
-                        <div id="pwCheckMsg" class="form-text mt-2 text-danger" style="display:none; font-size: 0.8rem;">비밀번호가 일치하지 않습니다.</div>
+                        <div id="pwCheckMsg" class="form-text mt-2 text-danger"
+                            style="display:none; font-size: 0.8rem;">비밀번호가 일치하지 않습니다.</div>
                     </div>
-                    <button type="button" id="btnChangePassword" class="btn-liquid-auth btn-liquid-login" onclick="changePassword(this)">비밀번호 변경 완료</button>
+                    <button type="button" id="btnChangePassword" class="btn-liquid-auth btn-liquid-login"
+                        onclick="changePassword(this)">비밀번호 변경 완료</button>
                 </div>
             </div>
-            
+
         </div>
     </div>
-    
+
     <!-- [NEW] 범용 알림(Alert)을 대체할 커스텀 리퀴드 모달 팝업 -->
     <div id="authAlertModal" class="auth-modal-overlay" style="z-index: 9999;">
-        <div class="glass-panel-auth auth-modal-content" style="max-width: 380px; text-align: center; padding: 2.5rem 2rem;">
-            <div id="authAlertMessage" style="color: #fff; font-size: 1.05rem; margin-bottom: 2rem; font-weight: 500;">
+        <div class="glass-panel-auth auth-modal-content"
+            style="max-width: 380px; text-align: center; padding: 2.5rem 2rem;">
+            <div id="authAlertMessage"
+                style="color: #2D2D2D; font-size: 1.05rem; margin-bottom: 2rem; font-weight: 500;">
                 <!-- 메시지 내용 -->
             </div>
-            <button type="button" class="btn-verify" style="padding: 0.6rem 2rem; width: auto;" onclick="closeAuthAlert()">확인</button>
+            <button type="button" class="btn-verify" style="padding: 0.6rem 2rem; width: auto;"
+                onclick="closeAuthAlert()">확인</button>
         </div>
     </div>
-    
+
     <script>
         // Custom Alert 
         function showAuthAlert(msg) {
@@ -198,7 +233,7 @@
 
         // 비밀번호 재설정 Modal Control
         const modal = document.getElementById('passwordResetModal');
-        
+
         function openResetModal() {
             modal.classList.add('active');
             // 초기화
@@ -208,41 +243,41 @@
             document.getElementById('resetEmail').value = '';
             document.getElementById('resetEmail').disabled = false;
             document.getElementById('emailCheckMsg').style.display = 'none';
-            
+
             const btnCheckEmail = document.getElementById('btnCheckEmail');
             btnCheckEmail.innerText = '이메일 확인';
             btnCheckEmail.disabled = false;
         }
-        
+
         function closeResetModal() {
             modal.classList.remove('active');
         }
-        
+
         // 플로우 구현 로직 (Mock)
         function checkRegisteredEmail(btnElement) {
             const emailInput = document.getElementById('resetEmail');
             const msgObj = document.getElementById('emailCheckMsg');
-            
-            if(!emailInput.value) {
+
+            if (!emailInput.value) {
                 msgObj.innerText = "이메일을 입력해 주세요.";
                 msgObj.style.display = 'block';
                 return;
             }
-            
+
             // 등록여부 확인 시뮬레이션
             btnElement.disabled = true;
             btnElement.innerText = "이메일 확인 중...";
             emailInput.disabled = true; // 수정 불가 상태
             msgObj.style.display = 'none';
-            
+
             setTimeout(() => {
                 // Mock 검증: admin@으로 시작하지 않으면 없는 계정으로 처리
-                if(!emailInput.value.startsWith('admin@')) {
+                if (!emailInput.value.startsWith('admin@')) {
                     msgObj.classList.remove('text-success');
                     msgObj.classList.add('text-danger');
                     msgObj.innerText = "입력하신 이메일로 가입된 계정을 찾을 수 없습니다.";
                     msgObj.style.display = 'block';
-                    
+
                     btnElement.disabled = false;
                     btnElement.innerText = "다시 확인";
                     emailInput.disabled = false;
@@ -251,7 +286,7 @@
                     msgObj.classList.add('text-success');
                     msgObj.innerText = "인증 가능한 이메일입니다. 다음 단계를 진행합니다.";
                     msgObj.style.display = 'block';
-                    
+
                     // 1초 뒤 인증 단계로 전환
                     setTimeout(() => {
                         document.getElementById('stepCheckEmail').style.display = 'none';
@@ -260,11 +295,11 @@
                 }
             }, 1000);
         }
-        
+
         function sendAuthCode(btnElement) {
             btnElement.disabled = true;
             btnElement.innerText = "발송 중...";
-            
+
             setTimeout(() => {
                 btnElement.innerText = "재발송";
                 // 30초 간 재요청 방지 쿨타임
@@ -274,20 +309,20 @@
                 showAuthAlert('인증번호 발송이 완료되었습니다.');
             }, 800);
         }
-        
+
         function verifyAuthCode(btnElement) {
             const codeInput = document.getElementById('authCode');
-            if(!codeInput.value) {
+            if (!codeInput.value) {
                 showAuthAlert('인증번호를 입력해주세요.');
                 return;
             }
-            
+
             btnElement.disabled = true;
             btnElement.innerText = "확인 중...";
-            
+
             setTimeout(() => {
                 // Mock: 인증번호 '123456'만 통과한다고 가정
-                if(codeInput.value === '123456') {
+                if (codeInput.value === '123456') {
                     document.getElementById('stepEmailAuth').style.display = 'none';
                     document.getElementById('stepResetConfig').style.display = 'block';
                 } else {
@@ -297,33 +332,34 @@
                 }
             }, 800);
         }
-        
+
         function changePassword(btnElement) {
             const pwInput = document.getElementById('newPassword');
             const pwConfirmInput = document.getElementById('confirmPassword');
             const msgObj = document.getElementById('pwCheckMsg');
-            
-            if(!pwInput.value || !pwConfirmInput.value) {
+
+            if (!pwInput.value || !pwConfirmInput.value) {
                 msgObj.innerText = "비밀번호를 입력해주세요.";
                 msgObj.style.display = 'block';
                 return;
             }
-            if(pwInput.value !== pwConfirmInput.value) {
+            if (pwInput.value !== pwConfirmInput.value) {
                 msgObj.innerText = "비밀번호가 일치하지 않습니다.";
                 msgObj.style.display = 'block';
                 return;
             }
-            
+
             msgObj.style.display = 'none';
             btnElement.disabled = true;
             btnElement.innerText = "저장 중...";
-            
+
             setTimeout(() => {
                 showAuthAlert('비밀번호가 성공적으로 변경되었습니다. 변경된 비밀번호로 다시 로그인해주세요.');
                 closeResetModal();
             }, 1000);
         }
-        
+
     </script>
 </body>
+
 </html>

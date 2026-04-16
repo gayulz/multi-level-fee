@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,30 +14,36 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="/css/welcome.css">
-    
+
     <style>
         /* 초기 로딩 시 깜빡임 방지용 하이드 */
-        body { visibility: hidden; }
-        .welcome-body { visibility: visible; }
-        
+        body {
+            visibility: hidden;
+        }
+
+        .welcome-body {
+            visibility: visible;
+        }
+
         .mock-card img {
             width: 100%;
             border-radius: 10px;
             margin-top: 20px;
-            border: 1px solid rgba(0,0,0,0.1);
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
+
 <body class="welcome-body">
 
     <!-- Ambient Background Elements -->
     <div class="ambient-grid"></div>
-    
+
     <div class="ambient-orbs">
         <div class="orb orb-neon"></div>
         <div class="orb orb-pink"></div>
     </div>
-    
+
     <div class="ambient-marquee">
         <div class="marquee-content">
             SETTLETREE GLOBAL SETTLEMENT &nbsp;&nbsp; SETTLETREE GLOBAL SETTLEMENT &nbsp;&nbsp;
@@ -55,13 +62,27 @@
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="floating-coins">
-            <div class="coin coin-1"><div class="coin-inner">🪙</div></div>
-            <div class="coin coin-2"><div class="coin-inner">💸</div></div>
-            <div class="coin coin-3"><div class="coin-inner">💰</div></div>
-            <div class="coin coin-4"><div class="coin-inner">🪙</div></div>
-            <div class="coin coin-5"><div class="coin-inner">💵</div></div>
-            <div class="coin coin-6"><div class="coin-inner">💰</div></div>
-            <div class="coin coin-7"><div class="coin-inner">💎</div></div>
+            <div class="coin coin-1">
+                <div class="coin-inner">🪙</div>
+            </div>
+            <div class="coin coin-2">
+                <div class="coin-inner">💸</div>
+            </div>
+            <div class="coin coin-3">
+                <div class="coin-inner">💰</div>
+            </div>
+            <div class="coin coin-4">
+                <div class="coin-inner">🪙</div>
+            </div>
+            <div class="coin coin-5">
+                <div class="coin-inner">💵</div>
+            </div>
+            <div class="coin coin-6">
+                <div class="coin-inner">💰</div>
+            </div>
+            <div class="coin coin-7">
+                <div class="coin-inner">💎</div>
+            </div>
         </div>
         <h1 class="hero-title">
             <span class="line">WE PUT</span>
@@ -81,14 +102,14 @@
                     DFS 기반 100% 정합성의 완벽한 분배 알고리즘을 경험하세요.
                 </p>
             </div>
-            
+
             <div class="feature-right">
                 <div class="mock-card">
                     <h3>DFS 정산 알고리즘</h3>
                     <p>깊이 우선 탐색(DFS) 기반으로 조직 트리를 순회하며 수수료를 한 치의 오차 없이 자동 분배합니다. 1/N 배분 시 100% 정합성을 달성합니다.</p>
                     <img src="/images/dashboard.png" alt="대시보드 화면" />
                 </div>
-                
+
                 <div class="mock-card">
                     <h3>다단계 승인 시스템</h3>
                     <p>조직 레벨에 따라 자동으로 승인 파이프라인(PENDING → AGENCY → BRANCH → COMPLETED)을 타며 완벽한 통제 환경을 구축합니다.</p>
@@ -133,9 +154,9 @@
             <p>다단계 정산 분배 시 발생하는 낙전(Dust)은 언제나 큰 골칫거리입니다.</p>
             <p>SettleTree는 남은 소수점 낙전을 최상위 루트 노드에</p>
             <p>자동 편입시켜 회계적 결함을 보정하는 독자적인 하향식 분산 엔진을 내장했습니다.</p>
-            
+
             <div class="dashboard-showcase">
-                <img src="/images/dashboard.png" alt="SettleTree Dashboard Full Preview" />
+                <img src="/images/request-detail.png" alt="SettleTree Dashboard Full Preview" />
             </div>
         </div>
     </section>
@@ -186,7 +207,7 @@
                 ease: "power4.out",
                 delay: 0.2
             });
-            
+
             gsap.from(".coin-inner", {
                 scale: 0,
                 rotation: -180,
@@ -240,7 +261,7 @@
                             val: target,
                             duration: 2,
                             ease: "power2.out",
-                            onUpdate: function() {
+                            onUpdate: function () {
                                 count.innerHTML = Math.round(current.val);
                             }
                         });
@@ -251,14 +272,14 @@
             // 6. Matter.js Physics Engine for Footer
             const initMatterJS = () => {
                 const Engine = Matter.Engine,
-                      Render = Matter.Render,
-                      Runner = Matter.Runner,
-                      Bodies = Matter.Bodies,
-                      Composite = Matter.Composite;
+                    Render = Matter.Render,
+                    Runner = Matter.Runner,
+                    Bodies = Matter.Bodies,
+                    Composite = Matter.Composite;
 
                 const engine = Engine.create();
                 const container = document.getElementById('matter-canvas');
-                
+
                 // 엔진 렌더러 생성
                 const render = Render.create({
                     element: container,
@@ -273,26 +294,26 @@
 
                 // 바닥 생성
                 const ground = Bodies.rectangle(
-                    container.clientWidth / 2, 
-                    container.clientHeight + 25, 
-                    container.clientWidth, 
-                    50, 
+                    container.clientWidth / 2,
+                    container.clientHeight + 25,
+                    container.clientWidth,
+                    50,
                     { isStatic: true, render: { visible: false } }
                 );
-                
+
                 // 좌우 벽 생성
                 const wallLeft = Bodies.rectangle(
-                    -25, 
-                    container.clientHeight / 2, 
-                    50, 
-                    container.clientHeight, 
+                    -25,
+                    container.clientHeight / 2,
+                    50,
+                    container.clientHeight,
                     { isStatic: true, render: { visible: false } }
                 );
                 const wallRight = Bodies.rectangle(
-                    container.clientWidth + 25, 
-                    container.clientHeight / 2, 
-                    50, 
-                    container.clientHeight, 
+                    container.clientWidth + 25,
+                    container.clientHeight / 2,
+                    50,
+                    container.clientHeight,
                     { isStatic: true, render: { visible: false } }
                 );
 
@@ -335,16 +356,16 @@
                 window.addEventListener('resize', () => {
                     render.canvas.width = container.clientWidth;
                     render.canvas.height = container.clientHeight;
-                    Matter.Body.setPosition(ground, { x: container.clientWidth/2, y: container.clientHeight + 25 });
-                    Matter.Body.setPosition(wallRight, { x: container.clientWidth + 25, y: container.clientHeight/2 });
+                    Matter.Body.setPosition(ground, { x: container.clientWidth / 2, y: container.clientHeight + 25 });
+                    Matter.Body.setPosition(wallRight, { x: container.clientWidth + 25, y: container.clientHeight / 2 });
                 });
 
                 return {
                     start: () => {
-                        if(!interval) interval = setInterval(dropCoin, 300);
+                        if (!interval) interval = setInterval(dropCoin, 300);
                     },
                     stop: () => {
-                        if(interval) {
+                        if (interval) {
                             clearInterval(interval);
                             interval = null;
                         }
@@ -375,4 +396,5 @@
         });
     </script>
 </body>
+
 </html>

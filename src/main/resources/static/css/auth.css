@@ -1,477 +1,247 @@
-/*
- * [NEW] 인증 페이지 (Login / Signup) 전용 스타일
- * 
- * Liquid Glassmorphism 디자인 적용
- * 심플하지만 인터랙티브한 동적 무빙 배경 및 둥근 모서리 UI 제공
- * 포인트 컬러: #19065a (네이비), #f05cfa (핑크), #d76750 (오렌지)
- *
- * @author gayul.kim
- * @since 2026-03-06
- */
-
-/* 인증 페이지의 기초 Base */
-body.auth-body {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow-x: hidden;
-    overflow-y: auto; /* 내용이 길 경우 스크롤 허용 */
-    font-family: "Suit", sans-serif;
-    color: #19065a;
-    
-    /* 심플하고 밝은 화이트톤 무빙 그라데이션 배경 */
-    background: linear-gradient(120deg, #ffffff, #f8f9fa, #ffffff, #e9ecef);
-    background-size: 300% 300%;
-    animation: bgGradientMove 20s ease infinite;
-}
-
-@keyframes bgGradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* 메인 컨테이너 정렬 */
+/* Neo-brutalist Auth Container */
 .auth-wrapper {
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding: 2rem;
     position: relative;
-    z-index: 2;
-}
-
-/* Floating 빛 반사 효과 오브젝트 (심플한 인테리어 포인트) */
-.ambient-glow {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(100px);
-    z-index: 1;
-    opacity: 0.4;
-    animation: floatGlow 10s ease-in-out infinite alternate;
-}
-
-.ambient-glow.pink {
-    background: #f05cfa;
-    width: 400px;
-    height: 400px;
-    top: -100px;
-    left: 10%;
-}
-
-.ambient-glow.orange {
-    background: #d76750;
-    width: 300px;
-    height: 300px;
-    bottom: -50px;
-    right: 10%;
-    animation-delay: -5s;
-}
-
-@keyframes floatGlow {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(30px, 50px) scale(1.1); }
-}
-
-/* Liquid Glass Panel 디자인 */
-.glass-panel-auth {
-    background: rgba(255, 255, 255, 0.85); /* 더 불투명하게 */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: none;
-    box-shadow: var(--shadow-lg);
-    border-radius: var(--border-radius-xl);
-    padding: var(--space-2xl) var(--space-3xl);
-    width: 100%;
     z-index: 10;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    position: relative;
-    overflow: hidden;
+    padding-top: 80px; /* Space for fixed nav */
 }
 
-.glass-panel-auth::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -100%;
-    width: 50%; height: 100%;
-    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
-    transform: skewX(-25deg);
-    animation: shineLight 6s infinite;
+.glass-panel-auth {
+    background: #FFFFFF;
+    border: 2px solid var(--wc-text-primary, #2D2D2D);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 10px 10px 0 var(--wc-text-primary, #2D2D2D);
+    width: 100%;
+    max-width: 480px;
+    text-align: left;
+    color: var(--wc-text-primary, #2D2D2D);
+    transition: transform 0.3s ease;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-@keyframes shineLight {
-    0% { left: -100%; }
-    20% { left: 200%; }
-    100% { left: 200%; }
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-.glass-panel-auth.panel-login { max-width: 420px; }
-.glass-panel-auth.panel-signup { max-width: 520px; }
-
-/* 폼 헤더 및 텍스트 */
-.auth-header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-}
-
+/* Typography */
 .auth-title {
-    font-weight: 800;
-    font-size: 2rem;
-    color: #19065a;
-    margin: 0 0 0.5rem 0;
-    letter-spacing: -0.5px;
+    font-family: var(--font-head, 'Oswald', sans-serif);
+    font-weight: 700;
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    color: var(--wc-text-primary, #2D2D2D);
 }
-
 .auth-subtitle {
-    font-weight: 300;
-    font-size: 1rem;
-    color: #6b5c8c;
+    font-size: 0.95rem;
+    color: rgba(45, 45, 45, 0.7);
 }
 
-/* 입력 필드 (Input) 디자인 */
+/* Inputs */
 .form-group {
     margin-bottom: 1.5rem;
-    position: relative;
 }
-
 .form-label {
     display: block;
-    font-size: 0.8rem;
+    font-family: var(--font-head, 'Oswald', sans-serif);
+    font-size: 0.85rem;
     font-weight: 600;
-    color: #19065a;
     text-transform: uppercase;
     margin-bottom: 0.5rem;
-    letter-spacing: 0.5px;
+    color: #2D2D2D;
 }
-
 .form-label .required {
-    color: #d76750;
-    margin-left: 2px;
+    color: #FF00FF;
 }
 
-/* Liquid Input */
 .form-control-liquid {
     width: 100%;
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid var(--border-color, rgba(25, 6, 90, 0.2));
-    border-radius: var(--border-radius-md);
+    background: #FFFFFF;
+    border: 2px solid #2D2D2D;
+    border-radius: 8px;
     padding: 0.8rem 1rem;
-    font-family: inherit;
     font-size: 1rem;
-    color: var(--text-heading, #19065a);
-    transition: all 0.3s ease;
+    color: #2D2D2D;
+    transition: all 0.2s ease;
     outline: none;
-    box-sizing: border-box;
+    box-shadow: inset 3px 3px 0 rgba(0,0,0,0.05);
 }
 
-/* Select Box 리퀴드 처리 */
+.form-control-liquid:focus {
+    background: #F9F9F9;
+    box-shadow: 4px 4px 0 #00F0FF;
+    border-color: #2D2D2D;
+}
+
+/* Select Box */
 select.form-control-liquid {
     appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2319065a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232D2D2D' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 1rem center;
     background-size: 1em;
 }
 
-select.form-control-liquid option {
-    background: #ffffff;
-    color: #19065a;
+/* Button Neo Brutalist */
+.btn-liquid-auth, .btn-verify {
+    font-family: var(--font-head, 'Oswald', sans-serif);
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #1A1A1A;
+    border: 2px solid #2D2D2D;
+    background: #00F0FF;
+    padding: 12px 24px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    width: 100%;
+    font-size: 1.1rem;
+    margin-top: 1rem;
 }
 
-.form-control-liquid:focus {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: #f05cfa;
-    box-shadow: 0 0 0 4px rgba(240, 92, 250, 0.15);
+.btn-verify {
+    background: #FF00FF;
+    color: #FFFFFF;
+    width: auto;
+    font-size: 0.9rem;
+    margin-top: 0;
+    border-radius: 8px;
+    padding: 0 1rem;
 }
 
-.form-control-liquid:disabled {
-    background: rgba(255, 255, 255, 0.3); /* 비활성화 상태 배경 */
-    color: #888;
-    cursor: not-allowed;
-    border-color: rgba(25, 6, 90, 0.1);
+.btn-liquid-auth:hover, .btn-verify:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px #00F0FF;
+}
+.btn-verify:hover {
+    box-shadow: 0 0 15px #FF00FF;
 }
 
-.form-control-liquid::placeholder {
-    color: rgba(25, 6, 90, 0.4);
+.btn-liquid-auth:active, .btn-verify:active {
+    transform: translateY(2px);
+    box-shadow: none;
 }
 
-/* 인풋 폼 옆 버튼이 있을 경우의 Flexbox (이메일 인증 등) */
+.btn-liquid-signup {
+    background: #FF00FF;
+    color: #FFFFFF;
+}
+
+/* Flex Group */
 .input-group-liquid {
     display: flex;
     gap: 0.5rem;
 }
-
 .input-group-liquid .form-control-liquid {
     flex: 1;
 }
 
-/* 작은 크기의 서브 버튼 (이메일 인증 등) */
-.btn-verify {
-    background: rgba(25, 6, 90, 0.05);
-    border: 1px solid rgba(25, 6, 90, 0.15);
-    color: var(--text-heading, #19065a);
-    border-radius: var(--border-radius-pill); /* 로그인/가입 주요 버튼과 동일한 알약형 통일 */
-    padding: 0 1rem;
+/* Divider & Text Links */
+.auth-footer {
+    margin-top: 1.5rem;
+    text-align: center;
     font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    white-space: nowrap;
+    color: rgba(45, 45, 45, 0.8);
+}
+.auth-link, .auth-link-alt {
+    color: #2D2D2D;
+    text-decoration: underline;
+    font-weight: 700;
+}
+.auth-link:hover, .auth-link-alt:hover {
+    color: #FF00FF;
 }
 
-.btn-verify:hover:not(:disabled) {
-    background: rgba(215, 103, 80, 0.8); /* #d76750 orange point */
-    border-color: #d76750;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(215, 103, 80, 0.3);
-}
-
-.btn-verify:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-    background: rgba(25, 6, 90, 0.1);
-}
-
-/* ReCAPTCHA Mock 영역 */
-.recaptcha-mock {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #f9f9f9;
-    border: 1px solid #d3d3d3;
-    border-radius: 4px;
-    padding: 0.8rem 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.recaptcha-mock .rc-left {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.recaptcha-mock input[type="checkbox"] {
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-}
-
-.recaptcha-mock span {
-    color: #2c2c2c;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.recaptcha-icon {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.recaptcha-icon img {
-    height: 30px;
-    opacity: 0.8;
-}
-.recaptcha-icon small {
-    font-size: 0.6rem;
-    color: #555;
-    margin-top: 2px;
-}
-
-/* 개인정보 동의 체크박스 */
+/* Checkbox */
 .terms-check {
     display: flex;
     align-items: flex-start;
     gap: 0.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     margin-top: 1rem;
 }
-
 .terms-check input[type="checkbox"] {
     margin-top: 4px;
-    cursor: pointer;
-    accent-color: #f05cfa;
+    width: 18px;
+    height: 18px;
+    accent-color: #00F0FF;
+    border: 2px solid #2D2D2D;
 }
-
 .terms-check label {
     font-size: 0.85rem;
-    color: #6b5c8c;
-    line-height: 1.4;
-    cursor: pointer;
+    color: #2D2D2D;
+    line-height: 1.5;
 }
-
 .terms-check a {
-    color: #f05cfa;
-    text-decoration: none;
-}
-.terms-check a:hover {
-    text-decoration: underline;
+    color: #FF00FF;
+    font-weight: bold;
 }
 
-/* Liquid 버튼 디자인 (Welcome과 동기화, 약간 더 꽉찬 100% 느낌) */
-.btn-liquid-auth {
-    width: 100%;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 1.15rem;
-    padding: 0.9rem;
-    border-radius: var(--border-radius-pill); /* 알약형 */
-    border: none;
-    color: #ffffff;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    position: relative;
-    overflow: hidden;
-    margin-top: 0.5rem;
+/* reCAPTCHA Mock */
+.recaptcha-mock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #EAF0E8;
+    border: 2px solid #2D2D2D;
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1rem;
 }
 
-/* Login - Pink to Orange Gradient */
-.btn-liquid-login {
-    background: linear-gradient(135deg, #19065a, #2e106b);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 4px 15px rgba(25, 6, 90, 0.4);
-}
-
-.btn-liquid-login:hover:not(:disabled) {
-    background: linear-gradient(135deg, #2e106b, #19065a);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(25, 6, 90, 0.6);
-}
-
-/* Signup - Pink to Orange Gradient */
-.btn-liquid-signup {
-    background: linear-gradient(135deg, #f05cfa, #d76750);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    box-shadow: 0 4px 15px rgba(240, 92, 250, 0.3);
-}
-
-.btn-liquid-signup:hover:not(:disabled) {
-    background: linear-gradient(135deg, #d76750, #b24b37);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(215, 103, 80, 0.5);
-}
-
-.btn-liquid-auth:active:not(:disabled) {
-    transform: scale(0.98);
-}
-
-/* 비활성화 상태 공통 */
-.btn-liquid-auth:disabled {
-    cursor: not-allowed;
-    background: rgba(255, 255, 255, 0.05); /* 흐리게 */
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: none;
-    color: rgba(255, 255, 255, 0.5);
-    transform: none;
-}
-
-/* 하단 텍스트 링크 */
-.auth-footer {
-    margin-top: 1.5rem;
-    text-align: left;
-    font-size: 0.85rem;
-    color: #6b5c8c;
-}
-.auth-footer-center {
-    text-align: center;
-}
-
-.auth-link {
-    color: #f05cfa;
-    text-decoration: none;
-    font-weight: 600;
-    margin-left: 0.2rem;
-    transition: color 0.2s;
-}
-
-.auth-link:hover {
-    color: #d76750;
-    text-decoration: underline;
-}
-
-.auth-link-alt {
-    color: #6b5c8c;
-    text-decoration: none;
-    font-size: 0.85rem;
-    display: block;
-    margin-bottom: 0.5rem;
-    cursor: pointer;
-}
-
-.auth-link-alt:hover {
-    color: #19065a;
-    text-decoration: underline;
-}
-
-.wait-approval-text {
-    font-size: 0.8rem;
-    color: #d76750;
-    margin-top: 10px;
-    text-align: center;
-    font-weight: 500;
-}
-
-/* [NEW] 모달 오버레이 및 팝업 창 (JS 연동) */
+/* Modals */
 .auth-modal-overlay {
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(234, 240, 232, 0.8);
     backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 100;
-    
-    /* 기본적으로 화면 밖 숨김 */
+    z-index: 10000;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
 }
-
 .auth-modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
+    opacity: 1; visibility: visible;
 }
-
 .auth-modal-content {
+    background: #FFFFFF;
+    border: 2px solid #2D2D2D;
+    box-shadow: 10px 10px 0 #2D2D2D;
+    border-radius: 20px;
+    padding: 2.5rem;
+    color: #2D2D2D;
     max-width: 450px;
-    padding: 2.5rem 3rem;
-    /* 나타날 때 살짝 아래에서 올라옴 */
+    width: 90%;
     transform: translateY(20px);
-    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: transform 0.4s ease;
 }
-
 .auth-modal-overlay.active .auth-modal-content {
     transform: translateY(0);
 }
 
-.auth-modal-close {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 2rem;
-    color: #6b5c8c;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-.auth-modal-close:hover {
-    color: #19065a;
+.divider {
+    width: 2px;
+    background: #2D2D2D;
+    margin: 0 2rem;
 }
 
-
-/* 반응형 모바일 */
-@media (max-width: 576px) {
-    .glass-panel-auth {
-        padding: 2.5rem 1.5rem;
-        border-radius: 20px;
+/* Login Split Panel */
+@media (max-width: 768px) {
+    .login-flex-container {
+        flex-direction: column;
     }
-    .auth-wrapper {
-        padding: 1rem;
-    }
-    .auth-modal-content {
-        margin: 1rem;
-        padding: 2rem 1.5rem;
+    .divider {
+        width: 100%;
+        height: 2px;
+        margin: 2rem 0;
     }
 }
