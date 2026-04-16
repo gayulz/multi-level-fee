@@ -7,10 +7,15 @@
 ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![H2](https://img.shields.io/badge/H2-Test_DB-blue?style=for-the-badge)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
+
+> **🌐 Live Demo**: [https://settletree.p-e.kr/](https://settletree.p-e.kr/)
+> **개인 프로젝트이지만 실제 운영 중**인 웹 애플리케이션입니다. Oracle Cloud Infrastructure의 무료 티어에 배포하여 실제 서비스를 제공하고 있습니다.
 
 ## 💡 프로젝트 개요
 
-SettleTree는 본사, 지사, 대리점으로 이어지는 **계층형 조직 구조(Hierarchical Organization)**를 기반으로 정산 요청을 처리하고 승인 워크플로우를 전산화한 웹 애플리케이션입니다. 
+SettleTree는 본사, 지사, 대리점으로 이어지는 **계층형 조직 구조(Hierarchical Organization)**를 기반으로 정산 요청을 처리하고 승인 워크플로우를 전산화한 웹 애플리케이션입니다.
 
 다중 레벨로 구성된 조직에서는 하위 조직의 정산 요청이 상위 조직의 순차적인 검토를 거쳐야 하는 경우가 많습니다. 본 프로젝트는 이러한 비즈니스 요구사항을 분석하여, 각 계층의 역할을 분리하고 수수료가 상위로 분배되는 로직을 전산화하는 데 초점을 맞추었습니다.
 
@@ -76,11 +81,32 @@ Spring Security의 URL 차단과 `@PreAuthorize` 어노테이션을 결합하여
 * 일반 사용자는 본인의 건만 볼 수 있고, 중간 관리자(지사/대리점 ADMIN)는 자신보다 하위 조직의 데이터만 승인하고 열람할 수 있도록 격리하였습니다.
 
 ### 4. 클라우드 인프라 운용 문제 해결 (OCI Free Tier)
-비용 효율적인 배포를 위해 Oracle Cloud Infrastructure (OCI)의 무료 티어(1/8 OCPU, 1GB RAM)에 시스템을 구축하는 과정에서 발생한 메모리 한계(OOM)를 다음과 같이 해결했습니다. 
+비용 효율적인 배포를 위해 Oracle Cloud Infrastructure (OCI)의 무료 티어(1/8 OCPU, 1GB RAM)에 시스템을 구축하는 과정에서 발생한 메모리 한계(OOM)를 다음과 같이 해결했습니다.
 
 1. **Swap Memory 할당**: 1GB의 제한된 물리 메모리를 우회하기 위해 2GB의 Swap 파일을 `/etc/fstab`에 마운트하여 Spring Boot, DB, Nginx, RabbitMQ의 동시 구동을 보장했습니다.
 2. **도커 빌드 최적화**: OCI 상의 CI/CD 과정에서 Gradle 빌드 시 불필요한 `-plain.jar`가 남는 현상을 방지하기 위해 `jar { enabled = false }` 처리를 진행했습니다.
 3. **Nginx 기반 HTTPS 프록시**: Certbot을 연동하여 HTTPS 암호화를 구현하고 80포트를 443으로 리다이렉트하는 표준적인 웹 인프라 환경을 구축했습니다.
+
+### 5. 최근 기능 개선 사항
+
+#### 대시보드 하이브리드 조직도 개편
+* **수평+수직 트리 전환**: 기존 조직도를 하이브리드 레이아웃으로 개선하여 가독성을 향상시켰습니다.
+* **용어 개선**: 사용자 편의성을 위해 "트랜잭션 → 주문", "Tx ID → 주문 ID"로 용어를 변경했습니다.
+* **실제 주문 ID 노출**: 대시보드 테이블에서 실제 주문 ID(orderId)를 노출하도록 DTO 필드를 추가했습니다.
+
+#### UI/UX 개선
+* **푸터 영역 레이아웃 수정**: 사이드바에 가려지던 푸터 영역을 Flexbox 기반으로 재배치하여 문제를 해결했습니다.
+* **정산 내역 링크 수정**: 대시보드에서 정산 내역 바로가기 링크의 404 오류를 수정했습니다(`/settlements` → `/settlement/history`).
+
+#### 보안 강화
+* **더미 데이터 초기화 분리**: 평문 비밀번호 설정을 `application.yml`에서 제거하고 `application-local.yml`로 이동하여 운영 환경에서의 보안 리스크를 제거했습니다.
+* **프로파일 기반 초기화**: `DataInitializer`는 local/dev 프로파일에서만 실행되도록 제한했습니다.
+
+#### 개발 편의성 향상
+* **Live Reload 환경 구성**: Thymeleaf 캐시 비활성화 및 `bootRun sourceResources` 설정을 통해 템플릿/정적 자원의 실시간 리로드를 지원합니다.
+
+#### 조직 관리 기능 고도화
+* **하위 조직 관리 개선**: 계층형 조직 구조에서 하위 조직을 더 효율적으로 관리할 수 있도록 기능을 개선했습니다.
 
 ---
 
@@ -130,14 +156,28 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:management
 
 ---
 
-## 📝 관리자 참고용 기초 세팅 (application.yml)
-로컬 프로파일 모드로 부팅 시, 더미 데이터 구성을 위해 아래 계정이 자동 생성됩니다. (비밀번호는 `application.yml` 혹은 `.env`를 통해 주입 가능)
+## 📝 관리자 참고용 기초 세팅
 
-- **최고 관리자**: `admin@sattletree.com`
-- **본사 관리자**: `hq_admin@sattletree.com`
-- **서울지사 관리자**: `seoul_admin@sattletree.com`
-- **강남대리점 관리자**: `gangnam_admin@sattletree.com`
+### 더미 데이터 초기화 (로컬 환경 전용)
+로컬 프로파일(`local`) 모드로 부팅 시, 더미 데이터 구성을 위해 아래 계정이 자동 생성됩니다.
+
+**⚠️ 보안 주의사항**:
+- 더미 데이터 초기화는 `application-local.yml`에서만 설정되며, **운영 환경에서는 실행되지 않습니다**.
+- `DataInitializer`는 `local` 또는 `dev` 프로파일에서만 활성화됩니다.
+- 비밀번호는 `application-local.yml`에서 환경 변수로 주입 가능합니다.
+
+**자동 생성 계정**:
+- **최고 관리자**: `admin@settletree.com`
+- **본사 관리자**: `hq_admin@settletree.com`
+- **서울지사 관리자**: `seoul_admin@settletree.com`
+- **강남대리점 관리자**: `gangnam_admin@settletree.com`
 - **강남대리점 일반사용자**: `gangnam_user@example.com`
+
+### 개발 환경 설정
+**Live Reload 지원**:
+- Thymeleaf 캐시가 비활성화되어 있어 템플릿 수정 시 재시작 없이 반영됩니다.
+- `bootRun`에서 `sourceResources` 설정으로 정적 자원도 실시간 감시됩니다.
+- IDE에서 "Build Project" 또는 자동 빌드 활성화 시 즉시 반영됩니다.
 
 ---
 
@@ -145,4 +185,83 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:management
 * **개발자**: 김가율 (gayul.kim)
 * **이메일**: gayulz@kakao.com
 * **GitHub**: https://github.com/gayulz/multi-level-fee
-* **운영 서버 환경**: https://settletree.p-e.kr/
+* **🌐 Live Demo (운영 중)**: https://settletree.p-e.kr/
+
+---
+
+## 🎯 프로젝트 특징 요약
+
+| 특징 | 설명 |
+|------|------|
+| **핵심 알고리즘** | DFS 재귀 기반 정산 분배 + 낙전 보정 알고리즘 |
+| **성능 최적화** | QueryDSL Fetch Join으로 N+1 문제 해결 |
+| **보안** | Spring Security 6.x 기반 Role/계층별 접근 제어 |
+| **인프라** | OCI Free Tier 1GB RAM 환경에서 안정적 운영 |
+| **비동기 메시징** | RabbitMQ 기반 정산 요청 처리 |
+| **개발 편의성** | Live Reload 지원, 로컬 환경 더미 데이터 자동 생성 |
+| **운영 환경** | Docker + Nginx + HTTPS(Certbot) 완전 자동화 배포 |
+
+---
+
+## 📊 프로젝트 구조
+
+```
+src/main/java/com/example/settlement/
+├── config/              # 설정 클래스 (Security, QueryDSL, RabbitMQ)
+├── controller/          # 웹 컨트롤러
+├── domain/
+│   ├── entity/         # JPA 엔티티 (Organization, User, SettlementRequest, SettlementNode)
+│   └── repository/     # Repository 인터페이스 및 QueryDSL 구현체
+├── dto/                # 데이터 전송 객체
+├── service/            # 비즈니스 로직 (정산, 승인, 조직 관리)
+├── messaging/          # RabbitMQ Producer/Consumer
+├── exception/          # 예외 처리
+└── web/
+    ├── controller/     # 뷰 컨트롤러 (대시보드, 설정)
+    └── security/       # 커스텀 UserDetails 구현
+```
+
+---
+
+## 🚀 주요 기술적 도전과 해결
+
+### 1. 정산 정합성 문제
+**문제**: 소수점 연산으로 인한 금액 유실 (낙전)
+**해결**: DFS 트리 순회 + `RoundingMode.DOWN` + 루트 노드 보정 알고리즘
+
+### 2. N+1 쿼리 문제
+**문제**: 계층형 조직 조회 시 쿼리 폭발
+**해결**: QueryDSL `fetchJoin`으로 필요한 연관 엔티티를 한 번에 로딩
+
+### 3. 제한된 인프라 자원
+**문제**: OCI Free Tier 1GB RAM에서 OOM 발생
+**해결**: 2GB Swap 메모리 + Docker 최적화 + Gradle 설정 개선
+
+### 4. 보안 취약점
+**문제**: 평문 비밀번호가 공유 설정 파일에 노출
+**해결**: 프로파일 분리 (`application-local.yml`로 격리)
+
+---
+
+## 📈 향후 개선 계획
+
+- [ ] **정산 승인 워크플로우 강화**: 다단계 승인 체인 구현
+- [ ] **실시간 알림**: WebSocket 기반 정산 상태 변경 알림
+- [ ] **대시보드 차트**: 조직별/기간별 정산 통계 시각화
+- [ ] **API 문서화**: Swagger/OpenAPI 통합
+- [ ] **테스트 커버리지 확대**: 통합 테스트 및 E2E 테스트 보강
+- [ ] **모니터링**: Prometheus + Grafana 연동
+
+---
+
+## 🏆 학습 성과
+
+이 프로젝트를 통해 다음을 학습하고 구현했습니다:
+
+✅ **계층형 자료구조 설계 및 재귀 알고리즘**
+✅ **QueryDSL을 활용한 복잡한 쿼리 최적화**
+✅ **Spring Security 기반 다단계 권한 제어**
+✅ **메시지 큐(RabbitMQ)를 활용한 비동기 처리**
+✅ **제한된 클라우드 자원에서의 실전 배포 및 운영**
+✅ **Docker/Nginx/Certbot을 활용한 프로덕션 인프라 구축**
+✅ **Thymeleaf + Bootstrap 5를 이용한 SSR 웹 UI 구현**
