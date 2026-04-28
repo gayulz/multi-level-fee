@@ -40,6 +40,8 @@
                     
                     <!-- 조직 정보 입력 폼 -->
                     <form class="needs-validation" novalidate id="nodeForm">
+                        <!-- CSRF token (Spring Security session-based) -->
+                        <input type="hidden" name="_csrf" th:value="${_csrf?.token}">
                         <!-- 수정 시 사용되는 ID -->
                         <input type="hidden" id="nodeId" th:value="${node?.id}">
                         
@@ -135,14 +137,16 @@
                         feeRate: (parseFloat(formData.get('feeRate')) / 100).toFixed(4)
                     };
 
-                    // CSRF 토큰 설정
+                    // CSRF token (fail-closed: missing token aborts the request)
                     const csrfToken = document.querySelector("input[name='_csrf']")?.value;
-                    const headers = {
-                        'Content-Type': 'application/json'
-                    };
-                    if (csrfToken) {
-                        headers['X-CSRF-TOKEN'] = csrfToken;
+                    if (!csrfToken) {
+                        alert('보안 토큰이 누락되었습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+                        return;
                     }
+                    const headers = {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    };
 
                     try {
                         const url = nodeId ? `/api/nodes/${nodeId}` : '/api/nodes';

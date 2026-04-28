@@ -51,6 +51,12 @@
             
             <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border: 1px solid rgba(0,0,0,0.05); border-radius: 12px; font-size: 13px;">
                 <li>
+                    <button type="button" class="btn btn-link dropdown-item w-100 text-start m-0 rounded-0" data-bs-toggle="modal" data-bs-target="#profileUpdateModal" style="font-size: 13px; font-weight: 600; color: var(--text-main);">
+                        <i class="bi bi-person-gear me-2"></i>개인정보 변경
+                    </button>
+                </li>
+                <li><hr class="dropdown-divider m-0"></li>
+                <li>
                     <form th:action="@{/auth/logout}" method="post" class="dropdown-item p-0">
                         <button type="submit" class="btn btn-link dropdown-item w-100 text-start m-0 rounded-0" style="font-size: 13px; font-weight: 600; color: #DC2626;">
                             <i class="bi bi-box-arrow-right me-2"></i>Log Out
@@ -61,4 +67,177 @@
         </div>
         
     </div>
+
+    <!-- 개인정보 변경 모달 -->
+    <div class="modal fade" id="profileUpdateModal" tabindex="-1" aria-labelledby="profileUpdateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="profileUpdateModalLabel" style="color: var(--text-main);">개인정보 변경</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <form id="profileUpdateForm">
+                        <input type="hidden" id="modalCsrfToken" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" id="modalCsrfHeader" th:if="${_csrf != null}" th:value="${_csrf.headerName}"/>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-muted" style="font-size: 12px;">성함</label>
+                            <input type="text" class="form-control bg-light" th:value="${user?.name ?: #authentication.principal.name}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-muted" style="font-size: 12px;">소속</label>
+                            <input type="text" class="form-control bg-light" th:value="${#authentication.principal.organization?.orgName ?: '본사'}" disabled>
+                        </div>
+                        
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <label class="form-label fw-semibold text-muted m-0" style="font-size: 12px;">비밀번호</label>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="btnTogglePasswordChange" style="border-radius: 20px; font-size: 12px; font-weight: 600;">
+                                비밀번호 변경
+                            </button>
+                        </div>
+                        
+                        <div id="passwordChangeSection" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted" style="font-size: 12px;">현재 비밀번호</label>
+                                <input type="password" class="form-control" id="modalCurrentPassword" name="currentPassword" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted" style="font-size: 12px;">새 비밀번호 변경</label>
+                                <input type="password" class="form-control" id="modalNewPassword" name="newPassword" placeholder="대소문자, 특수문자 포함 8자리 이상" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted" style="font-size: 12px;">비밀번호 변경 재확인</label>
+                                <input type="password" class="form-control" id="modalConfirmPassword" name="confirmPassword" placeholder="새 비밀번호 재입력" disabled>
+                            </div>
+                            <div id="modalPwCheckMsg" class="form-text text-danger" style="display:none; font-size: 11px;"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">취소</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveProfile" style="border-radius: 8px; font-weight: 600; background: linear-gradient(135deg, #3B82F6, #8B5CF6); border: none;">최종 저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnToggle = document.getElementById('btnTogglePasswordChange');
+            const pwSection = document.getElementById('passwordChangeSection');
+            const btnSave = document.getElementById('btnSaveProfile');
+            const msgObj = document.getElementById('modalPwCheckMsg');
+
+            function clearPasswordFields() {
+                document.getElementById('modalCurrentPassword').value = '';
+                document.getElementById('modalNewPassword').value = '';
+                document.getElementById('modalConfirmPassword').value = '';
+                msgObj.style.display = 'none';
+            }
+
+            btnToggle.addEventListener('click', function() {
+                const isHidden = pwSection.style.display === 'none';
+                pwSection.style.display = isHidden ? 'block' : 'none';
+                
+                const inputs = [
+                    document.getElementById('modalCurrentPassword'),
+                    document.getElementById('modalNewPassword'),
+                    document.getElementById('modalConfirmPassword')
+                ];
+                
+                inputs.forEach(input => {
+                    input.disabled = !isHidden;
+                    if (!isHidden) input.value = '';
+                });
+                msgObj.style.display = 'none';
+            });
+
+            btnSave.addEventListener('click', function() {
+                if (pwSection.style.display === 'block') {
+                    const currentPw = document.getElementById('modalCurrentPassword').value;
+                    const newPw = document.getElementById('modalNewPassword').value;
+                    const confirmPw = document.getElementById('modalConfirmPassword').value;
+                    
+                    if (!currentPw || !newPw || !confirmPw) {
+                        msgObj.innerText = "비밀번호를 모두 입력해주세요.";
+                        msgObj.style.display = 'block';
+                        return;
+                    }
+                    
+                    if (newPw !== confirmPw) {
+                        msgObj.innerText = "새 비밀번호가 일치하지 않습니다.";
+                        msgObj.style.display = 'block';
+                        return;
+                    }
+                    
+                    // Password policy regex — synced with backend PasswordPolicy.REGEX
+                    // Policy: ≥1 uppercase, ≥1 lowercase, ≥1 special char, min length 8
+                    const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+                    if (!pwRegex.test(newPw)) {
+                        msgObj.innerText = "비밀번호는 대문자, 소문자, 특수문자를 각 1자 이상 포함하여 최소 8자 이상이어야 합니다.";
+                        msgObj.style.display = 'block';
+                        return;
+                    }
+                    
+                    const csrfTokenEl = document.getElementById('modalCsrfToken');
+                    const csrfHeaderEl = document.getElementById('modalCsrfHeader');
+                    const csrfToken = csrfTokenEl ? csrfTokenEl.value : '';
+                    const csrfHeader = csrfHeaderEl ? csrfHeaderEl.value : '';
+
+                    // Fail-closed: missing CSRF token must abort the request, not silently bypass
+                    if (!csrfHeader || !csrfToken) {
+                        msgObj.innerText = "보안 토큰이 누락되었습니다. 페이지를 새로고침 후 다시 시도해주세요.";
+                        msgObj.style.display = 'block';
+                        return;
+                    }
+
+                    const formData = new URLSearchParams();
+                    formData.append('currentPassword', currentPw);
+                    formData.append('newPassword', newPw);
+                    formData.append('confirmPassword', confirmPw);
+
+                    const headers = {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        [csrfHeader]: csrfToken
+                    };
+                    
+                    fetch('/settings/api/change-password', {
+                        method: 'POST',
+                        headers: headers,
+                        body: formData.toString()
+                    })
+                    .then(response => response.json().then(data => ({status: response.status, body: data})))
+                    .then(res => {
+                        if (res.status === 200) {
+                            alert(res.body.message);
+                            const modalEl = document.getElementById('profileUpdateModal');
+                            const modal = bootstrap.Modal.getInstance(modalEl);
+                            modal.hide();
+                            
+                            pwSection.style.display = 'none';
+                            clearPasswordFields();
+                            const inputs = [
+                                document.getElementById('modalCurrentPassword'),
+                                document.getElementById('modalNewPassword'),
+                                document.getElementById('modalConfirmPassword')
+                            ];
+                            inputs.forEach(input => input.disabled = true);
+                        } else {
+                            msgObj.innerText = res.body.message || "오류가 발생했습니다.";
+                            msgObj.style.display = 'block';
+                        }
+                    })
+                    .catch(err => {
+                        msgObj.innerText = "서버 통신 중 오류가 발생했습니다.";
+                        msgObj.style.display = 'block';
+                    });
+                } else {
+                    const modalEl = document.getElementById('profileUpdateModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                }
+            });
+        });
+    </script>
 </header>

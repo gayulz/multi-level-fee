@@ -8,9 +8,17 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
 /**
  * [NEW] Spring Security 설정 클래스.
+ *
+ * <p>
+ * CSRF 정책:
+ * - HTTP Session 기반 토큰 저장 (서버사이드 렌더링 환경에 적합)
+ * - 모든 state-changing 요청(POST/PUT/DELETE/PATCH)에 토큰 검증 강제
+ * - 이메일 인증 GET 링크(/auth/verify-email/**)는 idempotent하므로 CSRF 검증 대상 외
+ * </p>
  *
  * @author gayul.kim
  * @since 2026-03-09
@@ -28,8 +36,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // CSRF: explicit session-based token repository (fail-closed by default)
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(new HttpSessionCsrfTokenRepository()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/auth/welcome", "/auth/login", "/auth/signup", "/auth/verify-email/**")
+                        .requestMatchers("/", "/auth/welcome", "/auth/login", "/auth/signup", "/auth/verify-email/**", "/auth/resend-verification")
                         .permitAll()
                         .requestMatchers("/css/**", "/js/**", "/fonts/**", "/images/**").permitAll()
 

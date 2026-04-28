@@ -1,5 +1,6 @@
 package com.example.settlement.web.controller;
 
+import com.example.settlement.common.PasswordPolicy;
 import com.example.settlement.domain.entity.User;
 import com.example.settlement.service.UserService;
 import com.example.settlement.web.security.CustomUserDetails;
@@ -44,6 +45,10 @@ public class SettingsController {
 
 		model.addAttribute("pageTitle", "개인정보 수정");
 		model.addAttribute("user", user);
+		model.addAttribute("pwMinLength", PasswordPolicy.MIN_LENGTH);
+		model.addAttribute("pwHtmlPattern", PasswordPolicy.HTML_PATTERN);
+		model.addAttribute("pwInputTitle", PasswordPolicy.INPUT_TITLE);
+		model.addAttribute("pwViolationMessage", PasswordPolicy.VIOLATION_MESSAGE);
 
 		return "pages/settings/profile";
 	}
@@ -102,14 +107,65 @@ public class SettingsController {
 				return "redirect:/settings/profile";
 			}
 
+			// 비밀번호 정책 검증 (PasswordPolicy 단일 소스)
+			if (!PasswordPolicy.isValid(newPassword)) {
+				redirectAttributes.addFlashAttribute("message", PasswordPolicy.VIOLATION_MESSAGE);
+				redirectAttributes.addFlashAttribute("alertType", "error");
+				return "redirect:/settings/profile";
+			}
+
 			userService.changePassword(userDetails.getUser().getUserId(), currentPassword, newPassword);
 			redirectAttributes.addFlashAttribute("message", "비밀번호가 변경되었습니다.");
 			redirectAttributes.addFlashAttribute("alertType", "success");
+		} catch (IllegalArgumentException e) {
+			// Service 레이어에서 던지는 검증 실패 메시지(현재 비밀번호 불일치 등)만 노출
+			redirectAttributes.addFlashAttribute("message", e.getMessage());
+			redirectAttributes.addFlashAttribute("alertType", "error");
 		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("message", "비밀번호 변경에 실패했습니다: " + e.getMessage());
+			// 시스템 오류는 일반 메시지만 노출 (스택트레이스 누수 방지)
+			redirectAttributes.addFlashAttribute("message", "비밀번호 변경 중 오류가 발생했습니다.");
 			redirectAttributes.addFlashAttribute("alertType", "error");
 		}
 
 		return "redirect:/settings/profile";
+	}
+
+	/**
+	 * [NEW] 모달 팝업용 비밀번호 변경 API
+	 *
+	 * @param userDetails 현재 로그인한 사용자
+	 * @param currentPassword 현재 비밀번호
+	 * @param newPassword 새 비밀번호
+	 * @param confirmPassword 새 비밀번호 확인
+	 * @return JSON 응답
+	 * @author gayul.kim
+	 * @since 2026-04-21
+	 */
+	@PostMapping("/api/change-password")
+	@org.springframework.web.bind.annotation.ResponseBody
+	public org.springframework.http.ResponseEntity<?> changePasswordApi(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam String currentPassword,
+		@RequestParam String newPassword,
+		@RequestParam String confirmPassword
+	) {
+		try {
+			// 새 비밀번호 일치 확인
+			if (!newPassword.equals(confirmPassword)) {
+				return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("message", "새 비밀번호가 일치하지 않습니다."));
+			}
+
+			// 비밀번호 복잡도 검증 (PasswordPolicy 단일 소스 참조)
+			if (!PasswordPolicy.isValid(newPassword)) {
+				return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("message", PasswordPolicy.VIOLATION_MESSAGE));
+			}
+
+			userService.changePassword(userDetails.getUser().getUserId(), currentPassword, newPassword);
+			return org.springframework.http.ResponseEntity.ok(java.util.Map.of("message", "비밀번호가 성공적으로 변경되었습니다."));
+		} catch (IllegalArgumentException e) {
+			return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+		} catch (Exception e) {
+			return org.springframework.http.ResponseEntity.internalServerError().body(java.util.Map.of("message", "비밀번호 변경에 실패했습니다."));
+		}
 	}
 }

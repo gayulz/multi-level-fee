@@ -56,6 +56,10 @@ dependencies {
 	// Slack Logback Appender
 	implementation 'com.github.maricn:logback-slack-appender:1.6.1'
 
+	// Caffeine Cache (rate limiting fast-path; DB is the source of truth)
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
+
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.amqp:spring-rabbit-test'

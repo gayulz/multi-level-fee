@@ -90,11 +90,14 @@
 								<input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
 							</div>
 
-							<!-- 새 비밀번호 -->
+							<!-- 새 비밀번호 (PasswordPolicy 단일 소스 참조) -->
 							<div class="mb-3">
 								<label for="newPassword" class="form-label">새 비밀번호 <span class="text-danger">*</span></label>
-								<input type="password" class="form-control" id="newPassword" name="newPassword" required minlength="8" pattern="^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':&quot;\\|,.<>\/?])(?=.*[a-zA-Z0-9]).{8,}$">
-								<small class="text-muted">최소 8자, 영문 대문자 1개, 특수문자 1개 이상</small>
+								<input type="password" class="form-control" id="newPassword" name="newPassword" required
+									   th:minlength="${pwMinLength}"
+									   th:pattern="${pwHtmlPattern}"
+									   th:title="${pwInputTitle}">
+								<small class="text-muted" th:text="${pwViolationMessage}">비밀번호 정책 안내</small>
 							</div>
 
 							<!-- 새 비밀번호 확인 -->

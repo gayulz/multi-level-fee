@@ -186,14 +186,20 @@ public class User {
     // =========================================================
 
     /**
-     * [NEW] 이메일 인증 토큰 설정 (만료 5분).
+     * [NEW] 이메일 인증 토큰 설정.
      *
-     * @param token 이메일 인증 토큰
+     * <p>
+     * Expiration is provided by the caller (driven by configuration).
+     * Service layer reads {@code app.email.verification-ttl-minutes} and passes the value here.
+     * </p>
+     *
+     * @param token       이메일 인증 토큰
+     * @param ttlMinutes  토큰 유효 시간(분)
      * @author gayul.kim
      */
-    public void setEmailVerificationToken(String token) {
+    public void setEmailVerificationToken(String token, int ttlMinutes) {
         this.emailVerificationToken = token;
-        this.emailVerificationExpiredAt = LocalDateTime.now().plusMinutes(5);
+        this.emailVerificationExpiredAt = LocalDateTime.now().plusMinutes(ttlMinutes);
         this.updatedAt = LocalDateTime.now();
     }
 
