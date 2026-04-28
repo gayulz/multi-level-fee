@@ -85,11 +85,17 @@ jobs:
             # 기존 .env에서 위 키를 제외한 커스텀 키 보존 (INIT_SUPER_ADMIN_PASSWORD 등)
             grep -v -E "^(POSTGRES_|RABBITMQ_|SLACK_WEBHOOK_URL)" .env >> .env.default || true
             mv .env.default .env
-            # DB/RabbitMQ는 상태ful 서비스이므로 배포 중 중단하지 않고, 앱만 새 이미지로 교체합니다.
-            sudo docker-compose up -d postgres rabbitmq
+            # DB/RabbitMQ는 상태ful 서비스이므로 배포 중 중단하지 않고, 기존 컨테이너만 확인합니다.
             for service in postgres rabbitmq; do
-              for attempt in $(seq 1 30); do
+              container_id="$(sudo docker-compose ps -q "$service")"
+              if [ -n "$container_id" ]; then
+                sudo docker start "$container_id" >/dev/null
+              else
+                sudo docker-compose up -d --no-recreate "$service"
                 container_id="$(sudo docker-compose ps -q "$service")"
+              fi
+
+              for attempt in $(seq 1 30); do
                 health="$(sudo docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$container_id" 2>/dev/null || true)"
                 if [ "$health" = "healthy" ] || [ "$health" = "running" ]; then
                   break
