@@ -57,6 +57,8 @@ services:
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
       INIT_SUPER_ADMIN_PASSWORD: ${INIT_SUPER_ADMIN_PASSWORD}
       INIT_COMMON_PASSWORD: ${INIT_COMMON_PASSWORD}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-resend}
       TZ: Asia/Seoul
       JAVA_TOOL_OPTIONS: "-Xms512m -Xmx512m -Duser.timezone=Asia/Seoul"
     depends_on:

@@ -15,6 +15,26 @@ spring:
 server:
   port: 8080
 
+# Application-level configuration (consumed by @ConfigurationProperties beans)
+app:
+  email:
+    # Provider: noop (log-only) or resend (real send)
+    # Override per environment via application-{profile}.yml
+    provider: noop
+    from: "SettleTree <noreply@settletree.io>"
+    public-base-url: "http://localhost:8080"
+    verification-ttl-minutes: 30
+    resend:
+      api-key: ${RESEND_API_KEY:}
+      api-url: "https://api.resend.com/emails"
+      timeout-millis: 5000
+  rate-limit:
+    email-verification:
+      email-hourly-limit: 5
+      email-daily-limit: 10
+      ip-hourly-limit: 20
+      ip-daily-limit: 100
+
 logging:
   level:
     org.springframework.security: DEBUG

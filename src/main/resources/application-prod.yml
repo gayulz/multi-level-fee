@@ -51,9 +51,24 @@ spring:
   thymeleaf:
     cache: true
 
+# Email & rate-limit overrides for production
+app:
+  email:
+    provider: ${EMAIL_PROVIDER:resend}
+    from: ${EMAIL_FROM:SettleTree <noreply@settletree.io>}
+    public-base-url: ${PUBLIC_BASE_URL:https://settletree.p-e.kr}
+    verification-ttl-minutes: ${EMAIL_VERIFY_TTL_MIN:30}
+    resend:
+      api-key: ${RESEND_API_KEY:}
+  rate-limit:
+    email-verification:
+      email-hourly-limit: ${RL_EMAIL_HOUR:5}
+      email-daily-limit: ${RL_EMAIL_DAY:10}
+      ip-hourly-limit: ${RL_IP_HOUR:20}
+      ip-daily-limit: ${RL_IP_DAY:100}
+
 # Logging
 logging:
   level:
     com.example.settlement: INFO
-    # prod 환경에서 Security DEBUG 로그는 불필요한 I/O 발생 → WARN으로 변경
     org.springframework.security: WARN

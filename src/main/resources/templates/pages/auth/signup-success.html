@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="/css/welcome.css">
-    
+
     <style>
         .success-wrapper {
             height: 100vh;
@@ -76,6 +76,65 @@
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
+
+        /* [NEW] Email verification banner styles */
+        .email-banner {
+            margin: 20px 0 10px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 2px solid;
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .email-banner.info {
+            border-color: #2D2D2D;
+            background: #F2FFFA;
+        }
+
+        .email-banner.warn {
+            border-color: #C53030;
+            background: #FFF5F5;
+        }
+
+        .email-banner code {
+            background: #FFFFFF;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+            font-size: 13px;
+        }
+
+        .resend-form {
+            margin-top: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .resend-form input {
+            border: 2px solid #2D2D2D;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .resend-form button {
+            border: 2px solid #2D2D2D;
+            background: #FFFFFF;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .resend-form button:hover {
+            background: #2D2D2D;
+            color: #FFFFFF;
+        }
     </style>
 </head>
 <body class="welcome-body" style="background-color: #EAF0E8; color: #2D2D2D;">
@@ -98,8 +157,32 @@
             <h2>REGISTRATION<br>COMPLETED</h2>
             <p class="success-desc">
                 가입 신청서가 정상적으로 접수되었습니다.<br/>
-                소속 조직 관리자의 <strong>최종 승인(Approval)</strong>이 떨어지면<br/>정상적으로 로그인이 가능합니다.
+                소속 조직 관리자의 <strong>최종 승인(Approval)</strong> 이후 로그인이 가능합니다.
             </p>
+
+            <!-- [NEW] 이메일 인증 안내 배너 -->
+            <div th:if="${emailDispatched == true}" class="email-banner info">
+                <strong>📧 인증 메일을 발송했습니다.</strong><br/>
+                <span th:if="${registeredEmail}">
+                    <code th:text="${registeredEmail}">user@example.com</code> 메일함에서 인증 링크를 클릭해주세요.
+                </span>
+                <span th:unless="${registeredEmail}">
+                    가입 시 입력하신 메일 주소에서 인증 링크를 클릭해주세요.
+                </span>
+                <br/>
+                <small style="color: rgba(45,45,45,0.6);">스팸 메일함도 함께 확인해주세요. 링크는 30분간 유효합니다.</small>
+            </div>
+
+            <div th:if="${emailDispatched == false}" class="email-banner warn">
+                <strong>⚠️ 인증 메일 발송에 실패했습니다.</strong><br/>
+                <span th:text="${emailWarning}">잠시 후 다시 시도해주세요.</span>
+                <form class="resend-form" th:action="@{/auth/resend-verification}" method="post">
+                    <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}" />
+                    <input type="email" name="email" th:value="${registeredEmail}" required placeholder="가입한 이메일" />
+                    <button type="submit">인증 메일 재발송</button>
+                </form>
+            </div>
+
             <a href="/auth/login" class="start-btn">LOGIN 화면으로 돌아가기</a>
         </div>
     </div>

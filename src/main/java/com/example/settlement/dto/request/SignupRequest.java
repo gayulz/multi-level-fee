@@ -1,5 +1,6 @@
 package com.example.settlement.dto.request;
 
+import com.example.settlement.common.PasswordPolicy;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,8 +10,9 @@ import lombok.Setter;
 
 /**
  * [NEW] 회원가입 요청 DTO
- * 
+ *
  * JSR-303 검증 어노테이션을 사용하여 폼 입력을 검증합니다.
+ * 비밀번호 정책은 {@link PasswordPolicy}에서 단일 소스로 관리합니다.
  *
  * @author gayul.kim
  * @since 2026-03-09
@@ -23,7 +25,8 @@ public class SignupRequest {
     @NotBlank(message = "이메일은 필수 입력입니다")
     private String email;
 
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$", message = "특수문자 1개 이상, 영어 대문자 1개 이상, 최소 8자리")
+    @NotBlank(message = "비밀번호는 필수 입력입니다")
+    @Pattern(regexp = PasswordPolicy.REGEX, message = PasswordPolicy.VIOLATION_MESSAGE)
     private String password;
 
     @NotBlank(message = "이름은 필수 입력입니다")

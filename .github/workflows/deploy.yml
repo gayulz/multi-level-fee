@@ -65,18 +65,49 @@ jobs:
           script: |
             cd ~/multi-level-fee
             touch .env
-            echo "POSTGRES_USER=settlement" > .env.default
-            echo "POSTGRES_PASSWORD=settlement_pass" >> .env.default
-            echo "POSTGRES_DB=settlementdb" >> .env.default
-            echo "RABBITMQ_DEFAULT_USER=admin" >> .env.default
-            echo "RABBITMQ_DEFAULT_PASS=admin_pass" >> .env.default
+            get_env_or_default() {
+              key="$1"
+              default_value="$2"
+              current_value="$(grep -m1 "^${key}=" .env | cut -d= -f2- || true)"
+              if [ -n "$current_value" ]; then
+                printf "%s=%s\n" "$key" "$current_value"
+              else
+                printf "%s=%s\n" "$key" "$default_value"
+              fi
+            }
+
+            get_env_or_default "POSTGRES_USER" "settlement" > .env.default
+            get_env_or_default "POSTGRES_PASSWORD" "settlement_pass" >> .env.default
+            get_env_or_default "POSTGRES_DB" "settlementdb" >> .env.default
+            get_env_or_default "RABBITMQ_DEFAULT_USER" "admin" >> .env.default
+            get_env_or_default "RABBITMQ_DEFAULT_PASS" "admin_pass" >> .env.default
             echo "SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL" >> .env.default
-            # 기존 .env에서 위 6개 키를 제외한 커스텀 키 보존 (INIT_SUPER_ADMIN_PASSWORD 등)
+            # 기존 .env에서 위 키를 제외한 커스텀 키 보존 (INIT_SUPER_ADMIN_PASSWORD 등)
             grep -v -E "^(POSTGRES_|RABBITMQ_|SLACK_WEBHOOK_URL)" .env >> .env.default || true
             mv .env.default .env
-            # ContainerConfig 파싱 에러(docker-compose 버그) 방지를 위해 기존 컨테이너 완전 삭제 후 시작
-            sudo docker-compose rm -fsv
-            sudo docker-compose up -d --build
+            # DB/RabbitMQ는 상태ful 서비스이므로 배포 중 중단하지 않고, 앱만 새 이미지로 교체합니다.
+            sudo docker-compose up -d postgres rabbitmq
+            for service in postgres rabbitmq; do
+              for attempt in $(seq 1 30); do
+                container_id="$(sudo docker-compose ps -q "$service")"
+                health="$(sudo docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$container_id" 2>/dev/null || true)"
+                if [ "$health" = "healthy" ] || [ "$health" = "running" ]; then
+                  break
+                fi
+                if [ "$attempt" = "30" ]; then
+                  echo "${service} health check timeout"
+                  sudo docker-compose ps
+                  exit 1
+                fi
+                sleep 2
+              done
+            done
+            sudo docker-compose build app
+            if [ -z "$(sudo docker-compose ps -q app)" ] && sudo docker ps -a --format '{{.Names}}' | grep -qx "settlement-app"; then
+              sudo docker rm -f settlement-app
+            fi
+            sudo docker-compose up -d --no-deps app
+            sudo docker-compose up -d nginx certbot
             
       # 8. 배포 결과 Slack 알림 전송
       - name: Slack 배포 알림 (Success/Failure)

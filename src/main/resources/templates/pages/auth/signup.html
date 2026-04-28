@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CSRF (Spring Security) -->
-    <meta name="_csrf" content=""/>
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
     
     <title>SettleTree - Sign Up</title>
     
@@ -55,10 +56,30 @@
                     </div>
                 </div>
                 
-                <!-- 비밀번호 영역 -->
+                <!-- 이름 영역 -->
+                <div class="form-group">
+                    <label class="form-label" for="name">Name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" class="form-control-liquid" placeholder="이름을 입력하세요" required maxlength="100">
+                </div>
+
+                <!-- 비밀번호 영역 (PasswordPolicy 단일 소스 참조) -->
                 <div class="form-group">
                     <label class="form-label" for="password">Password <span class="required">*</span></label>
-                    <input type="password" id="password" name="password" class="form-control-liquid" placeholder="••••••••" required>
+                    <input type="password" id="password" name="password" class="form-control-liquid" placeholder="••••••••" required
+                           th:minlength="${pwMinLength}"
+                           th:pattern="${pwHtmlPattern}"
+                           th:title="${pwInputTitle}"
+                           oninput="checkPasswordMatch()">
+                    <small style="display:block; margin-top:6px; font-size:12px; color:rgba(45,45,45,0.65);"
+                           th:text="${pwViolationMessage}">비밀번호 정책 안내</small>
+                </div>
+
+                <!-- 비밀번호 확인 영역 -->
+                <div class="form-group">
+                    <label class="form-label" for="passwordConfirm">Confirm Password <span class="required">*</span></label>
+                    <input type="password" id="passwordConfirm" class="form-control-liquid" placeholder="••••••••" required
+                           oninput="checkPasswordMatch()">
+                    <small id="passwordMatchMsg" style="display:none; margin-top:6px; font-size:12px; font-weight:600;"></small>
                 </div>
                 
                 <!-- 연락처 영역 -->
@@ -67,15 +88,14 @@
                     <input type="tel" id="phone" name="phone" class="form-control-liquid" placeholder="010-0000-0000" required>
                 </div>
                 
-                <!-- 소속 지점 선택 (드롭다운) -->
+                <!-- 소속 조직 선택 (드롭다운) — AuthController가 organizations 모델로 전달 -->
                 <div class="form-group">
-                    <label class="form-label" for="branch">Branch (소속 지점) <span class="required">*</span></label>
-                    <select id="branch" name="branchId" class="form-control-liquid" required>
-                        <option value="" disabled selected>지점을 선택해주세요</option>
-                        <option value="1">서울 본사 (HQ)</option>
-                        <option value="2">강남 지사</option>
-                        <option value="3">부산 지사</option>
-                        <option value="4">해외 법인 (US)</option>
+                    <label class="form-label" for="organizationId">Organization (소속) <span class="required">*</span></label>
+                    <select id="organizationId" name="organizationId" class="form-control-liquid" required>
+                        <option value="" disabled selected>소속을 선택해주세요</option>
+                        <option th:each="org : ${organizations}"
+                                th:value="${org.orgId}"
+                                th:text="${org.orgName}">조직명</option>
                     </select>
                 </div>
                 
@@ -114,7 +134,50 @@
     </div>
     
     <script>
-        // Custom Alert 
+        // Password confirmation validation
+        function checkPasswordMatch() {
+            const pw = document.getElementById('password').value;
+            const confirm = document.getElementById('passwordConfirm').value;
+            const msg = document.getElementById('passwordMatchMsg');
+            const confirmInput = document.getElementById('passwordConfirm');
+
+            if (confirm.length === 0) {
+                msg.style.display = 'none';
+                confirmInput.style.borderColor = '#2D2D2D';
+                confirmInput.style.boxShadow = 'inset 3px 3px 0 rgba(0,0,0,0.05)';
+                return;
+            }
+
+            if (pw === confirm) {
+                msg.style.display = 'block';
+                msg.style.color = '#16A34A';
+                msg.textContent = '✓ 비밀번호가 일치합니다.';
+                confirmInput.style.borderColor = '#16A34A';
+                confirmInput.style.boxShadow = '4px 4px 0 #16A34A';
+            } else {
+                msg.style.display = 'block';
+                msg.style.color = '#DC2626';
+                msg.textContent = '✗ 비밀번호가 일치하지 않습니다.';
+                confirmInput.style.borderColor = '#DC2626';
+                confirmInput.style.boxShadow = '4px 4px 0 #DC2626';
+            }
+        }
+
+        // Block form submission when passwords do not match
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form[action]');
+            form.addEventListener('submit', function (e) {
+                const pw = document.getElementById('password').value;
+                const confirm = document.getElementById('passwordConfirm').value;
+                if (pw !== confirm) {
+                    e.preventDefault();
+                    showAuthAlert('비밀번호 확인이 일치하지 않습니다. 다시 확인해주세요.');
+                    document.getElementById('passwordConfirm').focus();
+                }
+            });
+        });
+
+        // Custom Alert
         function showAuthAlert(msg) {
             document.getElementById('authAlertMessage').innerText = msg;
             document.getElementById('authAlertModal').classList.add('active');
