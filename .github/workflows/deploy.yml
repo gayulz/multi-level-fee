@@ -109,10 +109,26 @@ jobs:
               done
             done
             sudo docker-compose build app
-            if [ -z "$(sudo docker-compose ps -q app)" ] && sudo docker ps -a --format '{{.Names}}' | grep -qx "settlement-app"; then
-              sudo docker rm -f settlement-app
-            fi
-            sudo docker-compose up -d --no-deps app
+            POSTGRES_USER_VALUE="$(grep -m1 "^POSTGRES_USER=" .env | cut -d= -f2-)"
+            POSTGRES_PASSWORD_VALUE="$(grep -m1 "^POSTGRES_PASSWORD=" .env | cut -d= -f2-)"
+            POSTGRES_DB_VALUE="$(grep -m1 "^POSTGRES_DB=" .env | cut -d= -f2-)"
+            sudo docker rm -f settlement-app >/dev/null 2>&1 || true
+            sudo docker rm -f "$(sudo docker-compose ps -q app)" >/dev/null 2>&1 || true
+            sudo docker run -d \
+              --name settlement-app \
+              --network multi-level-fee_default \
+              --network-alias app \
+              --env-file .env \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e POSTGRES_DB="$POSTGRES_DB_VALUE" \
+              -e DB_USERNAME="$POSTGRES_USER_VALUE" \
+              -e DB_PASSWORD="$POSTGRES_PASSWORD_VALUE" \
+              -e JAVA_TOOL_OPTIONS="-Xms512m -Xmx512m -Duser.timezone=Asia/Seoul" \
+              -e TZ=Asia/Seoul \
+              -p 8080:8080 \
+              -v "$(pwd)/logs:/app/logs" \
+              --restart unless-stopped \
+              multi-level-fee_app:latest
             sudo docker start settlement-nginx certbot >/dev/null
             sudo docker exec settlement-nginx nginx -s reload
             
