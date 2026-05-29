@@ -129,8 +129,20 @@ jobs:
               -v "$(pwd)/logs:/app/logs" \
               --restart unless-stopped \
               multi-level-fee_app:latest
-            sudo docker start settlement-nginx certbot >/dev/null
-            sudo docker exec settlement-nginx nginx -s reload
+            # nginx: recreate to pick up new volume mounts (blocked-ips.conf) and WAF rules
+            sudo docker rm -f settlement-nginx >/dev/null 2>&1 || true
+            sudo docker run -d \
+              --name settlement-nginx \
+              --network multi-level-fee_default \
+              -p 80:80 \
+              -p 443:443 \
+              -v "$(pwd)/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro" \
+              -v "$(pwd)/nginx/blocked-ips.conf:/etc/nginx/blocked-ips.conf:ro" \
+              -v /etc/letsencrypt:/etc/letsencrypt:ro \
+              -v "$(pwd)/nginx/certbot-www:/var/www/certbot:ro" \
+              --restart unless-stopped \
+              nginx:alpine
+            sudo docker start certbot >/dev/null
             
       # 8. 배포 결과 Slack 알림 전송
       - name: Slack 배포 알림 (Success/Failure)

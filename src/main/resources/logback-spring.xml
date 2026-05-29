@@ -64,6 +64,21 @@
     </appender>
 
     <!-- Spring Boot 프로파일 별 로깅 설정 다르게 적용 가능 (여기선 일괄 적용) -->
+
+    <!--
+        Bot/scanner traffic noise suppression.
+        Tomcat's dispatcherServlet container logs every uncaught exception
+        bubbling out of the servlet stack (LocaleChangeInterceptor parse
+        errors, multipart boundary failures, URLDecoder %xx errors) at ERROR
+        level. These are 100% caused by external scanners injecting payloads
+        into `lang`, malformed multipart, etc. — not by our application code.
+        Silencing this specific logger removes the Slack noise while keeping
+        all application-level ERROR logs (controllers, services, ControllerAdvice)
+        intact, because those flow through their own class loggers.
+    -->
+    <logger name="org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/].[dispatcherServlet]" level="OFF" />
+    <logger name="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" level="OFF" />
+
     <!-- 모든 환경 (기본) -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
