@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(new HttpSessionCsrfTokenRepository()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/auth/welcome", "/auth/login", "/auth/signup", "/auth/verify-email/**", "/auth/resend-verification")
+                        .requestMatchers("/", "/auth/welcome", "/auth/login", "/auth/signup", "/auth/verify-email/**", "/auth/resend-verification", "/auth/demo-login")
                         .permitAll()
                         .requestMatchers("/css/**", "/js/**", "/fonts/**", "/images/**").permitAll()
 

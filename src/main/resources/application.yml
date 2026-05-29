@@ -34,6 +34,11 @@ app:
       email-daily-limit: 10
       ip-hourly-limit: 20
       ip-daily-limit: 100
+  # Demo mode (off by default; enable per-profile)
+  demo:
+    enabled: false
+    password: ${DEMO_PASSWORD:demo1234!}
+    reset-interval-minutes: 30
 
 logging:
   level:
