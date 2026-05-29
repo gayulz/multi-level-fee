@@ -13,6 +13,28 @@
 > **🌐 Live Demo**: [https://settletree.p-e.kr/](https://settletree.p-e.kr/)
 > **개인 프로젝트이지만 실제 운영 중**인 웹 애플리케이션입니다. Oracle Cloud Infrastructure의 무료 티어에 배포하여 실제 서비스를 제공하고 있습니다.
 
+---
+
+## 🎭 면접관/리뷰어용 30초 체험 가이드
+
+가입 절차 없이 **로그인 페이지의 데모 버튼 한 번으로** 4가지 권한 시점에서 시스템을 직접 체험하실 수 있습니다.
+
+1. **접속**: https://settletree.p-e.kr/auth/login
+2. **체험 버튼 클릭**: 화면 하단 "🎭 면접관/리뷰어용 1초 체험" 영역에서 4개 중 하나 선택
+
+| 버튼 | 역할 | 무엇을 보실 수 있나요? |
+|------|------|----------------------|
+| 🦸 **슈퍼관리자** | `ROLE_SUPER_ADMIN` | 모든 조직/사용자/정산 관리 + 사용자 승인 기능 |
+| 🏢 **본사 관리자** | `ROLE_ADMIN` (본사) | 본사 시점의 정산 최종 승인 + 전체 조직 트리 |
+| 🏙 **지사 관리자** | `ROLE_ADMIN` (지사) | 지사 + 하위 대리점 데이터만 (계층형 권한 격리 확인) |
+| 🏪 **대리점 사용자** | `ROLE_USER` (대리점) | 본인 정산 요청만 (개인 격리 확인) |
+
+> 💡 **추천 체험 동선**: 슈퍼관리자 → 본사 관리자 → 지사 관리자 → 대리점 사용자 순서로 들어가시면, **권한에 따라 보이는 데이터/메뉴가 어떻게 격리되는지** 한눈에 비교하실 수 있습니다. 이것이 본 프로젝트가 자랑하는 Spring Security 기반 계층형 접근 제어의 핵심입니다.
+
+데모 데이터는 별도 "데모 본사" 조직 트리 내에 격리되어 있으며, 주기적으로 자동 초기화됩니다.
+
+---
+
 ## 💡 프로젝트 개요
 
 SettleTree는 본사, 지사, 대리점으로 이어지는 **계층형 조직 구조(Hierarchical Organization)**를 기반으로 정산 요청을 처리하고 승인 워크플로우를 전산화한 웹 애플리케이션입니다.
@@ -166,12 +188,17 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:management
 - `DataInitializer`는 `local` 또는 `dev` 프로파일에서만 활성화됩니다.
 - 비밀번호는 `application-local.yml`에서 환경 변수로 주입 가능합니다.
 
-**자동 생성 계정**:
-- **최고 관리자**: `admin@settletree.com`
-- **본사 관리자**: `hq_admin@settletree.com`
-- **서울지사 관리자**: `seoul_admin@settletree.com`
-- **강남대리점 관리자**: `gangnam_admin@settletree.com`
-- **강남대리점 일반사용자**: `gangnam_user@example.com`
+**자동 생성 계정** (local/dev 프로파일에서만):
+- **최고 관리자**: `admin@settletree.io`
+- **본사/지사/대리점 관리자**: `admin{N}@settletree.io` (N은 인덱스)
+- **일반 사용자**: `user{N}@settletree.io`
+
+**데모 모드 계정** (`app.demo.enabled=true` 환경 전용):
+- **데모 슈퍼관리자**: `demo_super@settletree.io`
+- **데모 본사 관리자**: `demo_hq@settletree.io`
+- **데모 지사 관리자**: `demo_branch@settletree.io`
+- **데모 대리점 사용자**: `demo_agency@settletree.io`
+- 비밀번호: `DEMO_PASSWORD` 환경 변수로 주입 (기본값: `demo1234!`)
 
 ### 개발 환경 설정
 **Live Reload 지원**:

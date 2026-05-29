@@ -108,6 +108,54 @@
                         <button type="submit" class="btn-liquid-auth btn-liquid-login mt-3">Log In</button>
                     </form>
 
+                    <!-- [NEW] Demo Mode entry section (visible only when app.demo.enabled=true) -->
+                    <div th:if="${demoEnabled}" class="demo-section mt-4 pt-4"
+                         style="border-top: 1px dashed rgba(45, 45, 45, 0.25);">
+                        <div style="text-align: center; margin-bottom: 12px;">
+                            <span style="font-size: 0.78rem; font-weight: 700; color: #2D2D2D; letter-spacing: 0.6px; text-transform: uppercase;">
+                                🎭 면접관/리뷰어용 1초 체험
+                            </span>
+                            <div style="font-size: 0.72rem; color: #555; margin-top: 4px;">
+                                가입 없이 4가지 권한 시점에서 시스템을 직접 체험해보세요.
+                            </div>
+                        </div>
+
+                        <div class="demo-grid"
+                             style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <form th:action="@{/auth/demo-login}" method="post" style="margin: 0;">
+                                <input type="hidden" name="role" value="super">
+                                <button type="submit" class="btn-demo"
+                                        style="width: 100%; padding: 10px 8px; border-radius: 10px; border: 1px solid rgba(45,45,45,0.2); background: rgba(255,255,255,0.55); color: #2D2D2D; font-weight: 700; font-size: 0.82rem; cursor: pointer;">
+                                    🦸 슈퍼관리자 체험
+                                </button>
+                            </form>
+                            <form th:action="@{/auth/demo-login}" method="post" style="margin: 0;">
+                                <input type="hidden" name="role" value="hq">
+                                <button type="submit" class="btn-demo"
+                                        style="width: 100%; padding: 10px 8px; border-radius: 10px; border: 1px solid rgba(45,45,45,0.2); background: rgba(255,255,255,0.55); color: #2D2D2D; font-weight: 700; font-size: 0.82rem; cursor: pointer;">
+                                    🏢 본사 관리자 체험
+                                </button>
+                            </form>
+                            <form th:action="@{/auth/demo-login}" method="post" style="margin: 0;">
+                                <input type="hidden" name="role" value="branch">
+                                <button type="submit" class="btn-demo"
+                                        style="width: 100%; padding: 10px 8px; border-radius: 10px; border: 1px solid rgba(45,45,45,0.2); background: rgba(255,255,255,0.55); color: #2D2D2D; font-weight: 700; font-size: 0.82rem; cursor: pointer;">
+                                    🏙 지사 관리자 체험
+                                </button>
+                            </form>
+                            <form th:action="@{/auth/demo-login}" method="post" style="margin: 0;">
+                                <input type="hidden" name="role" value="agency">
+                                <button type="submit" class="btn-demo"
+                                        style="width: 100%; padding: 10px 8px; border-radius: 10px; border: 1px solid rgba(45,45,45,0.2); background: rgba(255,255,255,0.55); color: #2D2D2D; font-weight: 700; font-size: 0.82rem; cursor: pointer;">
+                                    🏪 대리점 사용자 체험
+                                </button>
+                            </form>
+                        </div>
+                        <div style="font-size: 0.7rem; color: #777; margin-top: 10px; text-align: center;">
+                            ※ 데모 데이터는 주기적으로 초기화됩니다.
+                        </div>
+                    </div>
+
                     <div class="auth-footer">
                         Need an account? <a href="/auth/signup" th:href="@{/auth/signup}" class="auth-link">Register</a>
                     </div>

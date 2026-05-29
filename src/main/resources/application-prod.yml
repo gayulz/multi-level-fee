@@ -66,6 +66,11 @@ app:
       email-daily-limit: ${RL_EMAIL_DAY:10}
       ip-hourly-limit: ${RL_IP_HOUR:20}
       ip-daily-limit: ${RL_IP_DAY:100}
+  # Demo mode is enabled in production so interviewers can self-experience the system
+  demo:
+    enabled: ${DEMO_ENABLED:true}
+    password: ${DEMO_PASSWORD:demo1234!}
+    reset-interval-minutes: ${DEMO_RESET_MIN:30}
 
 # Logging
 logging:
